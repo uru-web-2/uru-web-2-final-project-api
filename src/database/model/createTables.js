@@ -1,4 +1,9 @@
 // Query to create the users table
+import {
+    USER_EMAILS_UNIQUE_EMAIL,
+    USER_USERNAMES_UNIQUE_USERNAME
+} from "./constraints.js";
+
 export const CREATE_USERS = `
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
@@ -20,6 +25,7 @@ CREATE TABLE IF NOT EXISTS user_usernames (
     revoked_at TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS ${USER_USERNAMES_UNIQUE_USERNAME} ON user_usernames (username) WHERE revoked_at IS NULL;
 `
 
 // Query to create the user_password_hashes table
@@ -39,13 +45,12 @@ export const CREATE_USER_EMAILS = `
 CREATE TABLE IF NOT EXISTS user_emails (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    verification_id BIGINT NOT NULL,
     email VARCHAR(255) NOT NULL,
     assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
     revoked_at TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (verification_id) REFERENCES user_email_verifications(id)
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS ${USER_EMAILS_UNIQUE_EMAIL} ON user_emails (email) WHERE revoked_at IS NULL;
 `
 
 // Query to create the user_email_verifications table
@@ -106,8 +111,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     name VARCHAR(50) NOT NULL,
     description VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    deleted_at TIMESTAMP
 );
 `
 

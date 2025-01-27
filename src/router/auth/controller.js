@@ -2,6 +2,7 @@
 import validator from "./validator.js";
 import {HandleValidation} from "../../components/handler.js";
 
+// Controller for the auth route
 class Controller {
     // Handle the SignUp request
     SignUp(req, res) {

@@ -1,4 +1,4 @@
-import {LOG_IN, SIGN_UP} from "./model.js";
+import {LOG_IN, SIGN_UP} from "../../components/model.js";
 import Validate from "@ralvarezdev/js-joi-parser/parser/validate.js";
 
 // Validator for the auth route

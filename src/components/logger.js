@@ -1,36 +1,41 @@
+import {fileURLToPath} from "url";
+import {dirname} from "path";
 import Logger from "@ralvarezdev/js-logger";
-import {debug, dev, prod, save} from "@ralvarezdev/js-mode";
-import path from 'path'
-import {__dirname} from "../../index.js";
+import {DEBUG, DEV, mode, PROD, SAVE} from "@ralvarezdev/js-mode";
+import path from 'path';
+
+// Get the file name and directory
+const __filename = fileURLToPath(import.meta.url);
+export const __dirname = dirname(__filename);
 
 // Save log files config
 const SAVE_CONFIG = {
-    save: [save],
+    save:  SAVE,
     logPath: path.join(__dirname, "log"),
     logFilename: "app.log"
 }
 
 // Print log entry types depending on mode
 const LOG_ENTRY_TYPES = {
-    [prod]: {
+    [PROD]: {
         warning: true,
         error: true,
         info: false,
         debug: false,
     },
-    [dev]: {
+    [DEV]: {
         info: true,
         warning: true,
         error: true,
         debug: false,
     },
-    [debug]: {
+    [DEBUG]: {
         info: true,
         warning: true,
         error: true,
         debug: true,
     }
-}
+}[mode]
 
 // Create a new logger
 const LOGGER = new Logger({
