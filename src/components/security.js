@@ -1,5 +1,5 @@
 // Map with the modules
-const MODULES=new Map()
+const MODULES = new Map()
 
 // Map with the objects
 const OBJECTS = new Map()

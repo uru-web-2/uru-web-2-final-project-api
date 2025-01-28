@@ -12,3 +12,6 @@ export const LOAD_PROFILES_FN = "SELECT * FROM load_profiles()"
 
 // Query to load the permissions
 export const LOAD_PERMISSIONS_FN = "SELECT * FROM load_permissions()"
+
+// Query to gets the users profiles
+export const GET_USER_PROFILES_FN = "SELECT name FROM get_user_profiles($1)"

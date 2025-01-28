@@ -1,8 +1,7 @@
 import {fileURLToPath} from "url";
-import {dirname} from "path";
+import path, {dirname} from "path";
 import Logger from "@ralvarezdev/js-logger";
 import {DEBUG, DEV, mode, PROD, SAVE} from "@ralvarezdev/js-mode";
-import path from 'path';
 
 // Get the file name and directory
 const __filename = fileURLToPath(import.meta.url);
@@ -10,7 +9,7 @@ export const __dirname = dirname(__filename);
 
 // Save log files config
 const SAVE_CONFIG = {
-    save:  SAVE,
+    save: SAVE,
     logPath: path.join(__dirname, "log"),
     logFilename: "app.log"
 }

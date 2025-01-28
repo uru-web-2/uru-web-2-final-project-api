@@ -13,6 +13,7 @@ export const SIGN_UP = Joi.object({
 export const LOG_IN = Joi.object({
     username: Joi.string().required().min(1),
     password: Joi.string().required().min(1),
+    profile: Joi.string(),
 })
 
 // Execute model

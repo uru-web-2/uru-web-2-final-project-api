@@ -91,3 +91,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 `
+
+// Query to create a function that gets the user profiles
+export const CREATE_GET_USER_PROFILES_FN = `
+CREATE OR REPLACE FUNCTION get_user_profiles(
+    IN in_user_id BIGINT
+) RETURNS
+TABLE (
+    name VARCHAR
+) AS $$
+BEGIN
+    -- Query to select all user profiles
+    RETURN QUERY
+    SELECT profiles.name AS name
+    FROM user_profiles
+    INNER JOIN profiles
+    ON user_profiles.profile_id = profiles.id
+    WHERE user_id = in_user_id
+    AND revoked_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`

@@ -1,8 +1,14 @@
-import Session, {checkSession as createCheckSession} from "@ralvarezdev/js-session"
+import Session, {
+    checkSession as createCheckSession
+} from "@ralvarezdev/js-session"
 import Logger from "./logger.js";
+import {IS_DEBUG, IS_PROD} from "@ralvarezdev/js-mode";
 
 // Error messages
-const SESSION_DOES_NOT_EXIST = {status: "fail", message: "Session does not exist. Please log in."};
+const SESSION_DOES_NOT_EXIST = {
+    status: "fail",
+    message: "Session does not exist. Please log in."
+};
 
 // Session config
 const SESSION_CONFIG = {
@@ -11,7 +17,7 @@ const SESSION_CONFIG = {
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
         sameSite: true,
-        secure: true,
+        secure: IS_PROD,
     },
     secret: process.env.URU_WEB_2_FINAL_PROJECT_API_SECRET
 }
