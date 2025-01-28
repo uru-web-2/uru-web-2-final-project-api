@@ -48,6 +48,7 @@ const DATABASE_CONFIG = {
 const DATABASE_MANAGER = new PostgresDatabaseManager(DATABASE_CONFIG)
 export default DATABASE_MANAGER
 
+/*
 // Create tables, functions, and stored procedures in the database if they do not exist
 DATABASE_MANAGER.runTransaction(async (client) => {
     // Create the tables
@@ -67,8 +68,9 @@ DATABASE_MANAGER.runTransaction(async (client) => {
         await client.rawQuery(query)
 
     Logger.info("Stored procedures created")
-}).then(r => {
+}).then(() => {
     Logger.info("Database migration complete")
 }).catch(err => {
     Logger.error(`Database migration failed: ${err}`)
 })
+*/

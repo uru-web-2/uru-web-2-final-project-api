@@ -5,12 +5,12 @@ import Validate from "@ralvarezdev/js-joi-parser/parser/validate.js";
 class Validator {
     // Validate the SingUp request
     SingUp(req) {
-        return Validate(req.body, SIGN_UP);
+        return Validate(req, SIGN_UP);
     }
 
     // Validate the LogIn request
     LogIn(req) {
-        return Validate(req.body, LOG_IN);
+        return Validate(req, LOG_IN);
     }
 }
 

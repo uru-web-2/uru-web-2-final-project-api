@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
-    birthdate DATE NOT NULL,
+    birthdate DATE,
     joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP
 );

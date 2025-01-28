@@ -6,8 +6,7 @@ export const SIGN_UP = Joi.object({
     last_name: Joi.string().required().min(1),
     username: Joi.string().required().min(1),
     password: Joi.string().required().min(1),
-    email: Joi.string().email().required(),
-    birthdate: Joi.date().required(),
+    email: Joi.string().email().required().email()
 })
 
 // LogIn model
