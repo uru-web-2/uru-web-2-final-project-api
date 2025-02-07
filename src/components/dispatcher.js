@@ -18,6 +18,7 @@ import {Validate} from "@ralvarezdev/js-joi-parser";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {SALT_ROUNDS} from "./bcrypt.js";
 import {
+    FailJSendBody,
     FieldFailError,
     HandleValidation,
     SuccessJSendBody
@@ -108,6 +109,13 @@ export default class Dispatcher {
     // Handle the login request
     async logIn(req, res, next) {
         try {
+            // Check if there's already a session
+            if (Session.exists(req)) {
+                // Send the response
+                res.status(400).json(FailJSendBody({session: "session already exists"}))
+                return
+            }
+
             // Validate the request
             const body = HandleValidation(req, res, req => Validate(req, LOG_IN));
 

@@ -4,11 +4,11 @@ import migrate from "./src/components/migrate.js";
 import Logger from "./src/components/logger.js";
 
 // Migration
-/*
+/**/
 migrate().then(() => {
     Logger.info("Migration completed")
 })
- */
+ /**/
 
 // Initialize dispatcher
 const dispatcher = new Dispatcher()

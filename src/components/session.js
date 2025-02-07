@@ -2,7 +2,7 @@ import Session, {
     checkSession as createCheckSession
 } from "@ralvarezdev/js-session"
 import Logger from "./logger.js";
-import {IS_DEBUG, IS_PROD} from "@ralvarezdev/js-mode";
+import {IS_PROD} from "@ralvarezdev/js-mode";
 
 // Error messages
 const SESSION_DOES_NOT_EXIST = {
@@ -14,11 +14,11 @@ const SESSION_DOES_NOT_EXIST = {
 const SESSION_CONFIG = {
     logger: Logger,
     cookie: {
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        sameSite: true,
+        expires: parseInt(process.env.URU_WEB_2_FINAL_PROJECT_SESSION_EXPIRES),
+        httpOnly: process.env.URU_WEB_2_FINAL_PROJECT_SESSION_HTTP_ONLY==="true",
         secure: IS_PROD,
     },
+    name: process.env.URU_WEB_2_FINAL_PROJECT_SESSION_NAME,
     secret: process.env.URU_WEB_2_FINAL_PROJECT_API_SECRET
 }
 

@@ -1,5 +1,7 @@
+import {AddMetadataProfiles} from "@ralvarezdev/js-module-permissions";
+
 // Controller for the base route
-class Controller {
+export class Controller {
     // Execute the request
     Execute(req, res) {
         // Handle the request
@@ -8,5 +10,7 @@ class Controller {
 }
 
 // Export an instance of the controller
-const CONTROLLER = new Controller();
-export default CONTROLLER;
+export const CONTROLLER = new Controller();
+
+// Set the profiles permissions for each method on the controller
+AddMetadataProfiles(Controller, "Execute", "admin");

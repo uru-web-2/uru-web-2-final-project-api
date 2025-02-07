@@ -1,9 +1,10 @@
 // Controller of the auth route
 import validator from "./validator.js";
-import {HandleValidation} from "../../components/handler.js";
+import {HandleValidation} from "@ralvarezdev/js-express";
+import {AddMetadataProfiles} from "@ralvarezdev/js-module-permissions";
 
 // Controller for the auth route
-class Controller {
+export class Controller {
     // Handle the SignUp request
     SignUp(req, res) {
         // Validate the request
@@ -26,5 +27,8 @@ class Controller {
 }
 
 // Export an instance of the controller
-const CONTROLLER = new Controller();
-export default CONTROLLER;
+export const CONTROLLER = new Controller();
+
+// Set the profiles permissions for each method on the controller
+AddMetadataProfiles(Controller, "SignUp","teacher");
+AddMetadataProfiles(Controller, "LogIn","superadmin", "user");
