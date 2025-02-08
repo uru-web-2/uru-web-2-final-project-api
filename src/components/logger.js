@@ -1,7 +1,7 @@
 import {fileURLToPath} from "url";
 import path, {dirname} from "path";
 import Logger from "@ralvarezdev/js-logger";
-import {DEBUG, DEV, mode, PROD, SAVE} from "@ralvarezdev/js-mode";
+import {DEBUG, DEV, MODE, PROD, SAVE} from "@ralvarezdev/js-mode";
 
 // Get the file name and directory
 const __filename = fileURLToPath(import.meta.url);
@@ -34,7 +34,7 @@ const LOG_ENTRY_TYPES = {
         error: true,
         debug: true,
     }
-}[mode]
+}[MODE]
 
 // Create a new logger
 const LOGGER = new Logger({
