@@ -99,3 +99,37 @@ EXCEPTION
 END;
 $$;
 `
+
+// Create a stored procedure that adds a new user profile
+export const CREATE_ADD_USER_PROFILE_PROC = `
+CREATE OR REPLACE PROCEDURE add_user_profile(
+    IN in_user_username VARCHAR,
+    IN in_profile_name VARCHAR,
+    OUT out_user_id BIGINT,
+    OUT out_profile_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Get the user ID
+    SELECT user_id INTO out_user_id
+    FROM user_usernames
+    WHERE username = in_user_username;
+
+    -- Get the profile ID
+    SELECT id INTO out_profile_id
+    FROM profiles
+    WHERE name = in_profile_name;
+
+    -- Insert into user_profiles table
+    INSERT INTO user_profiles (
+        user_id,
+        profile_id
+    )
+    VALUES (
+        out_user_id,
+        out_profile_id
+    );
+END;
+$$;
+`
