@@ -56,7 +56,7 @@ import {__dirname} from "../router/constants.js";
 import {INSERT_PROFILES} from "../database/model/insertProfiles.js";
 
 // Excluded script names RegExp
-const EXCLUDED_SCRIPT_NAMES = /.*(?:Model|Service|Validator)\.js$/
+const EXCLUDED_SCRIPT_NAMES = /.*(?:Model|Service|Validator)\.js$|^constants\.js$/
 
 // Print the root module recursively
 function printModule(module, ...parentModules) {
@@ -98,6 +98,7 @@ function printModule(module, ...parentModules) {
 
 // Migrate the database
 export default async function migrate() {
+    /*
     // Log the migration
     Logger.info("Migrating the database")
 
@@ -130,13 +131,14 @@ export default async function migrate() {
         // Insert the profiles
         await DATABASE_MANAGER.runTransaction(async (client) => await client.rawQuery(INSERT_PROFILES)).then(() => Logger.info("Profiles inserted")
         ).catch(err => Logger.error(`Profiles insertion failed: ${err}`))
+        */
 
         // Load the metadata profiles
         const rootModule = await MigratePermissions({
             dirPath: __dirname,
             matchScriptNameFn: (scriptName) => {
                 // Check if the script name matches with an excluded script name
-                if (EXCLUDED_SCRIPT_NAMES.test(scriptName)) return false
+                return !EXCLUDED_SCRIPT_NAMES.test(scriptName)
             },
             classNameFn: (scriptPath, scriptName) => {
                 // Should return the name of the script, without the extension and with the first letter capitalized

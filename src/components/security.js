@@ -17,11 +17,11 @@ const PERMISSIONS = new Map()
 
 // Profiles
 export const PROFILES = DeepFreeze({
-    GUEST: {NAME: 'guest'},
-    STUDENT: {NAME: 'student'},
-    TEACHER: {NAME: 'teacher'},
-    LIBRARIAN: {NAME: 'librarian'},
-    ADMIN: {NAME: 'admin'},
-    SUPERADMIN: {NAME: 'superadmin'},
-    DEVELOPER: {NAME: 'developer'}
+    GUEST: 'guest',
+    STUDENT: 'student',
+    TEACHER: 'teacher',
+    LIBRARIAN: 'librarian',
+    ADMIN: 'admin',
+    SUPER_ADMIN: 'super admin',
+    DEVELOPER: 'developer'
 });
