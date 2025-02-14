@@ -12,32 +12,32 @@ import {
 export class ProfileValidator {
     // Validate assign profile permission
     AssignProfilePermission(req) {
-        Validate(req, ASSIGN_PROFILE_PERMISSION);
+        return Validate(req, ASSIGN_PROFILE_PERMISSION);
     }
 
     // Validate revoke profile permission
     RevokeProfilePermission(req) {
-        Validate(req, REVOKE_PROFILE_PERMISSION);
+        return Validate(req, REVOKE_PROFILE_PERMISSION);
     }
 
     // Validate create profile
     CreateProfile(req) {
-        Validate(req, CREATE_PROFILE);
+        return Validate(req, CREATE_PROFILE);
     }
 
     // Validate update profile
     UpdateProfile(req) {
-        Validate(req, UPDATE_PROFILE);
+        return Validate(req, UPDATE_PROFILE);
     }
 
     // Validate delete profile
     DeleteProfile(req) {
-        Validate(req, DELETE_PROFILE);
+        return Validate(req, DELETE_PROFILE);
     }
 
     // Validate get profile permissions methods
     GetProfilePermissionsMethods(req) {
-        Validate(req, GET_PROFILE_PERMISSIONS_METHODS);
+        return Validate(req, GET_PROFILE_PERMISSIONS_METHODS);
     }
 }
 

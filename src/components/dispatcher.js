@@ -126,7 +126,7 @@ export class Dispatcher {
     async logIn(req, res, next) {
         try {
             // Check if there's already a session
-            if (Session.exists(req)) {
+            if (req.session.userID) {
                 // Send the response
                 res.status(400).json(FailJSendBody({session: "session already exists"}))
                 return
@@ -139,9 +139,11 @@ export class Dispatcher {
             let userID, passwordHash
             const logInRes = await DatabaseManager.rawQuery(LOG_IN_PROC,
                 body.username, null, null)
+
+            // Check if the username was found
             if (logInRes.rows.length > 0) {
                 userID = logInRes.rows[0]?.out_user_id
-                passwordHash = logInRes.rows[0]?.out_password_hash
+                passwordHash = logInRes.rows[0]?.out_user_password_hash
             }
 
             // Check if the user exists
@@ -175,6 +177,7 @@ export class Dispatcher {
                 throw new FieldFailError(401, "profile", "profile not found, specify a profile between: " + parsedUserProfilesNames.join(", "))
 
             // Create a session with the given profile
+            console.log( parsedUserProfiles.find(profile => profile.name === body.profile).id)
             Session.set(req, {
                 userID,
                 profileID: body.profile ? parsedUserProfiles.find(profile => profile.name === body.profile).id : parsedUserProfiles[0].id
@@ -203,6 +206,13 @@ export class Dispatcher {
     // Handle the execute request
     async Execute(req, res, next) {
         try {
+            // Check if there's a session
+            if (!req.session.userID) {
+                // Send the response
+                res.status(400).json(FailJSendBody({session: "session not found"}))
+                return
+            }
+
             // Validate the request
             const {
                 modules,

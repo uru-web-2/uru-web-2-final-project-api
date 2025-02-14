@@ -129,10 +129,10 @@ export class ProfileService {
     }
 
     // Gets the methods IDs and names from the permissions of a profile
-    async GetProfilePermissionsMethods(req, profileID) {
+    async GetProfilePermissionsMethods(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_PROFILE_PERMISSIONS_METHODS_FN,
-            profileID
+            body.id
         );
         return queryRes.rows;
     }

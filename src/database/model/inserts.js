@@ -4,7 +4,6 @@ import {PROFILES_NAME as PROFILES} from "../../components/constants.js";
 export const INSERT_PROFILES = `
 INSERT INTO profiles (name, description)
 VALUES
-('${PROFILES.GUEST}', 'Guest'),
 ('${PROFILES.STUDENT}', 'Student'),
 ('${PROFILES.TEACHER}', 'Teacher'),
 ('${PROFILES.LIBRARIAN}', 'Librarian'),

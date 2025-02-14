@@ -24,5 +24,5 @@ export const EXECUTE = Joi.object({
     modules: Joi.array().items(Joi.string().min(1)),
     object: Joi.string().required().min(1),
     method: Joi.string().required().min(1),
-    parameters: Joi.array().items(Joi.any())
+    parameters: Joi.object()
 })

@@ -14,7 +14,7 @@ const SESSION_DOES_NOT_EXIST = {
 const SESSION_CONFIG = {
     logger: Logger,
     cookie: {
-        expires: parseInt(process.env.URU_WEB_2_FINAL_PROJECT_SESSION_EXPIRES),
+        maxAge: parseInt(process.env.URU_WEB_2_FINAL_PROJECT_SESSION_MAX_AGE),
         httpOnly: process.env.URU_WEB_2_FINAL_PROJECT_SESSION_HTTP_ONLY === "true",
         secure: IS_PROD,
     },

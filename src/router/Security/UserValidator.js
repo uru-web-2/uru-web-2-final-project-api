@@ -5,12 +5,12 @@ import {ASSIGN_USER_PROFILE, REVOKE_USER_PROFILE} from "./UserModel.js";
 export class UserValidator {
     // Validate assign user profile
     AssignUserProfile(req) {
-        Validate(req, ASSIGN_USER_PROFILE);
+        return Validate(req, ASSIGN_USER_PROFILE);
     }
 
     // Validate revoke user profile
     RevokeUserProfile(req) {
-        Validate(req, REVOKE_USER_PROFILE);
+        return Validate(req, REVOKE_USER_PROFILE);
     }
 }
 

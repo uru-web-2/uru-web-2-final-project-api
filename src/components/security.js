@@ -24,7 +24,9 @@ export class Security {
     #modules = new Map()
     #objects = new Map()
     #methods = new Map()
+    #methodsIDsByNames= new Map()
     #permissions = new Map()
+    #scripts
 
     constructor() {
         // Create the root module
@@ -74,9 +76,9 @@ export class Security {
         const permissions = await DatabaseManager.rawQuery(GET_PERMISSIONS_FN)
 
         // Iterate over the permissions
-        for (const {profile_id: profileID, method_id} of permissions.rows)
+        for (const {profile_id, method_id} of permissions.rows)
             // Add the permission
-            this.addPermission(profileID, method_id)
+            this.addPermission(profile_id, method_id)
 
         // Get the methods
         const methods = await DatabaseManager.rawQuery(GET_METHODS_FN)
@@ -89,6 +91,7 @@ export class Security {
             // Create the method
             const method = object.createMethod(name, ...this.#permissions.get(id))
             this.#methods.set(id, method)
+            this.#methodsIDsByNames.set(name, id)
         }
 
         // Print the root module
@@ -120,7 +123,7 @@ export class Security {
             this.#permissions.set(methodID, [])
 
         // Set the permission
-        this.#permissions.set(methodID, [...this.#permissions.get(methodID), methodID])
+        this.#permissions.set(methodID, [...this.#permissions.get(methodID), profileID])
     }
 
     // Remove a permission
@@ -162,7 +165,7 @@ export class Security {
         // Iterate over the modules
         for (const moduleName of modulesNames) {
             // Get the module
-            module = module.getMethod(moduleName)
+            module = module.getNestedModule(moduleName)
             if (!module)
                 throw new Error(`Module ${moduleName} not found in ${parentModuleName}`)
 
@@ -177,15 +180,17 @@ export class Security {
 
         // Get the method
         const method = object.getMethod(methodName)
+        if (!method)
+            throw new Error(`Method ${methodName} not found in ${objectName}`)
 
         // Check if the user has the permission to execute the method
-        if (!this.hasPermission(req.session.profileID, method.id))
+        if (!this.hasPermission(req.session.profileID, this.#methodsIDsByNames.get(methodName)))
             throw new FailResponseError(401, {
                 session: "You don't have permission to execute this method"
             })
 
         // Execute the method
-        return await method(req, res)
+        return await (await object.getInstanceMethod(methodName))(req, res)
     }
 }
 
