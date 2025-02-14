@@ -23,8 +23,7 @@ const SESSION_CONFIG = {
 }
 
 // Initialize Express Session wrapper
-const SESSION = new Session(SESSION_CONFIG)
-export default SESSION
+export default new Session(SESSION_CONFIG)
 
 // Middleware for checking if the session exists
 export const checkSession = createCheckSession(SESSION_DOES_NOT_EXIST)

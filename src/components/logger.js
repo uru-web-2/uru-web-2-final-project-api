@@ -37,8 +37,7 @@ const LOG_ENTRY_TYPES = {
 }[MODE]
 
 // Create a new logger
-const LOGGER = new Logger({
+export default new Logger({
     ...SAVE_CONFIG,
     ...LOG_ENTRY_TYPES
 })
-export default LOGGER

@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-// SignUp model
+// Sign up model
 export const SIGN_UP = Joi.object({
     first_name: Joi.string().required().min(1),
     last_name: Joi.string().required().min(1),
@@ -12,7 +12,7 @@ export const SIGN_UP = Joi.object({
     document_country: Joi.string().required().min(1),
 })
 
-// LogIn model
+// Log in model
 export const LOG_IN = Joi.object({
     username: Joi.string().required().min(1),
     password: Joi.string().required().min(1),
@@ -22,6 +22,7 @@ export const LOG_IN = Joi.object({
 // Execute model
 export const EXECUTE = Joi.object({
     modules: Joi.array().items(Joi.string().min(1)),
-    method: Joi.string().min(1),
+    object: Joi.string().required().min(1),
+    method: Joi.string().required().min(1),
     parameters: Joi.array().items(Joi.any())
 })

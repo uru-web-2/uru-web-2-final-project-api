@@ -92,7 +92,7 @@ export default class Dispatcher {
             }
 
             // Log the user ID
-            Logger.info(`User signed up with ID: ${userID}`)
+            Logger.info(`Signed up user ${userID}`)
 
             // Send the response
             res.status(200).json(SuccessJSendBody())
@@ -170,7 +170,7 @@ export default class Dispatcher {
             })
 
             // Log the user ID
-            Logger.info(`User logged in with ID: ${userID}`)
+            Logger.info(`Logged in user ${userID}`)
 
             // Send the response
             res.status(201).json(SuccessJSendBody())

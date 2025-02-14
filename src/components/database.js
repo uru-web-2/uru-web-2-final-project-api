@@ -27,5 +27,4 @@ const DATABASE_CONFIG = {
 }
 
 // Initialize PostgresDatabaseManager
-const DATABASE_MANAGER = new PostgresDatabaseManager(DATABASE_CONFIG)
-export default DATABASE_MANAGER
+export default new PostgresDatabaseManager(DATABASE_CONFIG)

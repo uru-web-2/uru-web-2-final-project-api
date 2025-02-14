@@ -1,8 +1,11 @@
 import {AddMetadataProfiles} from "@ralvarezdev/js-module-permissions";
-import {Book} from "../router/Library/Book.js";
-import {Thesis} from "../router/Library/Thesis.js";
+import {Profile} from "../router/Security/Profile.js";
 import {PROFILES} from "./security.js";
 
-// Set the profiles permissions for each method on the controller
-AddMetadataProfiles(Book, "Create", PROFILES.LIBRARIAN);
-AddMetadataProfiles(Thesis, "Create", PROFILES.LIBRARIAN);
+// Profile object for the security module
+AddMetadataProfiles(Profile, "AssignProfilePermissions", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Profile, "RevokeProfilePermissions", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Profile, "CreateProfile", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Profile, "UpdateProfile", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Profile, "DeleteProfile", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Profile, "GetProfilePermissionsMethods", PROFILES.SUPER_ADMIN)
