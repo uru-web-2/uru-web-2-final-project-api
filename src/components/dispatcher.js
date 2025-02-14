@@ -7,9 +7,7 @@ import DatabaseManager from "./database.js";
 import ErrorHandler from "./handler.js";
 import {LOG_IN, SIGN_UP} from "./model.js";
 import {LOG_IN_PROC, SIGN_UP_PROC} from "../database/model/storedProcedures.js";
-import {
-    GET_USER_PROFILES_FN,
-} from "../database/model/functions.js";
+import {GET_USER_PROFILES_FN,} from "../database/model/functions.js";
 import {
     USER_EMAILS_UNIQUE_EMAIL,
     USER_USERNAMES_UNIQUE_USERNAME
@@ -145,7 +143,7 @@ export default class Dispatcher {
                 parsedUserProfiles.push(userProfiles.rows[i]?.name)
 
             // Check if the user has multiple profiles
-            if (parsedUserProfiles.length > 1&&!body.profile)
+            if (parsedUserProfiles.length > 1 && !body.profile)
                 throw new FieldFailError(401, "profile", "multiple profiles found, specify a profile between: " + parsedUserProfiles.join(", "))
 
             // Check if the user has the specified profile
@@ -153,7 +151,10 @@ export default class Dispatcher {
                 throw new FieldFailError(401, "profile", "profile not found, specify a profile between: " + parsedUserProfiles.join(", "))
 
             // Create a session with the given profile
-            Session.set(req, {userID, profile: body.profile?body.profile:parsedUserProfiles[0]})
+            Session.set(req, {
+                userID,
+                profile: body.profile ? body.profile : parsedUserProfiles[0]
+            })
 
             // Log the user ID
             Logger.info(`User logged in with ID: ${userID}`)

@@ -15,7 +15,7 @@ const SESSION_CONFIG = {
     logger: Logger,
     cookie: {
         expires: parseInt(process.env.URU_WEB_2_FINAL_PROJECT_SESSION_EXPIRES),
-        httpOnly: process.env.URU_WEB_2_FINAL_PROJECT_SESSION_HTTP_ONLY==="true",
+        httpOnly: process.env.URU_WEB_2_FINAL_PROJECT_SESSION_HTTP_ONLY === "true",
         secure: IS_PROD,
     },
     name: process.env.URU_WEB_2_FINAL_PROJECT_SESSION_NAME,

@@ -1,18 +1,23 @@
 import 'dotenv/config';
 import Dispatcher from "./src/components/dispatcher.js";
 import migrate from "./src/components/migrate.js";
-import Logger from "./src/components/logger.js";
 import {loadNode, MIGRATE} from "@ralvarezdev/js-mode";
 
 // Load environment variables
 loadNode()
 
-// Migration
 if (MIGRATE) {
-    migrate().then(() => {
-        Logger.info("Migration completed")
-    })
-    process.exit(0)
+    migrate().then(
+        () => {
+            console.log('Migration successful')
+            process.exit(0)
+        }
+    ).catch(
+        (error) => {
+            console.error('An error occurred while migrating:', error)
+            process.exit(1)
+        }
+    )
 }
 
 // Initialize dispatcher

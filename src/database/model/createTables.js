@@ -5,7 +5,8 @@ import {
     COUNTRIES_UNIQUE_NAME,
     DOCUMENT_AUTHORS_UNIQUE_DOCUMENT_ID_AUTHOR_ID,
     DOCUMENT_TOPICS_UNIQUE_DOCUMENT_ID_TOPIC_ID,
-    IDENTITY_DOCUMENTS_UNIQUE_NUMBER, LANGUAGES_UNIQUE_NAME,
+    IDENTITY_DOCUMENTS_UNIQUE_NUMBER,
+    LANGUAGES_UNIQUE_NAME,
     LOCATIONS_UNIQUE_FLOOR_SECTION,
     METHODS_UNIQUE_OBJECT_ID_NAME,
     MODULES_UNIQUE_PARENT_MODULE_ID_NAME,
@@ -14,7 +15,8 @@ import {
     PEOPLE_UNIQUE_IDENTITY_DOCUMENT,
     PEOPLE_UNIQUE_PASSPORT,
     PERMISSIONS_UNIQUE_METHOD_ID_PROFILE_ID,
-    PROFILES_UNIQUE_NAME, PUBLISHERS_UNIQUE_NAME,
+    PROFILES_UNIQUE_NAME,
+    PUBLISHERS_UNIQUE_NAME,
     USER_EMAIL_VERIFICATIONS_UNIQUE_USER_EMAIL_ID,
     USER_EMAILS_UNIQUE_EMAIL,
     USER_EMAILS_UNIQUE_USER_ID,
@@ -29,9 +31,9 @@ import {
 export const CREATE_COUNTRIES = `
 CREATE TABLE IF NOT EXISTS countries (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL
 );
-UNIQUE INDEX IF NOT EXISTS ${COUNTRIES_UNIQUE_NAME} ON countries (name);
+CREATE UNIQUE INDEX IF NOT EXISTS ${COUNTRIES_UNIQUE_NAME} ON countries (name);
 `;
 
 // Query to create the passports table
@@ -41,9 +43,9 @@ CREATE TABLE IF NOT EXISTS passports (
     passport_number VARCHAR(50) NOT NULL,
     country_id BIGINT NOT NULL,
     deleted_at TIMESTAMP,
-    FOREIGN KEY (country_id) REFERENCES country(id)
+    FOREIGN KEY (country_id) REFERENCES countries(id)
 );
-UNIQUE INDEX IF NOT EXISTS ${PASSPORTS_UNIQUE_NUMBER} ON passports (country_id, passport_number) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ${PASSPORTS_UNIQUE_NUMBER} ON passports (country_id, passport_number) WHERE deleted_at IS NULL;
 `;
 
 // Query to create the identity_documents table
@@ -55,7 +57,7 @@ CREATE TABLE IF NOT EXISTS identity_documents (
     deleted_at TIMESTAMP,
     FOREIGN KEY (country_id) REFERENCES countries(id)
 );
-UNIQUE INDEX IF NOT EXISTS ${IDENTITY_DOCUMENTS_UNIQUE_NUMBER} ON identity_documents (country_id, identity_document_number) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ${IDENTITY_DOCUMENTS_UNIQUE_NUMBER} ON identity_documents (country_id, identity_document_number) WHERE deleted_at IS NULL;
 `;
 
 // Query to create the people table
@@ -72,9 +74,21 @@ CREATE TABLE IF NOT EXISTS people (
     FOREIGN KEY (identity_document_id) REFERENCES identity_documents(id),
     FOREIGN KEY (passport_id) REFERENCES passports(id)
 );
-UNIQUE INDEX IF NOT EXISTS ${PEOPLE_UNIQUE_IDENTITY_DOCUMENT} ON identity_documents (id, identity_document_id) WHERE deleted_at IS NULL;
-UNIQUE INDEX IF NOT EXISTS ${PEOPLE_UNIQUE_PASSPORT} ON passports (id, passport_id) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ${PEOPLE_UNIQUE_IDENTITY_DOCUMENT} ON people (id, identity_document_id) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ${PEOPLE_UNIQUE_PASSPORT} ON people (id, passport_id) WHERE deleted_at IS NULL;
 `;
+
+// Query to create the users table
+export const CREATE_USERS = `
+CREATE TABLE IF NOT EXISTS users (
+    id BIGSERIAL PRIMARY KEY,
+    joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP,
+    person_id BIGINT NOT NULL,
+    FOREIGN KEY (person_id) REFERENCES people(id)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS ${USERS_UNIQUE_PERSON} ON users (person_id);
+`
 
 // Query to create the person_positions table
 export const CREATE_PERSON_POSITIONS = `
@@ -91,18 +105,6 @@ CREATE TABLE IF NOT EXISTS person_positions (
     FOREIGN KEY (revoked_by_user_id) REFERENCES users(id)
 );
 `;
-
-// Query to create the users table
-export const CREATE_USERS = `
-CREATE TABLE IF NOT EXISTS users (
-    id BIGSERIAL PRIMARY KEY,
-    joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMP,
-    person_id BIGINT NOT NULL,
-    FOREIGN KEY (person_id) REFERENCES people(id)
-);
-UNIQUE INDEX IF NOT EXISTS ${USERS_UNIQUE_PERSON} ON users (person_id);
-`
 
 // Query to create the user_usernames table
 export const CREATE_USER_USERNAMES = `
@@ -168,7 +170,7 @@ CREATE TABLE IF NOT EXISTS modules (
     name VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP,
-    FOREIGN KEY (parent_module_id) REFERENCES modules(id),
+    FOREIGN KEY (parent_module_id) REFERENCES modules(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${MODULES_UNIQUE_PARENT_MODULE_ID_NAME} ON modules (parent_module_id, name) WHERE deleted_at IS NULL;
 `
@@ -196,7 +198,7 @@ CREATE TABLE IF NOT EXISTS methods (
     deleted_at TIMESTAMP,
     FOREIGN KEY (object_id) REFERENCES objects(id)
 );
-UNIQUE INDEX IF NOT EXISTS ${METHODS_UNIQUE_OBJECT_ID_NAME} ON methods (object_id, name) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ${METHODS_UNIQUE_OBJECT_ID_NAME} ON methods (object_id, name) WHERE deleted_at IS NULL;
 `
 
 // Query to create the profiles table
@@ -240,7 +242,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
     FOREIGN KEY (revoked_by_user_id) REFERENCES users(id)
 );
-UNIQUE INDEX IF NOT EXISTS ${USER_PROFILES_UNIQUE_USER_ID_PROFILE_ID} ON user_profiles (user_id, profile_id) WHERE revoked_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ${USER_PROFILES_UNIQUE_USER_ID_PROFILE_ID} ON user_profiles (user_id, profile_id) WHERE revoked_at IS NULL;
 `
 // Query to create the documents table
 export const CREATE_DOCUMENTS = `
@@ -369,9 +371,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_TOPICS_UNIQUE_DOCUMENT_ID_TOPIC_ID}
 // Query to create the publishers table
 export const CREATE_PUBLISHERS = `
 CREATE TABLE IF NOT EXISTS publishers (
-    id_publisher BIGSERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     removed_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
     removed_by_user_id BIGINT,
@@ -417,6 +419,8 @@ CREATE TABLE IF NOT EXISTS book_models (
     document_id BIGINT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     removed_at TIMESTAMP,
+    created_by_user_id BIGINT NOT NULL,
+    removed_by_user_id BIGINT,
     FOREIGN KEY (language_id) REFERENCES languages(id),
     FOREIGN KEY (book_id) REFERENCES books(id),
     FOREIGN KEY (document_id) REFERENCES documents(id),
