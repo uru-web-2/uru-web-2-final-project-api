@@ -560,6 +560,51 @@ END;
 $$;
 `
 
+// Create a stored procedure that creates a new method with the profiles for the permissions
+export const CREATE_CREATE_METHOD_WITH_PROFILES_PROC = `
+CREATE OR REPLACE PROCEDURE create_method_with_profiles(
+    IN in_created_by_user_id BIGINT,
+    IN in_method_name VARCHAR,
+    IN in_object_id BIGINT,
+    IN in_profile_ids BIGINT[],
+    OUT out_method_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    out_profile_id BIGINT;
+BEGIN
+    -- Insert into methods table
+    INSERT INTO methods (
+        created_by_user_id,
+        name,
+        object_id
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_method_name,
+        in_object_id
+    )
+    RETURNING id INTO out_method_id;
+    
+    -- Insert into permissions table
+    FOREACH out_profile_id IN ARRAY in_profile_ids
+    LOOP
+        INSERT INTO permissions (
+            profile_id,
+            method_id,
+            assigned_by_user_id
+        )
+        VALUES (
+            out_profile_id,
+            out_method_id,
+            in_created_by_user_id
+        );
+    END LOOP;
+END;
+$$;
+`
+
 // Create a stored procedure that deletes all modules
 export const CREATE_DELETE_ALL_MODULES_PROC = `
 CREATE OR REPLACE PROCEDURE delete_all_modules(

@@ -39,3 +39,6 @@ export const CREATE_METHOD_PROC = "CALL create_method($1, $2, $3, $4)"
 
 // Query to delete all modules
 export const DELETE_ALL_MODULES_PROC = "CALL delete_all_modules($1)"
+
+// Query to create a method with the profiles for the permissions
+export const CREATE_METHOD_WITH_PERMISSIONS_PROC = "CALL create_method_with_permissions($1, $2, $3, $4, $5)"
