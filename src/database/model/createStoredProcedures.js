@@ -247,6 +247,11 @@ BEGIN
     -- Get the user ID
     call get_user_id_by_username(in_user_username, out_user_id);
     
+    -- Check if the user ID is valid
+    IF out_user_id IS NULL THEN
+        RETURN;
+    END IF;
+    
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
     IF out_is_profile_id_valid = FALSE THEN
@@ -282,6 +287,11 @@ AS $$
 BEGIN
     -- Get the user ID
     call get_user_id_by_username(in_user_username, out_user_id);
+    
+    -- Check if the user ID is valid
+    IF out_user_id IS NULL THEN
+        RETURN;
+    END IF;
     
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
