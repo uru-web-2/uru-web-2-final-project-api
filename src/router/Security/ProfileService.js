@@ -10,6 +10,7 @@ import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {
     GET_PROFILE_PERMISSIONS_METHODS_FN
 } from "../../database/model/functions.js";
+import Security from "../../components/security.js";
 
 // Service for the profile object
 export class ProfileService {
@@ -30,6 +31,10 @@ export class ProfileService {
             throw new FieldFailError('profile_id', 'Profile ID is invalid');
         if (queryRow?.out_is_method_id_valid === false)
             throw new FieldFailError('method_id', 'Method ID is invalid');
+
+        // Add the permission ID to the security component
+        Security.addPermission(body.profile_id, body.method_id)
+
         return queryRow?.out_permission_id;
     }
 
@@ -50,6 +55,10 @@ export class ProfileService {
             throw new FieldFailError('profile_id', 'Profile ID is invalid');
         if (queryRow?.out_is_method_id_valid === false)
             throw new FieldFailError('method_id', 'Method ID is invalid');
+
+        // Remove the permission ID from the security component
+        Security.removePermission(body.profile_id, body.method_id)
+
         return queryRow?.out_permission_id;
     }
 
@@ -112,6 +121,9 @@ export class ProfileService {
 
         if (queryRow?.out_is_profile_id_valid === false)
             throw new FieldFailError('profile_id', 'Profile ID is invalid');
+
+        // Remove the profile ID from the security component
+        Security.removeProfile(body.profile_id)
     }
 
     // Gets the methods IDs and names from the permissions of a profile

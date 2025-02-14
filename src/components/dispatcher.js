@@ -157,21 +157,27 @@ export default class Dispatcher {
 
             // Parse the user profiles
             const parsedUserProfiles = []
-            for (let i = 0; i < userProfiles.rows.length; i++)
-                parsedUserProfiles.push(userProfiles.rows[i]?.name)
+            const parsedUserProfilesNames = []
+            for (let i = 0; i < userProfiles.rows.length; i++) {
+                parsedUserProfiles.push({
+                    name: userProfiles.rows[i]?.name,
+                    id: userProfiles.rows[i]?.id
+                })
+                parsedUserProfilesNames.push(userProfiles.rows[i]?.name)
+            }
 
             // Check if the user has multiple profiles
-            if (parsedUserProfiles.length > 1 && !body.profile)
-                throw new FieldFailError(401, "profile", "multiple profiles found, specify a profile between: " + parsedUserProfiles.join(", "))
+            if (parsedUserProfilesNames.length > 1 && !body.profile)
+                throw new FieldFailError(401, "profile", "multiple profiles found, specify a profile between: " + parsedUserProfilesNames.join(", "))
 
             // Check if the user has the specified profile
-            if (body.profile && !parsedUserProfiles.includes(body.profile))
-                throw new FieldFailError(401, "profile", "profile not found, specify a profile between: " + parsedUserProfiles.join(", "))
+            if (body.profile && !parsedUserProfilesNames.includes(body.profile))
+                throw new FieldFailError(401, "profile", "profile not found, specify a profile between: " + parsedUserProfilesNames.join(", "))
 
             // Create a session with the given profile
             Session.set(req, {
                 userID,
-                profile: body.profile ? body.profile : parsedUserProfiles[0]
+                profileID: body.profile ? parsedUserProfiles.find(profile => profile.name === body.profile).id : parsedUserProfiles[0].id
             })
 
             // Log the user ID

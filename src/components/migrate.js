@@ -76,9 +76,7 @@ import {
     CREATE_OBJECT_PROC
 } from "../database/model/storedProcedures.js";
 import {GET_PROFILES_FN} from "../database/model/functions.js";
-
-// Excluded script names RegExp
-const EXCLUDED_SCRIPT_NAMES = /.*(?:Model|Service|Validator)\.js$|^constants\.js$/
+import {classNameFn, instanceNameFn, matchScriptNameFn} from "./reflection.js";
 
 // Print the root module recursively
 function printModule(module, ...parentModules) {
@@ -288,19 +286,9 @@ export default async function migrate() {
     // Load the metadata profiles
     const rootModule = await MigratePermissions({
         dirPath: __dirname,
-        matchScriptNameFn: (scriptName) => {
-            // Check if the script name matches with an excluded script name
-            return !EXCLUDED_SCRIPT_NAMES.test(scriptName)
-        },
-        classNameFn: (scriptPath, scriptName) => {
-            // Should return the name of the script, without the extension and with the first letter capitalized
-            scriptName = scriptName.replace(".js", "")
-            return scriptName.charAt(0).toUpperCase() + scriptName.slice(1)
-        },
-        instanceNameFn: (scriptPath, scriptName) => {
-            // Should be default export of the script
-            return "default"
-        },
+        matchScriptNameFn,
+        classNameFn,
+        instanceNameFn,
         logger: Logger
     })
 
