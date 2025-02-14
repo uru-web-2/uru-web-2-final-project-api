@@ -170,7 +170,11 @@ CREATE TABLE IF NOT EXISTS modules (
     name VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP,
-    FOREIGN KEY (parent_module_id) REFERENCES modules(id)
+    created_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
+    FOREIGN KEY (parent_module_id) REFERENCES modules(id),
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${MODULES_UNIQUE_PARENT_MODULE_ID_NAME} ON modules (parent_module_id, name) WHERE deleted_at IS NULL;
 `
@@ -183,7 +187,11 @@ CREATE TABLE IF NOT EXISTS objects (
     name VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP,
-    FOREIGN KEY (module_id) REFERENCES modules(id)
+    created_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
+    FOREIGN KEY (module_id) REFERENCES modules(id),
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${OBJECTS_UNIQUE_MODULE_ID_NAME} ON objects (module_id, name) WHERE deleted_at IS NULL;
 `
@@ -196,7 +204,11 @@ CREATE TABLE IF NOT EXISTS methods (
     name VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP,
-    FOREIGN KEY (object_id) REFERENCES objects(id)
+    created_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
+    FOREIGN KEY (object_id) REFERENCES objects(id),
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${METHODS_UNIQUE_OBJECT_ID_NAME} ON methods (object_id, name) WHERE deleted_at IS NULL;
 `

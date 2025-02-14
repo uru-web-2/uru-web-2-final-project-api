@@ -1,6 +1,6 @@
-// Query to create a function that loads the modules
-export const CREATE_LOAD_MODULES_FN = `
-CREATE OR REPLACE FUNCTION load_modules(
+// Query to create a function that gets the modules
+export const CREATE_GET_MODULES_FN = `
+CREATE OR REPLACE FUNCTION get_modules(
 ) RETURNS
 TABLE (
     id BIGINT,
@@ -18,9 +18,9 @@ END;
 $$ LANGUAGE plpgsql;
 `
 
-// Query to create a function that loads the objects
-export const CREATE_LOAD_OBJECTS_FN = `
-CREATE OR REPLACE FUNCTION load_objects(
+// Query to create a function that gets the objects
+export const CREATE_GET_OBJECTS_FN = `
+CREATE OR REPLACE FUNCTION get_objects(
 ) RETURNS
 TABLE (
     id BIGINT,
@@ -38,9 +38,9 @@ END;
 $$ LANGUAGE plpgsql;
 `
 
-// Query to create a function that loads the methods
-export const CREATE_LOAD_METHODS_FN = `
-CREATE OR REPLACE FUNCTION load_methods(
+// Query to create a function that gets the methods
+export const CREATE_GET_METHODS_FN = `
+CREATE OR REPLACE FUNCTION get_methods(
 ) RETURNS
 TABLE (
     id BIGINT,
@@ -80,7 +80,7 @@ END;
 $$ LANGUAGE plpgsql;
 `
 
-// Create a function that gets the methods IDs and names from the permissions IDs of a profile
+// Create a function that gets the methods IDs and names from the permissions of a profile
 export const CREATE_GET_PROFILE_PERMISSIONS_METHODS_FN = `
 CREATE OR REPLACE FUNCTION get_profile_permissions_methods(
     IN in_profile_id BIGINT
@@ -124,7 +124,7 @@ $$ LANGUAGE plpgsql;
 
 // Query to create a function that gets the permissions
 export const CREATE_GET_PERMISSIONS_FN = `
-CREATE OR REPLACE FUNCTION load_permissions(
+CREATE OR REPLACE FUNCTION get_permissions(
 ) RETURNS
 TABLE (
      method_id BIGINT,

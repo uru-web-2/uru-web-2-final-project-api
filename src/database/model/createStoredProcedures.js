@@ -368,3 +368,119 @@ BEGIN
 END;
 $$;
 `
+
+// Create a stored procedure that creates a new module
+export const CREATE_CREATE_MODULE_PROC = `
+CREATE OR REPLACE PROCEDURE create_module(
+    IN in_created_by_user_id BIGINT,
+    IN in_module_name VARCHAR,
+    IN in_parent_module_id BIGINT,
+    OUT out_module_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into modules table
+    INSERT INTO modules (
+        created_by_user_id,
+        name,
+        parent_module_id
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_module_name,
+        in_parent_module_id
+    )
+    RETURNING id INTO out_module_id;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new object
+export const CREATE_CREATE_OBJECT_PROC = `
+CREATE OR REPLACE PROCEDURE create_object(
+    IN in_created_by_user_id BIGINT,
+    IN in_object_name VARCHAR,
+    IN in_module_id BIGINT,
+    OUT out_object_id BIGINT
+)   
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into objects table
+    INSERT INTO objects (
+        created_by_user_id,
+        name,
+        module_id
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_object_name,
+        in_module_id
+    )
+    RETURNING id INTO out_object_id;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new method
+export const CREATE_CREATE_METHOD_PROC = `
+CREATE OR REPLACE PROCEDURE create_method(
+    IN in_created_by_user_id BIGINT,
+    IN in_method_name VARCHAR,
+    IN in_object_id BIGINT,
+    OUT out_method_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into methods table
+    INSERT INTO methods (
+        created_by_user_id,
+        name,
+        object_id
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_method_name,
+        in_object_id
+    )
+    RETURNING id INTO out_method_id;
+END;
+$$;
+`
+
+// Create a stored procedure that deletes all modules
+export const CREATE_DELETE_ALL_MODULES_PROC = `
+CREATE OR REPLACE PROCEDURE delete_all_modules(
+    IN in_deleted_by_user_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the modules table
+    UPDATE modules
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE deleted_at IS NULL;
+    
+    -- Update the objects table
+    UPDATE objects
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE deleted_at IS NULL;
+    
+    -- Update the methods table
+    UPDATE methods
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE deleted_at IS NULL;
+    
+    -- Update the permissions table
+    UPDATE permissions
+    SET revoked_at = NOW(),
+        revoked_by_user_id = in_deleted_by_user_id
+    WHERE revoked_at IS NULL;
+END;
+$$;
+`
