@@ -26,7 +26,7 @@ import {
 import Security from "./security.js";
 
 // Dispatcher for handling requests
-export default class Dispatcher {
+export class Dispatcher {
     #app
 
     // Initialize the dispatcher
@@ -226,3 +226,6 @@ export default class Dispatcher {
         }
     }
 }
+
+// Singleton instance for the dispatcher
+export default new Dispatcher()

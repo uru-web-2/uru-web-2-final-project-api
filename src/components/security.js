@@ -1,4 +1,3 @@
-import DeepFreeze from "@ralvarezdev/js-deep-freeze";
 import {
     NewRootModuleManager
 } from "@ralvarezdev/js-module-permissions/permissions/moduleManager.js";
@@ -11,19 +10,13 @@ import {
 } from "../database/model/functions.js";
 import {FailResponseError} from "@ralvarezdev/js-express";
 import {__dirname} from "../router/constants.js";
-import {classNameFn, instanceNameFn, scriptNameFn} from "./reflection.js";
+import {
+    classNameFn,
+    instanceNameFn,
+    printModule,
+    scriptNameFn
+} from "./reflection.js";
 import path from "path";
-
-// Profiles names
-export const PROFILES_NAME = DeepFreeze({
-    GUEST: 'guest',
-    STUDENT: 'student',
-    TEACHER: 'teacher',
-    LIBRARIAN: 'librarian',
-    ADMIN: 'admin',
-    SUPER_ADMIN: 'super admin',
-    DEVELOPER: 'developer'
-});
 
 // Security component
 export class Security {
@@ -70,10 +63,10 @@ export class Security {
 
             // Create the script name and script path
             const scriptName = scriptNameFn(name)
-            const scriptPath = path.join(__dirname, scriptName)
+            const scriptPath = path.join(__dirname, module.name, scriptName)
 
             // Create the object
-            const object = module.createObject(scriptPath, scriptName, classNameFn(scriptPath, scriptName), instanceNameFn(scriptPath, scriptName))
+            const object = module.createObject(scriptPath, scriptName, classNameFn, instanceNameFn)
             this.#objects.set(id, object)
         }
 
@@ -97,6 +90,9 @@ export class Security {
             const method = object.createMethod(name, ...this.#permissions.get(id))
             this.#methods.set(id, method)
         }
+
+        // Print the root module
+        printModule(this.#rootModule)
     }
 
     // Get a module

@@ -42,3 +42,12 @@ export const DELETE_ALL_MODULES_PROC = "CALL delete_all_modules($1)"
 
 // Query to create a method with the profiles for the permissions
 export const CREATE_METHOD_WITH_PROFILES_PROC = "CALL create_method_with_profiles($1, $2, $3, $4, $5)"
+
+// Query to get the module ID by name
+export const GET_MODULE_ID_BY_NAME_PROC = "CALL get_module_id_by_name($1, $2)"
+
+// Query to get the object ID by name
+export const GET_OBJECT_ID_BY_NAME_PROC = "CALL get_object_id_by_name($1, $2)"
+
+// Query to get the method ID by name
+export const GET_METHOD_ID_BY_NAME_PROC = "CALL get_method_id_by_name($1, $2)"

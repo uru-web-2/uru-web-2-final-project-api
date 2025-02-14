@@ -10,9 +10,9 @@ TABLE (
 BEGIN
     -- Query to select all modules
     RETURN QUERY
-    SELECT id, name, parent_module_id
+    SELECT modules.id, modules.name, modules.parent_module_id
     FROM modules
-    WHERE deleted_at IS NULL;
+    WHERE modules.deleted_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -29,9 +29,9 @@ TABLE (
 BEGIN
     -- Query to select all objects
     RETURN QUERY
-    SELECT id, name, module_id
+    SELECT objects.id, objects.name, objects.module_id
     FROM objects
-    WHERE deleted_at IS NULL;
+    WHERE objects.deleted_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -48,9 +48,9 @@ TABLE (
 BEGIN
     -- Query to select all methods
     RETURN QUERY
-    SELECT id, name, object_id
+    SELECT methods.id, methods.name, methods.object_id
     FROM methods
-    WHERE deleted_at IS NULL;
+    WHERE methods.deleted_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -94,8 +94,7 @@ BEGIN
     INNER JOIN methods
     ON permissions.method_id = methods.id
     WHERE profile_id = in_profile_id
-    AND revoked_at IS NULL
-    ORDER BY methods.id;
+    AND revoked_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -129,9 +128,9 @@ TABLE (
 BEGIN
     -- Query to select all permissions
     RETURN QUERY
-    SELECT method_id, profile_id
+    SELECT permissions.method_id, permissions.profile_id
     FROM permissions
-    WHERE revoked_at IS NULL;
+    WHERE permissions.revoked_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `

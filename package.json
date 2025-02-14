@@ -7,7 +7,7 @@
     "dev": "node index.js --dev",
     "prod": "node index.js --prod",
     "debug": "node index.js --debug",
-    "migrate": "node index.js --migrate",
+    "migrate": "node migrate.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Ramón Álvarez, Juan Camarillo, Yeglimar Montanez and Angelina Pineda",

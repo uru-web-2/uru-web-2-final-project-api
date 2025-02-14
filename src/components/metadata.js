@@ -1,6 +1,6 @@
 import {AddMetadataProfiles} from "@ralvarezdev/js-module-permissions";
 import {Profile} from "../router/Security/Profile.js";
-import {PROFILES_NAME as PROFILES} from "./security.js";
+import {PROFILES_NAME as PROFILES} from "./constants.js";
 import {User} from "../router/Security/User.js";
 
 // Security module

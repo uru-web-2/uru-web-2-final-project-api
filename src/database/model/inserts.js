@@ -1,4 +1,4 @@
-import {PROFILES_NAME as PROFILES} from "../../components/security.js";
+import {PROFILES_NAME as PROFILES} from "../../components/constants.js";
 
 // Query with the profiles inserts
 export const INSERT_PROFILES = `

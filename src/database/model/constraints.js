@@ -16,6 +16,9 @@ export const USER_EMAIL_VERIFICATIONS_UNIQUE_USER_EMAIL_ID = 'user_email_verific
 // Unique parent module ID and name constraint for the modules table
 export const MODULES_UNIQUE_PARENT_MODULE_ID_NAME = 'modules_unique_parent_module_id_name';
 
+// Unique name constraint for the modules table
+export const MODULES_UNIQUE_NAME = 'modules_unique_name';
+
 // Unique module ID and name constraint for the objects table
 export const OBJECTS_UNIQUE_MODULE_ID_NAME = 'objects_unique_module_id_name';
 

@@ -57,7 +57,9 @@ import {
     CREATE_CREATE_OBJECT_PROC,
     CREATE_CREATE_PROFILE_PROC,
     CREATE_DELETE_ALL_MODULES_PROC,
-    CREATE_DELETE_PROFILE_PROC,
+    CREATE_DELETE_PROFILE_PROC, CREATE_GET_METHOD_ID_BY_NAME_PROC,
+    CREATE_GET_MODULE_ID_BY_NAME_PROC,
+    CREATE_GET_OBJECT_ID_BY_NAME_PROC,
     CREATE_GET_USER_ID_BY_USERNAME_PROC,
     CREATE_IS_METHOD_ID_VALID_PROC,
     CREATE_IS_PROFILE_ID_VALID_PROC,
@@ -74,70 +76,62 @@ import {INSERT_COUNTRIES, INSERT_PROFILES} from "../database/model/inserts.js";
 import {
     CREATE_METHOD_WITH_PROFILES_PROC,
     CREATE_MODULE_PROC,
-    CREATE_OBJECT_PROC
+    CREATE_OBJECT_PROC,
+    GET_METHOD_ID_BY_NAME_PROC,
+    GET_MODULE_ID_BY_NAME_PROC,
+    GET_OBJECT_ID_BY_NAME_PROC
 } from "../database/model/storedProcedures.js";
 import {GET_PROFILES_FN} from "../database/model/functions.js";
-import {classNameFn, instanceNameFn, matchScriptNameFn} from "./reflection.js";
-
-// Print the root module recursively
-function printModule(module, ...parentModules) {
-    // Check if the parent modules are empty
-    let modulesName
-    if (parentModules.length === 0) {
-        modulesName = ["router"]
-    } else {
-        modulesName = [...parentModules, module.name]
-    }
-
-    // Get the module name
-    const moduleName = modulesName.join(".")
-
-    // Iterate over the objects
-    for (const objectName of Object.keys(module.objects)) {
-        // Get the object
-        const object = module.getObject(objectName)
-
-        // Iterate over the object methods
-        for (const methodName of Object.keys(object.methods)) {
-            // Get the method
-            const method = object.getMethod(methodName)
-
-            // Print the method
-            console.log(`Module: ${moduleName}, Object: ${objectName}, Method: ${methodName}, Allowed Profiles: ${method.allowedProfiles}`)
-        }
-    }
-
-    // Iterate over the modules
-    for (const nestedModuleName of Object.keys(module.nestedModules)) {
-        // Get the nested module
-        const nestedModule = module.getNestedModule(nestedModuleName)
-
-        // Print the nested module
-        printModule(nestedModule, ...modulesName)
-    }
-}
+import {
+    classNameFn,
+    instanceNameFn,
+    matchScriptNameFn,
+    printModule
+} from "./reflection.js";
+import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
+import {
+    METHODS_UNIQUE_OBJECT_ID_NAME,
+    MODULES_UNIQUE_NAME, OBJECTS_UNIQUE_MODULE_ID_NAME
+} from "../database/model/constraints.js";
 
 // Migrate module recursively
-async function migrateModule(profilesID, module, client, parentModuleID = null) {
-    // Insert the module
-    let queryRes = await client.rawQuery(
-        CREATE_MODULE_PROC,
-        null,
-        module.name,
-        parentModuleID,
-        null
-    )
-    const queryRows = queryRes?.rows?.[0]
+async function migrateModule(profilesID, module, parentModuleID = null) {
+    let queryRes, queryRows
 
-    // Check if the module was inserted
-    const moduleID = queryRows?.out_module_id
-    if (!moduleID) {
-        Logger.error(`Module ${module.name} insertion failed`)
-        return
+    try {
+        // Insert the module
+        queryRes = await DatabaseManager.rawQuery(
+            CREATE_MODULE_PROC,
+            null,
+            module.name,
+            parentModuleID,
+            null
+        )
+    }catch(error){
+        // Log the error
+        Logger.error(`Error inserting module ${module.name}: ${error}`)
+
+        // Check if it is a constraint violation error
+        const constraintName = PostgresIsUniqueConstraintError(error)
+
+        // Check if the constraint is the unique name constraint
+        if (constraintName !== MODULES_UNIQUE_NAME)
+            throw error
+
+        // Get the module
+        queryRes = await DatabaseManager.rawQuery(
+            GET_MODULE_ID_BY_NAME_PROC,
+            module.name,
+            null
+        )
     }
 
+    // Get the module ID
+    queryRows = queryRes?.rows?.[0]
+    const moduleID = queryRows?.out_module_id
+
     // Log the module
-    Logger.info(`Module ${module.name} inserted with ID ${moduleID}`)
+    Logger.info(`Module ${module.name} inserted/retrieved with ID ${moduleID}`)
 
     // Iterate over the objects
     for (const objectName of Object.keys(module.objects)) {
@@ -145,24 +139,39 @@ async function migrateModule(profilesID, module, client, parentModuleID = null) 
         const object = module.getObject(objectName)
 
         // Insert the object
-        queryRes = await client.rawQuery(
-            CREATE_OBJECT_PROC,
-            null,
-            objectName,
-            moduleID,
-            null,
-        )
-        const queryRows = queryRes?.rows?.[0]
+        try {
+            queryRes = await DatabaseManager.rawQuery(
+                CREATE_OBJECT_PROC,
+                null,
+                objectName,
+                moduleID,
+                null,
+            )
+        }catch(error) {
+            // Log the error
+            Logger.error(`Error inserting object ${objectName}: ${error}`)
 
-        // Check if the object was inserted
-        const objectID = queryRows?.out_object_id
-        if (!objectID) {
-            Logger.error(`Object ${objectName} insertion failed with parent module ID ${moduleID}`)
-            return
+            // Check if it is a constraint violation error
+            const constraintName = PostgresIsUniqueConstraintError(error)
+
+            // Check if the constraint is the unique name constraint
+            if (constraintName !== OBJECTS_UNIQUE_MODULE_ID_NAME)
+                throw error
+
+            // Get the object
+            queryRes = await DatabaseManager.rawQuery(
+                GET_OBJECT_ID_BY_NAME_PROC,
+                objectName,
+                null
+            )
         }
 
+        // Get the object ID
+        queryRows = queryRes?.rows?.[0]
+        const objectID = queryRows?.out_object_id
+
         // Log the object
-        Logger.info(`Object ${objectName} inserted with ID ${objectID} and parent module ID ${moduleID}`)
+        Logger.info(`Object ${objectName} inserted/retrieved with ID ${objectID} and parent module ID ${moduleID}`)
 
         // Iterate over the methods
         for (const methodName of Object.keys(object.methods)) {
@@ -182,25 +191,40 @@ async function migrateModule(profilesID, module, client, parentModuleID = null) 
             }
 
             // Insert the method
-            const queryRes = await client.rawQuery(
-                CREATE_METHOD_WITH_PROFILES_PROC,
-                null,
-                methodName,
-                objectID,
-                allowedProfilesID,
-                null
-            )
-            const queryRows = queryRes?.rows?.[0]
+            try {
+                queryRes = await DatabaseManager.rawQuery(
+                    CREATE_METHOD_WITH_PROFILES_PROC,
+                    null,
+                    methodName,
+                    objectID,
+                    allowedProfilesID,
+                    null
+                )
+            } catch(error) {
+                // Log the error
+                Logger.error(`Error inserting method ${methodName}: ${error}`)
 
-            // Check if the method was inserted
-            const methodID = queryRows?.out_method_id
-            if (!methodID) {
-                Logger.error(`Method ${methodName} insertion failed with parent object ID ${objectID}`)
-                return
+                // Check if it is a constraint violation error
+                const constraintName = PostgresIsUniqueConstraintError(error)
+
+                // Check if the constraint is the unique name constraint
+                if (constraintName !== METHODS_UNIQUE_OBJECT_ID_NAME)
+                    throw error
+
+                // Get the method
+                queryRes = await DatabaseManager.rawQuery(
+                    GET_METHOD_ID_BY_NAME_PROC,
+                    methodName,
+                    null
+                )
             }
 
+            // Check if the method was inserted
+            queryRows = queryRes?.rows?.[0]
+            const methodID = queryRows?.out_method_id
+
             // Log the method
-            Logger.info(`Method ${methodName} inserted with ID ${methodID} and parent object ID ${objectID}`)
+            Logger.info(`Method ${methodName} inserted/retrieved with ID ${methodID} and parent object ID ${objectID}`)
         }
     }
 
@@ -210,7 +234,7 @@ async function migrateModule(profilesID, module, client, parentModuleID = null) 
         const nestedModule = module.getNestedModule(nestedModuleName)
 
         // Migrate the nested module
-        await migrateModule(profilesID, nestedModule, client, moduleID)
+        await migrateModule(profilesID, nestedModule, DatabaseManager, moduleID)
     }
 }
 
@@ -250,7 +274,10 @@ export default async function migrate() {
             CREATE_CREATE_OBJECT_PROC,
             CREATE_CREATE_METHOD_PROC,
             CREATE_DELETE_ALL_MODULES_PROC,
-            CREATE_CREATE_METHOD_WITH_PROFILES_PROC,])
+            CREATE_CREATE_METHOD_WITH_PROFILES_PROC,
+        CREATE_GET_MODULE_ID_BY_NAME_PROC,
+        CREATE_GET_OBJECT_ID_BY_NAME_PROC,
+        CREATE_GET_METHOD_ID_BY_NAME_PROC])
             await client.rawQuery(query)
 
         Logger.info("Stored procedures created")
@@ -296,15 +323,12 @@ export default async function migrate() {
     // Print the root module
     printModule(rootModule)
 
-    // Migrate the root module
-    await DatabaseManager.runTransaction(async (client) => {
-        // Migrate the root module nested modules
-        for (const nestedModuleName of Object.keys(rootModule.nestedModules)) {
-            // Get the nested module
-            const nestedModule = rootModule.getNestedModule(nestedModuleName)
+    // Migrate the root module nested modules
+    for (const nestedModuleName of Object.keys(rootModule.nestedModules)) {
+        // Get the nested module
+        const nestedModule = rootModule.getNestedModule(nestedModuleName)
 
-            // Migrate the nested module
-            await migrateModule(profilesID, nestedModule, client)
-        }
-    })
+        // Migrate the nested module
+        await migrateModule(profilesID, nestedModule)
+    }
 }

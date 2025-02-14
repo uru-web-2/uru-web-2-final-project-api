@@ -135,8 +135,8 @@ BEGIN
 	FROM profiles
     WHERE name = 'student';
 	
-	-- Insert into profiles table
-	INSERT INTO profiles (
+	-- Insert into user_profiles table
+	INSERT INTO user_profiles (
         user_id, 
         profile_id
     )
@@ -651,6 +651,63 @@ BEGIN
     SET revoked_at = NOW(),
         revoked_by_user_id = in_deleted_by_user_id
     WHERE revoked_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that gets the module ID by name
+export const CREATE_GET_MODULE_ID_BY_NAME_PROC = `
+CREATE OR REPLACE PROCEDURE get_module_id_by_name(
+    IN in_module_name VARCHAR,
+    OUT out_module_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Select the module id
+    SELECT id
+    INTO out_module_id
+    FROM modules
+    WHERE name = in_module_name
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that gets the object ID by name
+export const CREATE_GET_OBJECT_ID_BY_NAME_PROC = `
+CREATE OR REPLACE PROCEDURE get_object_id_by_name(
+    IN in_object_name VARCHAR,
+    OUT out_object_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Select the object id
+    SELECT id
+    INTO out_object_id
+    FROM objects
+    WHERE name = in_object_name
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that gets the method ID by name
+export const CREATE_GET_METHOD_ID_BY_NAME_PROC = `
+CREATE OR REPLACE PROCEDURE get_method_id_by_name(
+    IN in_method_name VARCHAR,
+    OUT out_method_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Select the method id
+    SELECT id
+    INTO out_method_id
+    FROM methods
+    WHERE name = in_method_name
+    AND deleted_at IS NULL;
 END;
 $$;
 `
