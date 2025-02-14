@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS permissions (
     profile_id BIGINT NOT NULL,
     assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
     revoked_at TIMESTAMP,
-    assigned_by_user_id BIGINT NOT NULL,
+    assigned_by_user_id BIGINT,
     revoked_by_user_id BIGINT,
     FOREIGN KEY (method_id) REFERENCES methods(id),
     FOREIGN KEY (profile_id) REFERENCES profiles(id),

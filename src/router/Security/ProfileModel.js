@@ -15,12 +15,14 @@ export const REVOKE_PROFILE_PERMISSION = Joi.object({
 // Create profile model
 export const CREATE_PROFILE = Joi.object({
     name: Joi.string().required().min(1),
+    description: Joi.string().required().min(1),
 })
 
 // Update profile model
 export const UPDATE_PROFILE = Joi.object({
     id: Joi.number().required().min(1),
-    name: Joi.string().required().min(1),
+    name: Joi.string().min(1),
+    description: Joi.string().min(1),
 })
 
 // Delete profile model

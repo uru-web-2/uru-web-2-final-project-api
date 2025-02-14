@@ -71,6 +71,7 @@ import {MigratePermissions} from "@ralvarezdev/js-module-permissions";
 import {__dirname} from "../router/constants.js";
 import {INSERT_COUNTRIES, INSERT_PROFILES} from "../database/model/inserts.js";
 import {
+    CREATE_METHOD_WITH_PROFILES_PROC,
     CREATE_MODULE_PROC,
     CREATE_OBJECT_PROC
 } from "../database/model/storedProcedures.js";
@@ -127,10 +128,10 @@ async function migrateModule(profilesID, module,client, parentModuleID = null) {
         parentModuleID,
         null
         )
-        queryRes=queryRes?.rows?.[0]
+        const queryRows=queryRes?.rows?.[0]
 
     // Check if the module was inserted
-    const moduleID=queryRes?.out_module_id
+    const moduleID=queryRows?.out_module_id
     if (!moduleID) {
         Logger.error(`Module ${module.name} insertion failed`)
         return
@@ -148,21 +149,21 @@ async function migrateModule(profilesID, module,client, parentModuleID = null) {
         queryRes = await client.rawQuery(
             CREATE_OBJECT_PROC,
             null,
-            object.name,
+            objectName,
             moduleID,
             null,
         )
-        queryRes = queryRes?.rows?.[0]
+        const queryRows = queryRes?.rows?.[0]
 
         // Check if the object was inserted
-        const objectID = queryRes?.out_object_id
+        const objectID = queryRows?.out_object_id
         if (!objectID) {
-            Logger.error(`Object ${object.name} insertion failed with parent module ID ${moduleID}`)
+            Logger.error(`Object ${objectName} insertion failed with parent module ID ${moduleID}`)
             return
         }
 
         // Log the object
-        Logger.info(`Object ${object.name} inserted with ID ${objectID} and parent module ID ${moduleID}`)
+        Logger.info(`Object ${objectName} inserted with ID ${objectID} and parent module ID ${moduleID}`)
 
         // Iterate over the methods
         for (const methodName of Object.keys(object.methods)) {
@@ -170,36 +171,37 @@ async function migrateModule(profilesID, module,client, parentModuleID = null) {
             const method = object.getMethod(methodName)
 
             // Map the allowed profiles name to its ID
-            const profilesID = []
+            const allowedProfilesID = []
             for (const profileName of method.allowedProfiles) {
                 // Check if the profile exists
-                const profileID = profilesID?.[profileName]
-                if (!profileID) {
+                const allowedProfileID = profilesID?.[profileName]
+                if (!allowedProfileID) {
                     Logger.error(`Profile ${profileName} does not exist in the profiles ID map`)
                     return
                 }
-                profilesID.push(profileID)
+                allowedProfilesID.push(allowedProfileID)
             }
 
             // Insert the method
             const queryRes = await client.rawQuery(
-                CREATE_METHODS,
+                CREATE_METHOD_WITH_PROFILES_PROC,
                 null,
-                method.name,
+                methodName,
                 objectID,
-                profilesID,
+                allowedProfilesID,
                 null
             )
+            const queryRows = queryRes?.rows?.[0]
 
             // Check if the method was inserted
-            const methodID = queryRes?.rows?.[0]?.out_method_id
+            const methodID = queryRows?.out_method_id
             if (!methodID) {
-                Logger.error(`Method ${method.name} insertion failed with parent object ID ${objectID}`)
+                Logger.error(`Method ${methodName} insertion failed with parent object ID ${objectID}`)
                 return
             }
 
             // Log the method
-            Logger.info(`Method ${method.name} inserted with ID ${methodID} and parent object ID ${objectID}`)
+            Logger.info(`Method ${methodName} inserted with ID ${methodID} and parent object ID ${objectID}`)
         }
     }
     
@@ -221,7 +223,7 @@ export default async function migrate() {
     // Create tables, functions, and stored procedures in the database if they do not exist
     await DatabaseManager.runTransaction(async (client) => {
         // Create the tables
-        for (const query of [CREATE_COUNTRIES, CREATE_PASSPORTS, CREATE_IDENTITY_DOCUMENTS, CREATE_PEOPLE, CREATE_MODULES, CREATE_OBJECTS, CREATE_METHODS, CREATE_USERS, CREATE_PERSON_POSITIONS, CREATE_PROFILES, CREATE_PERMISSIONS, CREATE_USER_USERNAMES, CREATE_USER_PASSWORD_HASHES, CREATE_USER_EMAILS, CREATE_USER_EMAIL_VERIFICATIONS, CREATE_USER_PROFILES, CREATE_DOCUMENTS, CREATE_POSTS, CREATE_LOCATIONS, CREATE_DOCUMENT_AUTHORS, CREATE_DOCUMENT_LOCATIONS, CREATE_DOCUMENT_REVIEWS, CREATE_TOPICS, CREATE_DOCUMENT_TOPICS, CREATE_PUBLISHERS, CREATE_BOOKS, CREATE_LANGUAGES, CREATE_BOOK_MODELS, CREATE_BOOK_COPIES, CREATE_BOOK_COPY_LOANS, CREATE_WORKS, CREATE_ARTICLES, CREATE_ARTICLE_JURY_MEMBERS, CREATE_ARTICLE_ANNOTATIONS, CREATE_THESES,
+        for (const query of [CREATE_COUNTRIES, CREATE_PASSPORTS, CREATE_IDENTITY_DOCUMENTS, CREATE_PEOPLE, CREATE_USERS, CREATE_MODULES, CREATE_OBJECTS, CREATE_METHODS, CREATE_PERSON_POSITIONS, CREATE_PROFILES, CREATE_PERMISSIONS, CREATE_USER_USERNAMES, CREATE_USER_PASSWORD_HASHES, CREATE_USER_EMAILS, CREATE_USER_EMAIL_VERIFICATIONS, CREATE_USER_PROFILES, CREATE_DOCUMENTS, CREATE_POSTS, CREATE_LOCATIONS, CREATE_DOCUMENT_AUTHORS, CREATE_DOCUMENT_LOCATIONS, CREATE_DOCUMENT_REVIEWS, CREATE_TOPICS, CREATE_DOCUMENT_TOPICS, CREATE_PUBLISHERS, CREATE_BOOKS, CREATE_LANGUAGES, CREATE_BOOK_MODELS, CREATE_BOOK_COPIES, CREATE_BOOK_COPY_LOANS, CREATE_WORKS, CREATE_ARTICLES, CREATE_ARTICLE_JURY_MEMBERS, CREATE_ARTICLE_ANNOTATIONS, CREATE_THESES,
             CREATE_MAGAZINES, CREATE_MAGAZINE_ISSUES])
             await client.rawQuery(query)
 
@@ -274,11 +276,7 @@ export default async function migrate() {
     )
 
     // Get the profiles
-    let queryRes = await DatabaseManager.rawQuery(GET_PROFILES_FN).then(
-        () => Logger.info("Profiles retrieved")
-    ).catch(
-        err => Logger.error(`Profiles retrieval failed: ${err}`)
-    )
+    let queryRes = await DatabaseManager.rawQuery(GET_PROFILES_FN)
         queryRes=queryRes?.rows
 
     // Create the profiles ID map
@@ -311,6 +309,13 @@ export default async function migrate() {
     
     // Migrate the root module
     await DatabaseManager.runTransaction(async (client) => {
-        await migrateModule(profilesID, rootModule, client)
+        // Migrate the root module nested modules
+        for (const nestedModuleName of Object.keys(rootModule.nestedModules)) {
+            // Get the nested module
+            const nestedModule = rootModule.getNestedModule(nestedModuleName)
+
+            // Migrate the nested module
+            await migrateModule(profilesID, nestedModule, client)
+        }
     })
 }

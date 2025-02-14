@@ -114,10 +114,9 @@ TABLE (
 BEGIN
     -- Query to select the profiles IDs and names
     RETURN QUERY
-    SELECT id, name
+    SELECT profiles.id, profiles.name
     FROM profiles
-    WHERE deleted_at IS NULL
-    ORDER BY id;
+    WHERE profiles.deleted_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `

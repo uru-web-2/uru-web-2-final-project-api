@@ -393,6 +393,7 @@ export const CREATE_CREATE_PROFILE_PROC = `
 CREATE OR REPLACE PROCEDURE create_profile(
     IN in_created_by_user_id BIGINT,
     IN in_profile_name VARCHAR,
+    IN in_profile_description VARCHAR,
     OUT out_profile_id BIGINT
 )
 LANGUAGE plpgsql
@@ -401,11 +402,13 @@ BEGIN
     -- Insert into profiles table
     INSERT INTO profiles (
         created_by_user_id,
-        name
+        name,
+        description
     )
     VALUES (
         in_created_by_user_id,
-        in_profile_name
+        in_profile_name,
+        in_profile_description
     )
     RETURNING id INTO out_profile_id;
 END;
@@ -418,23 +421,35 @@ CREATE OR REPLACE PROCEDURE update_profile(
     IN in_updated_by_user_id BIGINT,
     IN in_profile_id BIGINT,
     IN in_profile_name VARCHAR,
+    IN in_profile_description VARCHAR,
     OUT out_is_profile_id_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    out_current_profile_name VARCHAR;
+    out_current_profile_description VARCHAR;
 BEGIN
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
     IF out_is_profile_id_valid = FALSE THEN
         RETURN;
     END IF;
+    
+    -- Select the current profile name and description
+    SELECT name, description
+    INTO out_current_profile_name, out_current_profile_description
+    FROM profiles
+    WHERE id = in_profile_id
+    AND deleted_at IS NULL;
 
     -- Update the profiles table
     UPDATE profiles
-    SET name = in_profile_name,
+    SET name = COALESCE(in_profile_name, out_current_profile_name),
+        description = COALESCE(in_profile_description, out_current_profile_description),
+        updated_at = NOW(),
         updated_by_user_id = in_updated_by_user_id
-    WHERE id = in_profile_id
-    AND deleted_at IS NULL;
+    WHERE id = in_profile_id;
 END;
 $$;
 `
