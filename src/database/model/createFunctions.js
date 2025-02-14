@@ -12,8 +12,7 @@ BEGIN
     RETURN QUERY
     SELECT id, name, parent_module_id
     FROM modules
-    WHERE deleted_at IS NULL
-    ORDER BY id;
+    WHERE deleted_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -32,8 +31,7 @@ BEGIN
     RETURN QUERY
     SELECT id, name, module_id
     FROM objects
-    WHERE deleted_at IS NULL
-    ORDER BY id;
+    WHERE deleted_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -52,8 +50,7 @@ BEGIN
     RETURN QUERY
     SELECT id, name, object_id
     FROM methods
-    WHERE deleted_at IS NULL
-    ORDER BY id;
+    WHERE deleted_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -134,8 +131,7 @@ BEGIN
     RETURN QUERY
     SELECT method_id, profile_id
     FROM permissions
-    WHERE revoked_at IS NULL
-    ORDER BY id;
+    WHERE revoked_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `

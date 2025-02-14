@@ -23,6 +23,7 @@ import {
     HandleValidation,
     SuccessJSendBody
 } from "@ralvarezdev/js-express";
+import Security from "./security.js";
 
 // Dispatcher for handling requests
 export default class Dispatcher {
@@ -66,8 +67,11 @@ export default class Dispatcher {
 
     // Start the server
     start(port) {
-        this.#app.listen(port, () => {
-            Logger.info(`Server started on port: ${port}`)
+        // Wait for the security components to be ready
+        Security.load().then(() => {
+            this.#app.listen(port, () => {
+                Logger.info(`Server started on port: ${port}`)
+            })
         })
     }
 

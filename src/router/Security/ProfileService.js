@@ -15,7 +15,7 @@ import {
 export class ProfileService {
     // Assigns a permission to a profile
     async AssignProfilePermission(req, body) {
-        let queryRes=await DatabaseManager.rawQuery(
+        const queryRes=await DatabaseManager.rawQuery(
             ASSIGN_PROFILE_PERMISSION_PROC,
             req.session.userID,
             body.profile_id,
@@ -24,18 +24,18 @@ export class ProfileService {
             null,
             null
         );
-        queryRes=queryRes.rows?.[0];
+        const queryRow=queryRes.rows?.[0];
 
-        if (queryRes?.out_is_profile_id_valid === false)
+        if (queryRow?.out_is_profile_id_valid === false)
             throw new FieldFailError('profile_id', 'Profile ID is invalid');
-        if (queryRes?.out_is_method_id_valid === false)
+        if (queryRow?.out_is_method_id_valid === false)
             throw new FieldFailError('method_id', 'Method ID is invalid');
-        return queryRes?.out_permission_id;
+        return queryRow?.out_permission_id;
     }
 
     // Revokes a permission from a profile
     async RevokeProfilePermission(req, body) {
-        let queryRes=await DatabaseManager.rawQuery(
+        const queryRes=await DatabaseManager.rawQuery(
             REVOKE_PROFILE_PERMISSION_PROC,
             req.session.userID,
             body.profile_id,
@@ -44,25 +44,26 @@ export class ProfileService {
             null,
             null
         );
-        queryRes=queryRes.rows?.[0];
+        const queryRow=queryRes.rows?.[0];
 
-        if (queryRes?.out_is_profile_id_valid === false)
+        if (queryRow?.out_is_profile_id_valid === false)
             throw new FieldFailError('profile_id', 'Profile ID is invalid');
-        if (queryRes?.out_is_method_id_valid === false)
+        if (queryRow?.out_is_method_id_valid === false)
             throw new FieldFailError('method_id', 'Method ID is invalid');
-        return queryRes?.out_permission_id;
+        return queryRow?.out_permission_id;
     }
 
     // Creates a profile
     async CreateProfile(req, body) {
         try {
-            let queryRes = await DatabaseManager.rawQuery(
+            const queryRes = await DatabaseManager.rawQuery(
                 CREATE_PROFILE_PROC,
                 req.session.userID,
                 body.name,
                 null
             );
-            return queryRes.rows?.[0]?.out_profile_id;
+            const queryRow = queryRes.rows?.[0];
+            return queryRow?.out_profile_id;
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
@@ -77,16 +78,16 @@ export class ProfileService {
     // Updates a profile
     async UpdateProfile(req, body) {
         try {
-            let queryRes = await DatabaseManager.rawQuery(
+            const queryRes = await DatabaseManager.rawQuery(
                 UPDATE_PROFILE_PROC,
                 req.session.userID,
                 body.profile_id,
                 body.name,
                 null
             );
-            queryRes = queryRes.rows?.[0];
+            const queryRow = queryRes.rows?.[0];
 
-            if (queryRes?.out_is_profile_id_valid === false)
+            if (queryRow?.out_is_profile_id_valid === false)
                 throw new FieldFailError('profile_id', 'Profile ID is invalid');
         } catch (error) {
             // Check if it is a constraint violation error
@@ -101,21 +102,21 @@ export class ProfileService {
 
     // Deletes a profile
     async DeleteProfile(req, body) {
-        let queryRes = await DatabaseManager.rawQuery(
+        const queryRes = await DatabaseManager.rawQuery(
             DELETE_PROFILE_PROC,
             req.session.userID,
             body.profile_id,
             null
         );
-        queryRes = queryRes.rows?.[0];
+        const queryRow = queryRes.rows?.[0];
 
-        if (queryRes?.out_is_profile_id_valid === false)
+        if (queryRow?.out_is_profile_id_valid === false)
             throw new FieldFailError('profile_id', 'Profile ID is invalid');
     }
 
     // Gets the methods IDs and names from the permissions of a profile
     async GetProfilePermissionsMethods(req, profileID) {
-        let queryRes = await DatabaseManager.rawQuery(
+        const queryRes = await DatabaseManager.rawQuery(
             GET_PROFILE_PERMISSIONS_METHODS_FN,
             profileID
         );
