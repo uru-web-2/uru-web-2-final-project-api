@@ -235,7 +235,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
     profile_id BIGINT NOT NULL,
     assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
     revoked_at TIMESTAMP,
-    assigned_by_user_id BIGINT NOT NULL,
+    assigned_by_user_id BIGINT,
     revoked_by_user_id BIGINT,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (profile_id) REFERENCES profiles(id),

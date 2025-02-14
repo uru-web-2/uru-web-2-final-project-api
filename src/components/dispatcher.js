@@ -9,6 +9,7 @@ import {LOG_IN, SIGN_UP} from "./model.js";
 import {LOG_IN_PROC, SIGN_UP_PROC} from "../database/model/storedProcedures.js";
 import {GET_USER_PROFILES_FN,} from "../database/model/functions.js";
 import {
+    IDENTITY_DOCUMENTS_UNIQUE_NUMBER, PASSPORTS_UNIQUE_NUMBER,
     USER_EMAILS_UNIQUE_EMAIL,
     USER_USERNAMES_UNIQUE_USERNAME
 } from "../database/model/constraints.js";
@@ -80,9 +81,15 @@ export default class Dispatcher {
 
             // Create the user
             let userID
-            const queryRes = await DatabaseManager.rawQuery(SIGN_UP_PROC, body.first_name, body.last_name, body.username, body.email, body.password_hash, null)
-            if (queryRes.rows.length > 0)
+            const queryRes = await DatabaseManager.rawQuery(SIGN_UP_PROC, body.first_name, body.last_name, body.username, body.email, body.password_hash, body.document_country, body.document_type, body.document_number, null, null)
+            if (queryRes.rows.length > 0) {
+                const isCountryValid = queryRes.rows[0]?.out_is_country_valid
                 userID = queryRes.rows[0]?.out_user_id
+
+                // Check if the country is valid
+                if (!isCountryValid)
+                    throw new FieldFailError(400, "document_country", "country not found")
+            }
 
             // Log the user ID
             Logger.info(`User signed up with ID: ${userID}`)
@@ -96,8 +103,14 @@ export default class Dispatcher {
             // Check if the username has already been registered
             if (constraintName === USER_USERNAMES_UNIQUE_USERNAME)
                 error = new FieldFailError(400, "username", "username has already been registered")
+
+            // Check if the email has already been registered
             else if (constraintName === USER_EMAILS_UNIQUE_EMAIL)
                 error = new FieldFailError(400, "email", "email has already been registered")
+
+            // Check if the identity document number or passport number has already been registered
+            else if (constraintName === IDENTITY_DOCUMENTS_UNIQUE_NUMBER||constraintName === PASSPORTS_UNIQUE_NUMBER)
+                error = new FieldFailError(400, "document_number", "document number has already been registered")
 
             // Pass the error to the error handler
             next(error)
