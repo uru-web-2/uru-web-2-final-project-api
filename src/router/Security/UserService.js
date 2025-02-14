@@ -1,17 +1,15 @@
 // Service for the user object
 import DatabaseManager from "../../components/database.js";
 import {
-    ASSIGN_PROFILE_PERMISSION_PROC,
     ASSIGN_USER_PROFILE_PROC,
     REVOKE_USER_PROFILE_PROC
 } from "../../database/model/storedProcedures.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
-import * as constants from "node:constants";
 
-export class UserService{
+export class UserService {
     // Assign a profile to a user
-    async AssignUserProfile(req, body){
-        const queryRes=await DatabaseManager.rawQuery(
+    async AssignUserProfile(req, body) {
+        const queryRes = await DatabaseManager.rawQuery(
             ASSIGN_USER_PROFILE_PROC,
             req.session.userID,
             body.username,
@@ -19,7 +17,7 @@ export class UserService{
             null,
             null
         );
-        const queryRow=queryRes.rows?.[0];
+        const queryRow = queryRes.rows?.[0];
 
         if (queryRow?.out_is_profile_id_valid === false)
             throw new FieldFailError('profile_id', 'Profile ID is invalid');
@@ -29,8 +27,8 @@ export class UserService{
     }
 
     // Revoke a profile from a user
-    async RevokeUserProfile(req, body){
-        const queryRes=await DatabaseManager.rawQuery(
+    async RevokeUserProfile(req, body) {
+        const queryRes = await DatabaseManager.rawQuery(
             REVOKE_USER_PROFILE_PROC,
             req.session.userID,
             body.username,
@@ -38,7 +36,7 @@ export class UserService{
             null,
             null
         );
-        const queryRow=queryRes.rows?.[0];
+        const queryRow = queryRes.rows?.[0];
 
         if (queryRow?.out_is_profile_id_valid === false)
             throw new FieldFailError('profile_id', 'Profile ID is invalid');

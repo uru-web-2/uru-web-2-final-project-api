@@ -5,7 +5,7 @@ import Session, {checkSession} from "./session.js";
 import Logger from "./logger.js";
 import DatabaseManager from "./database.js";
 import ErrorHandler from "./handler.js";
-import {LOG_IN, SIGN_UP} from "./model.js";
+import {EXECUTE, LOG_IN, SIGN_UP} from "./model.js";
 import {LOG_IN_PROC, SIGN_UP_PROC} from "../database/model/storedProcedures.js";
 import {GET_USER_PROFILES_FN,} from "../database/model/functions.js";
 import {
@@ -201,8 +201,28 @@ export default class Dispatcher {
     }
 
     // Handle the execute request
-    Execute(req, res) {
-        // Handle the request
-        // ...
+    async Execute(req, res, next) {
+        try {
+            // Validate the request
+            const {
+                modules,
+                object,
+                method,
+                parameters
+            } = HandleValidation(req, res, req => Validate(req, EXECUTE));
+
+            // Substitute the parameters in the request
+            delete req.modules
+            delete req.object
+            delete req.method
+            delete req.parameters
+            req.body = parameters
+
+            // Handle the request
+            await Security.executeMethod(modules, object, method, req, res)
+        } catch (error) {
+            // Pass the error to the error handler
+            next(error)
+        }
     }
 }

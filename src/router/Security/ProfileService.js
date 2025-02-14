@@ -2,8 +2,10 @@ import DatabaseManager from "../../components/database.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
 import {
     ASSIGN_PROFILE_PERMISSION_PROC,
-    CREATE_PROFILE_PROC, DELETE_PROFILE_PROC,
-    REVOKE_PROFILE_PERMISSION_PROC, UPDATE_PROFILE_PROC
+    CREATE_PROFILE_PROC,
+    DELETE_PROFILE_PROC,
+    REVOKE_PROFILE_PERMISSION_PROC,
+    UPDATE_PROFILE_PROC
 } from "../../database/model/storedProcedures.js";
 import {PROFILES_UNIQUE_NAME} from "../../database/model/constraints.js";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
@@ -16,7 +18,7 @@ import Security from "../../components/security.js";
 export class ProfileService {
     // Assigns a permission to a profile
     async AssignProfilePermission(req, body) {
-        const queryRes=await DatabaseManager.rawQuery(
+        const queryRes = await DatabaseManager.rawQuery(
             ASSIGN_PROFILE_PERMISSION_PROC,
             req.session.userID,
             body.profile_id,
@@ -25,7 +27,7 @@ export class ProfileService {
             null,
             null
         );
-        const queryRow=queryRes.rows?.[0];
+        const queryRow = queryRes.rows?.[0];
 
         if (queryRow?.out_is_profile_id_valid === false)
             throw new FieldFailError('profile_id', 'Profile ID is invalid');
@@ -40,7 +42,7 @@ export class ProfileService {
 
     // Revokes a permission from a profile
     async RevokeProfilePermission(req, body) {
-        const queryRes=await DatabaseManager.rawQuery(
+        const queryRes = await DatabaseManager.rawQuery(
             REVOKE_PROFILE_PERMISSION_PROC,
             req.session.userID,
             body.profile_id,
@@ -49,7 +51,7 @@ export class ProfileService {
             null,
             null
         );
-        const queryRow=queryRes.rows?.[0];
+        const queryRow = queryRes.rows?.[0];
 
         if (queryRow?.out_is_profile_id_valid === false)
             throw new FieldFailError('profile_id', 'Profile ID is invalid');

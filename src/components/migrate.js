@@ -51,7 +51,8 @@ import {
 import {
     CREATE_ASSIGN_PROFILE_PERMISSION_PROC,
     CREATE_ASSIGN_USER_PROFILE_PROC,
-    CREATE_CREATE_METHOD_PROC, CREATE_CREATE_METHOD_WITH_PROFILES_PROC,
+    CREATE_CREATE_METHOD_PROC,
+    CREATE_CREATE_METHOD_WITH_PROFILES_PROC,
     CREATE_CREATE_MODULE_PROC,
     CREATE_CREATE_OBJECT_PROC,
     CREATE_CREATE_PROFILE_PROC,
@@ -117,7 +118,7 @@ function printModule(module, ...parentModules) {
 }
 
 // Migrate module recursively
-async function migrateModule(profilesID, module,client, parentModuleID = null) {    
+async function migrateModule(profilesID, module, client, parentModuleID = null) {
     // Insert the module
     let queryRes = await client.rawQuery(
         CREATE_MODULE_PROC,
@@ -125,11 +126,11 @@ async function migrateModule(profilesID, module,client, parentModuleID = null) {
         module.name,
         parentModuleID,
         null
-        )
-        const queryRows=queryRes?.rows?.[0]
+    )
+    const queryRows = queryRes?.rows?.[0]
 
     // Check if the module was inserted
-    const moduleID=queryRows?.out_module_id
+    const moduleID = queryRows?.out_module_id
     if (!moduleID) {
         Logger.error(`Module ${module.name} insertion failed`)
         return
@@ -202,14 +203,14 @@ async function migrateModule(profilesID, module,client, parentModuleID = null) {
             Logger.info(`Method ${methodName} inserted with ID ${methodID} and parent object ID ${objectID}`)
         }
     }
-    
+
     // Iterate over the nested modules
     for (const nestedModuleName of Object.keys(module.nestedModules)) {
         // Get the nested module
         const nestedModule = module.getNestedModule(nestedModuleName)
 
         // Migrate the nested module
-        await migrateModule(profilesID, nestedModule,client, moduleID)
+        await migrateModule(profilesID, nestedModule, client, moduleID)
     }
 }
 
@@ -249,7 +250,7 @@ export default async function migrate() {
             CREATE_CREATE_OBJECT_PROC,
             CREATE_CREATE_METHOD_PROC,
             CREATE_DELETE_ALL_MODULES_PROC,
-        CREATE_CREATE_METHOD_WITH_PROFILES_PROC,])
+            CREATE_CREATE_METHOD_WITH_PROFILES_PROC,])
             await client.rawQuery(query)
 
         Logger.info("Stored procedures created")
@@ -275,7 +276,7 @@ export default async function migrate() {
 
     // Get the profiles
     let queryRes = await DatabaseManager.rawQuery(GET_PROFILES_FN)
-        queryRes=queryRes?.rows
+    queryRes = queryRes?.rows
 
     // Create the profiles ID map
     const profilesID = queryRes.reduce((acc, profile) => {
@@ -294,7 +295,7 @@ export default async function migrate() {
 
     // Print the root module
     printModule(rootModule)
-    
+
     // Migrate the root module
     await DatabaseManager.runTransaction(async (client) => {
         // Migrate the root module nested modules

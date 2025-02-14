@@ -6,12 +6,11 @@ import DatabaseManager from './database.js'
 import {
     GET_METHODS_FN,
     GET_MODULES_FN,
-    GET_OBJECTS_FN, GET_PERMISSIONS_FN, GET_PROFILES_FN
+    GET_OBJECTS_FN,
+    GET_PERMISSIONS_FN
 } from "../database/model/functions.js";
 import {FailResponseError} from "@ralvarezdev/js-express";
-import {Route} from "@ralvarezdev/js-module-permissions";
 import {__dirname} from "../router/constants.js";
-import Script from "@ralvarezdev/js-reflection";
 import {classNameFn, instanceNameFn, scriptNameFn} from "./reflection.js";
 import path from "path";
 
@@ -42,16 +41,14 @@ export class Security {
     // Load the security configuration
     async load() {
         // Get the modules
-        const  queryRes= await DatabaseManager.rawQuery(GET_MODULES_FN)
+        const queryRes = await DatabaseManager.rawQuery(GET_MODULES_FN)
 
         // Iterate over the modules
-        for (const {id,name , parent_module_id} of queryRes.rows) {
+        for (const {id, name, parent_module_id} of queryRes.rows) {
             // Check if the module has a parent
             if (parent_module_id) {
                 // Get the parent module
-                const parentModule = this.#modules.get(parent_module_id)
-                if (!parentModule)
-                    throw new Error(`Parent module ${parent_module_id} not found for module ${id}`)
+                const parentModule = this.getModule(parent_module_id)
 
                 // Create the module
                 const moduleManager = parentModule.createNestedModule(name)
@@ -69,14 +66,24 @@ export class Security {
         // Iterate over the objects
         for (const {id, name, module_id} of objects.rows) {
             // Get the module
-            const module = this.#modules.get(module_id)
-            if (!module)
-                throw new Error(`Module ${module_id} not found for object ${id}`)
+            const module = this.getModule(module_id)
+
+            // Create the script name and script path
+            const scriptName = scriptNameFn(name)
+            const scriptPath = path.join(__dirname, scriptName)
 
             // Create the object
-            const object = module.createObject(name)
+            const object = module.createObject(scriptPath, scriptName, classNameFn(scriptPath, scriptName), instanceNameFn(scriptPath, scriptName))
             this.#objects.set(id, object)
         }
+
+        // Get the permissions
+        const permissions = await DatabaseManager.rawQuery(GET_PERMISSIONS_FN)
+
+        // Iterate over the permissions
+        for (const {profile_id: profileID, method_id} of permissions.rows)
+            // Add the permission
+            this.addPermission(profileID, method_id)
 
         // Get the methods
         const methods = await DatabaseManager.rawQuery(GET_METHODS_FN)
@@ -84,38 +91,40 @@ export class Security {
         // Iterate over the methods
         for (const {id, name, object_id} of methods.rows) {
             // Get the object
-            const object = this.#objects.get(object_id)
-            if (!object)
-                throw new Error(`Object ${object_id} not found for method ${id}`)
+            const object = this.getObject(object_id)
 
             // Create the method
-            const method = object.createMethod(name)
+            const method = object.createMethod(name, ...this.#permissions.get(id))
             this.#methods.set(id, method)
         }
+    }
 
-        // Get the permissions
-        const permissions = await DatabaseManager.rawQuery(GET_PERMISSIONS_FN)
+    // Get a module
+    getModule(moduleID) {
+        // Get the module
+        const module = this.#modules.get(moduleID)
+        if (!module)
+            throw new Error(`Module ${moduleID} not found`)
+        return module
+    }
 
-        // Iterate over the permissions
-        for (const {id, profile_id:profileID, method_id} of permissions.rows) {
-            // Get the method
-            const method = this.#methods.get(method_id)
-            if (!method)
-                throw new Error(`Method ${method_id} not found for permission ${id}`)
-
-            // Add the permission
-            this.addPermission(profileID, method)
-        }
+    // Get an object
+    getObject(objectID) {
+        // Get the object
+        const object = this.#objects.get(objectID)
+        if (!object)
+            throw new Error(`Object ${objectID} not found`)
+        return object
     }
 
     // Add a permission
     addPermission(profileID, methodID) {
         // Check if the method exists in the permissions map
         if (!this.#permissions.has(methodID))
-            this.#permissions.set(methodID, new Map())
+            this.#permissions.set(methodID, [])
 
         // Set the permission
-        this.#permissions.get(methodID).set(profileID, true)
+        this.#permissions.set(methodID, [...this.#permissions.get(methodID), methodID])
     }
 
     // Remove a permission
@@ -125,13 +134,13 @@ export class Security {
             return
 
         // Remove the permission
-        this.#permissions.get(methodID).delete(profileID)
+        this.#permissions.get(methodID).filter(permissionProfileID => permissionProfileID !== profileID)
     }
 
     // Remove a profile
     removeProfile(profileID) {
         // Iterate over the permissions
-        for (const [methodID, profileID] of this.#permissions) {
+        for (const [methodID,] of this.#permissions) {
             // Check if the profile has the permission
             if (this.hasPermission(profileID, methodID))
                 this.removePermission(profileID, methodID)
@@ -145,11 +154,11 @@ export class Security {
             return false
 
         // Check if the profile has the permission
-        return this.#permissions.get(methodID).has(profileID)
+        return this.#permissions.get(methodID).includes(profileID)
     }
 
     // Execute a method
-    async executeMethod(modulesNames, objectName, methodName, req) {
+    async executeMethod(modulesNames, objectName, methodName, req, res) {
         // Get the module
         let module = this.#rootModule
         let parentModuleName = 'router'
@@ -157,7 +166,7 @@ export class Security {
         // Iterate over the modules
         for (const moduleName of modulesNames) {
             // Get the module
-            module = module.getNestedModule(moduleName)
+            module = module.getMethod(moduleName)
             if (!module)
                 throw new Error(`Module ${moduleName} not found in ${parentModuleName}`)
 
@@ -179,52 +188,8 @@ export class Security {
                 session: "You don't have permission to execute this method"
             })
 
-        // Check if the module has the script
-        if (!module.getObject(objectName))
-        {
-            // Create the script name and script path
-            const scriptName=scriptNameFn(objectName)
-            const scriptPath=path.join(__dirname, scriptName)
-
-            // Create object
-            module.createObject(scriptPath, scriptName, classNameFn(scriptPath, scriptName), instanceNameFn(scriptPath, scriptName))
-        }
-
-         // Get the class from the object manager
-        const Class = await options.object.getClass();
-
-
-        // Get the script
-        const script = this.#scripts.get(scriptPath)
-
-        // Get the class from the object manager
-        const Class = await script.getClass();
-
-    // Get the class methods from the object manager
-    const ClassMethods = await options.object.getClassMethods();
-
-
-
-    // Iterate over the class methods
-    for (const classMethodName of Object.keys(ClassMethods)) {
-        // Log the class method name
-        if (options.logger)
-            options.logger.info(`Class method found: ${classMethodName}`);
-
-        // Get the allowed profiles for the method
-        const allowedProfiles = GetMetadataProfiles(Class, classMethodName);
-
-        // Log the allowed profiles
-        if (options.logger)
-            options.logger.info(`Class method '${classMethodName}' has allowed profiles: ${allowedProfiles}`);
-
-        // Create a new method in the object manager
-        options.object.createMethod(classMethodName, ...allowedProfiles);
-    }
-
-
         // Execute the method
-        return method.(...args)
+        return await method(req, res)
     }
 }
 
