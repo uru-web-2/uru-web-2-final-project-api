@@ -3,9 +3,9 @@ import Validator from "./UserValidator.js";
 import Logger from "../../components/logger.js";
 
 // User object for the security module
-export class User{
+export class User {
     // Assign a profile to a user
-    async AssignUserProfile(req, res, next){
+    async AssignUserProfile(req, res, next) {
         try {
             // Validate the request
             const body = HandleValidation(req, res, Validator.AssignUserProfile);
@@ -21,7 +21,7 @@ export class User{
     }
 
     // Revoke a profile from a user
-    async RevokeUserProfile(req, res, next){
+    async RevokeUserProfile(req, res, next) {
         try {
             // Validate the request
             const body = HandleValidation(req, res, Validator.RevokeUserProfile);

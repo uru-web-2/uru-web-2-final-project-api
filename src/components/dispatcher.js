@@ -9,7 +9,8 @@ import {LOG_IN, SIGN_UP} from "./model.js";
 import {LOG_IN_PROC, SIGN_UP_PROC} from "../database/model/storedProcedures.js";
 import {GET_USER_PROFILES_FN,} from "../database/model/functions.js";
 import {
-    IDENTITY_DOCUMENTS_UNIQUE_NUMBER, PASSPORTS_UNIQUE_NUMBER,
+    IDENTITY_DOCUMENTS_UNIQUE_NUMBER,
+    PASSPORTS_UNIQUE_NUMBER,
     USER_EMAILS_UNIQUE_EMAIL,
     USER_USERNAMES_UNIQUE_USERNAME
 } from "../database/model/constraints.js";
@@ -109,7 +110,7 @@ export default class Dispatcher {
                 error = new FieldFailError(400, "email", "email has already been registered")
 
             // Check if the identity document number or passport number has already been registered
-            else if (constraintName === IDENTITY_DOCUMENTS_UNIQUE_NUMBER||constraintName === PASSPORTS_UNIQUE_NUMBER)
+            else if (constraintName === IDENTITY_DOCUMENTS_UNIQUE_NUMBER || constraintName === PASSPORTS_UNIQUE_NUMBER)
                 error = new FieldFailError(400, "document_number", "document number has already been registered")
 
             // Pass the error to the error handler

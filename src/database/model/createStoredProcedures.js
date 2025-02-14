@@ -188,12 +188,57 @@ END;
 $$;
 `
 
+// Create a stored procedure to check if a profile ID is valid
+export const CREATE_IS_PROFILE_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_profile_id_valid(
+    IN in_profile_id BIGINT,
+    OUT out_is_profile_id_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_is_profile_id_valid := FALSE;
+
+    -- Check if the profile ID is valid
+    SELECT TRUE
+    INTO out_is_profile_id_valid
+    FROM profiles
+    WHERE id = in_profile_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure to check if a method ID is valid
+export const CREATE_IS_METHOD_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_method_id_valid(
+    IN in_method_id BIGINT,
+    OUT out_is_method_id_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_is_method_id_valid := FALSE;
+
+    -- Check if the method ID is valid    
+    SELECT TRUE
+    INTO out_is_method_id_valid
+    FROM methods
+    WHERE id = in_method_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
 // Create a stored procedure that assigns a profile to a user
 export const CREATE_ASSIGN_USER_PROFILE_PROC = `
 CREATE OR REPLACE PROCEDURE assign_user_profile(
     IN in_assigned_by_user_id BIGINT,
     IN in_user_username VARCHAR,
     IN in_profile_id VARCHAR,
+    OUT out_is_profile_id_valid BOOLEAN,
     OUT out_user_id BIGINT
 )
 LANGUAGE plpgsql
@@ -201,6 +246,12 @@ AS $$
 BEGIN
     -- Get the user ID
     call get_user_id_by_username(in_user_username, out_user_id);
+    
+    -- Check if the profile ID is valid
+    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
+    IF out_is_profile_id_valid = FALSE THEN
+        RETURN;
+    END IF;
     
     -- Insert into profiles table
     INSERT INTO profiles (
@@ -223,6 +274,7 @@ CREATE OR REPLACE PROCEDURE revoke_user_profile(
     IN in_revoked_by_user_id BIGINT,
     IN in_user_username VARCHAR,
     IN in_profile_id VARCHAR,
+    OUT out_is_profile_id_valid BOOLEAN,
     OUT out_user_id BIGINT
 )
 LANGUAGE plpgsql
@@ -230,6 +282,12 @@ AS $$
 BEGIN
     -- Get the user ID
     call get_user_id_by_username(in_user_username, out_user_id);
+    
+    -- Check if the profile ID is valid
+    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
+    IF out_is_profile_id_valid = FALSE THEN
+        RETURN;
+    END IF;
 
     -- Update the profiles table
     UPDATE profiles
@@ -248,11 +306,25 @@ CREATE OR REPLACE PROCEDURE assign_profile_permission(
     IN in_assigned_by_user_id BIGINT,
     IN in_profile_id BIGINT,
     IN in_method_id BIGINT,
+    OUT out_is_profile_id_valid BOOLEAN,
+    OUT out_is_method_id_valid BOOLEAN,
     OUT out_permission_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the profile ID is valid
+    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
+    IF out_is_profile_id_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the method ID is valid
+    call is_method_id_valid(in_method_id, out_is_method_id_valid);
+    IF out_is_method_id_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into permissions table
     INSERT INTO permissions (
         profile_id,
@@ -275,11 +347,25 @@ CREATE OR REPLACE PROCEDURE revoke_profile_permission(
     IN in_revoked_by_user_id BIGINT,
     IN in_profile_id BIGINT,
     IN in_method_id BIGINT,
+    OUT out_is_profile_id_valid BOOLEAN,
+    OUT out_is_method_id_valid BOOLEAN,
     OUT out_permission_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the profile ID is valid
+    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
+    IF out_is_profile_id_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the method ID is valid
+    call is_method_id_valid(in_method_id, out_is_method_id_valid);
+    IF out_is_method_id_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
     -- Update the permissions table
     UPDATE permissions
     SET revoked_at = NOW(),
@@ -321,11 +407,18 @@ export const CREATE_UPDATE_PROFILE_PROC = `
 CREATE OR REPLACE PROCEDURE update_profile(
     IN in_updated_by_user_id BIGINT,
     IN in_profile_id BIGINT,
-    IN in_profile_name VARCHAR
+    IN in_profile_name VARCHAR,
+    OUT out_is_profile_id_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the profile ID is valid
+    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
+    IF out_is_profile_id_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the profiles table
     UPDATE profiles
     SET name = in_profile_name,
@@ -340,11 +433,18 @@ $$;
 export const CREATE_DELETE_PROFILE_PROC = `
 CREATE OR REPLACE PROCEDURE delete_profile(
     IN in_deleted_by_user_id BIGINT,
-    IN in_profile_id BIGINT
+    IN in_profile_id BIGINT,
+    OUT out_is_profile_id_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the profile ID is valid
+    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
+    IF out_is_profile_id_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the profiles table
     UPDATE profiles
     SET deleted_at = NOW(),
