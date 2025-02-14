@@ -208,7 +208,14 @@ CREATE TABLE IF NOT EXISTS profiles (
     name VARCHAR(50) NOT NULL,
     description VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMP
+    updated_at TIMESTAMP,
+    deleted_at TIMESTAMP,
+    created_by_user_id BIGINT,
+    updated_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (updated_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${PROFILES_UNIQUE_NAME} ON profiles (name) WHERE deleted_at IS NULL;
 `
@@ -221,8 +228,12 @@ CREATE TABLE IF NOT EXISTS permissions (
     profile_id BIGINT NOT NULL,
     assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
     revoked_at TIMESTAMP,
+    assigned_by_user_id BIGINT NOT NULL,
+    revoked_by_user_id BIGINT,
     FOREIGN KEY (method_id) REFERENCES methods(id),
-    FOREIGN KEY (profile_id) REFERENCES profiles(id)
+    FOREIGN KEY (profile_id) REFERENCES profiles(id),
+    FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (revoked_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${PERMISSIONS_UNIQUE_METHOD_ID_PROFILE_ID} ON permissions (method_id, profile_id) WHERE revoked_at IS NULL;
 `

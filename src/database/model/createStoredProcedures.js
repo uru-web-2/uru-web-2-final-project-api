@@ -135,8 +135,8 @@ BEGIN
 	FROM profiles
     WHERE name = 'student';
 	
-	-- Insert into user_profiles table
-	INSERT INTO user_profiles (
+	-- Insert into profiles table
+	INSERT INTO profiles (
         user_id, 
         profile_id
     )
@@ -169,36 +169,202 @@ END;
 $$;
 `
 
-// Create a stored procedure that adds a new user profile
-export const CREATE_ADD_USER_PROFILE_PROC = `
-CREATE OR REPLACE PROCEDURE add_user_profile(
+// Create a stored procedure that gets the user ID by username
+export const CREATE_GET_USER_ID_BY_USERNAME_PROC = `
+CREATE OR REPLACE PROCEDURE get_user_id_by_username(
     IN in_user_username VARCHAR,
-    IN in_profile_name VARCHAR,
-    OUT out_user_id BIGINT,
-    OUT out_profile_id BIGINT
+    OUT out_user_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Select the user id
+    SELECT user_id
+    INTO out_user_id
+    FROM user_usernames
+    WHERE username = in_user_username
+    AND revoked_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that assigns a profile to a user
+export const CREATE_ASSIGN_USER_PROFILE_PROC = `
+CREATE OR REPLACE PROCEDURE assign_user_profile(
+    IN in_assigned_by_user_id BIGINT,
+    IN in_user_username VARCHAR,
+    IN in_profile_id VARCHAR,
+    OUT out_user_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Get the user ID
-    SELECT user_id INTO out_user_id
-    FROM user_usernames
-    WHERE username = in_user_username;
-
-    -- Get the profile ID
-    SELECT id INTO out_profile_id
-    FROM profiles
-    WHERE name = in_profile_name;
-
-    -- Insert into user_profiles table
-    INSERT INTO user_profiles (
+    call get_user_id_by_username(in_user_username, out_user_id);
+    
+    -- Insert into profiles table
+    INSERT INTO profiles (
         user_id,
-        profile_id
+        profile_id,
+        assigned_by_user_id
     )
     VALUES (
         out_user_id,
-        out_profile_id
+        in_profile_id,
+        in_assigned_by_user_id
     );
+END;
+$$;
+`
+
+// Create a stored procedure that revokes a profile from a user
+export const CREATE_REVOKE_USER_PROFILE_PROC = `
+CREATE OR REPLACE PROCEDURE revoke_user_profile(
+    IN in_revoked_by_user_id BIGINT,
+    IN in_user_username VARCHAR,
+    IN in_profile_id VARCHAR,
+    OUT out_user_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Get the user ID
+    call get_user_id_by_username(in_user_username, out_user_id);
+
+    -- Update the profiles table
+    UPDATE profiles
+    SET revoked_at = NOW(),
+        revoked_by_user_id = in_revoked_by_user_id
+    WHERE user_id = out_user_id
+    AND profile_id = in_profile_id
+    AND revoked_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that assigns a permission to a profile
+export const CREATE_ASSIGN_PROFILE_PERMISSION_PROC = `
+CREATE OR REPLACE PROCEDURE assign_profile_permission(
+    IN in_assigned_by_user_id BIGINT,
+    IN in_profile_id BIGINT,
+    IN in_method_id BIGINT,
+    OUT out_permission_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into permissions table
+    INSERT INTO permissions (
+        profile_id,
+        method_id,
+        assigned_by_user_id
+    )
+    VALUES (
+        in_profile_id,
+        in_method_id,
+        in_assigned_by_user_id
+    )
+    RETURNING id INTO out_permission_id;
+END;
+$$;
+`
+
+// Create a stored procedure that revokes a permission from a profile
+export const CREATE_REVOKE_PROFILE_PERMISSION_PROC = `
+CREATE OR REPLACE PROCEDURE revoke_profile_permission(
+    IN in_revoked_by_user_id BIGINT,
+    IN in_profile_id BIGINT,
+    IN in_method_id BIGINT,
+    OUT out_permission_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the permissions table
+    UPDATE permissions
+    SET revoked_at = NOW(),
+        revoked_by_user_id = in_revoked_by_user_id
+    WHERE profile_id = in_profile_id
+    AND method_id = in_method_id
+    AND revoked_at IS NULL
+    RETURNING id INTO out_permission_id;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new profile
+export const CREATE_CREATE_PROFILE_PROC = `
+CREATE OR REPLACE PROCEDURE create_profile(
+    IN in_created_by_user_id BIGINT,
+    IN in_profile_name VARCHAR,
+    OUT out_profile_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into profiles table
+    INSERT INTO profiles (
+        created_by_user_id,
+        name
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_profile_name
+    )
+    RETURNING id INTO out_profile_id;
+END;
+$$;
+`
+
+// Create a stored procedure that updates a profile
+export const CREATE_UPDATE_PROFILE_PROC = `
+CREATE OR REPLACE PROCEDURE update_profile(
+    IN in_updated_by_user_id BIGINT,
+    IN in_profile_id BIGINT,
+    IN in_profile_name VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the profiles table
+    UPDATE profiles
+    SET name = in_profile_name,
+        updated_by_user_id = in_updated_by_user_id
+    WHERE id = in_profile_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that deletes a profile
+export const CREATE_DELETE_PROFILE_PROC = `
+CREATE OR REPLACE PROCEDURE delete_profile(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_profile_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the profiles table
+    UPDATE profiles
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_profile_id
+    AND deleted_at IS NULL;
+    
+    -- Update the permissions table
+    UPDATE permissions
+    SET revoked_at = NOW(),
+        revoked_by_user_id = in_deleted_by_user_id
+    WHERE profile_id = in_profile_id
+    AND revoked_at IS NULL;
+    
+    -- Update the user_profiles table
+    UPDATE user_profiles
+    SET revoked_at = NOW(),
+        revoked_by_user_id = in_deleted_by_user_id
+    WHERE profile_id = in_profile_id
+    AND revoked_at IS NULL;
 END;
 $$;
 `

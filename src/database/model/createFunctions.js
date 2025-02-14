@@ -3,6 +3,7 @@ export const CREATE_LOAD_MODULES_FN = `
 CREATE OR REPLACE FUNCTION load_modules(
 ) RETURNS
 TABLE (
+    id BIGINT,
     name VARCHAR,
     parent_module_id BIGINT
 ) AS $$
@@ -22,6 +23,7 @@ export const CREATE_LOAD_OBJECTS_FN = `
 CREATE OR REPLACE FUNCTION load_objects(
 ) RETURNS
 TABLE (
+    id BIGINT,
     name VARCHAR,
     module_id BIGINT
 ) AS $$
@@ -41,6 +43,7 @@ export const CREATE_LOAD_METHODS_FN = `
 CREATE OR REPLACE FUNCTION load_methods(
 ) RETURNS
 TABLE (
+    id BIGINT,
     name VARCHAR,
     object_id BIGINT
 ) AS $$
@@ -55,15 +58,61 @@ END;
 $$ LANGUAGE plpgsql;
 `
 
-// Query to create a function that loads the profiles
-export const CREATE_LOAD_PROFILES_FN = `
-CREATE OR REPLACE FUNCTION load_profiles(
+// Query to create a function that gets the user profiles
+export const CREATE_GET_USER_PROFILES_FN = `
+CREATE OR REPLACE FUNCTION get_user_profiles(
+    IN in_user_id BIGINT
 ) RETURNS
 TABLE (
+    id BIGINT,
     name VARCHAR
 ) AS $$
 BEGIN
-    -- Query to select all profiles
+    -- Query to select all user profiles
+    RETURN QUERY
+    SELECT profiles.id, profiles.name
+    FROM profiles
+    INNER JOIN user_profiles
+    ON profiles.id = user_profiles.profile_id
+    WHERE user_profiles.user_id = in_user_id
+    AND user_profiles.revoked_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Create a function that gets the methods IDs and names from the permissions IDs of a profile
+export const CREATE_GET_PROFILE_PERMISSIONS_METHODS_FN = `
+CREATE OR REPLACE FUNCTION get_profile_permissions_methods(
+    IN in_profile_id BIGINT
+) RETURNS
+TABLE (
+    method_id BIGINT,
+    method_name VARCHAR
+) AS $$
+BEGIN
+    -- Query to select the methods IDs and names
+    RETURN QUERY
+    SELECT methods.id, methods.name
+    FROM permissions
+    INNER JOIN methods
+    ON permissions.method_id = methods.id
+    WHERE profile_id = in_profile_id
+    AND revoked_at IS NULL
+    ORDER BY methods.id;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Create a function that gets the profiles IDs and names
+export const CREATE_GET_PROFILES_FN = `
+CREATE OR REPLACE FUNCTION get_profiles(
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR
+) AS $$
+BEGIN
+    -- Query to select the profiles IDs and names
     RETURN QUERY
     SELECT id, name
     FROM profiles
@@ -73,8 +122,8 @@ END;
 $$ LANGUAGE plpgsql;
 `
 
-// Query to create a function that loads the permissions
-export const CREATE_LOAD_PERMISSIONS_FN = `
+// Query to create a function that gets the permissions
+export const CREATE_GET_PERMISSIONS_FN = `
 CREATE OR REPLACE FUNCTION load_permissions(
 ) RETURNS
 TABLE (
@@ -88,27 +137,6 @@ BEGIN
     FROM permissions
     WHERE revoked_at IS NULL
     ORDER BY id;
-END;
-$$ LANGUAGE plpgsql;
-`
-
-// Query to create a function that gets the user profiles
-export const CREATE_GET_USER_PROFILES_FN = `
-CREATE OR REPLACE FUNCTION get_user_profiles(
-    IN in_user_id BIGINT
-) RETURNS
-TABLE (
-    name VARCHAR
-) AS $$
-BEGIN
-    -- Query to select all user profiles
-    RETURN QUERY
-    SELECT profiles.name AS name
-    FROM user_profiles
-    INNER JOIN profiles
-    ON user_profiles.profile_id = profiles.id
-    WHERE user_id = in_user_id
-    AND revoked_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
