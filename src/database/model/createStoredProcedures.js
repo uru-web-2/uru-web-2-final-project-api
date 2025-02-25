@@ -237,7 +237,7 @@ export const CREATE_ASSIGN_USER_PROFILE_PROC = `
 CREATE OR REPLACE PROCEDURE assign_user_profile(
     IN in_assigned_by_user_id BIGINT,
     IN in_user_username VARCHAR,
-    IN in_profile_id VARCHAR,
+    IN in_profile_id BIGINT,
     OUT out_is_profile_id_valid BOOLEAN,
     OUT out_user_id BIGINT
 )
@@ -258,8 +258,8 @@ BEGIN
         RETURN;
     END IF;
     
-    -- Insert into profiles table
-    INSERT INTO profiles (
+    -- Insert into user_profiles table
+    INSERT INTO user_profiles (
         user_id,
         profile_id,
         assigned_by_user_id
@@ -278,7 +278,7 @@ export const CREATE_REVOKE_USER_PROFILE_PROC = `
 CREATE OR REPLACE PROCEDURE revoke_user_profile(
     IN in_revoked_by_user_id BIGINT,
     IN in_user_username VARCHAR,
-    IN in_profile_id VARCHAR,
+    IN in_profile_id BIGINT,
     OUT out_is_profile_id_valid BOOLEAN,
     OUT out_user_id BIGINT
 )
@@ -299,8 +299,8 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Update the profiles table
-    UPDATE profiles
+    -- Update the user_profiles table
+    UPDATE user_profiles
     SET revoked_at = NOW(),
         revoked_by_user_id = in_revoked_by_user_id
     WHERE user_id = out_user_id
