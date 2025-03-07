@@ -95,11 +95,11 @@ export const CREATE_PERSON_POSITIONS = `
 CREATE TABLE IF NOT EXISTS person_positions (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    assigned_at TIMESTAMP NOT NULL,
-    revoked_at TIMESTAMP,
     person_id BIGINT NOT NULL,
     assigned_by_user_id BIGINT NOT NULL,
     revoked_by_user_id BIGINT,
+    assigned_at TIMESTAMP NOT NULL,
+    revoked_at TIMESTAMP,
     FOREIGN KEY (person_id) REFERENCES people(id),
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
     FOREIGN KEY (revoked_by_user_id) REFERENCES users(id)
@@ -282,6 +282,22 @@ CREATE TABLE IF NOT EXISTS documents (
 );
 `;
 
+// Query to create the document_images table
+export const CREATE_DOCUMENT_IMAGES = `
+CREATE TABLE IF NOT EXISTS document_images (
+    id BIGSERIAL PRIMARY KEY,
+    document_id BIGINT NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    removed_at TIMESTAMP,
+    created_by_user_id BIGINT NOT NULL,
+    removed_by_user_id BIGINT,
+    FOREIGN KEY (document_id) REFERENCES documents(id),
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+);
+`;
+
 // Query to create the posts table
 export const CREATE_POSTS = `
 CREATE TABLE IF NOT EXISTS posts (
@@ -303,7 +319,7 @@ export const CREATE_LOCATIONS = `
 CREATE TABLE IF NOT EXISTS locations (
     id BIGSERIAL PRIMARY KEY,
     floor INTEGER NOT NULL,
-    section VARCHAR(50) NOT NULL,
+    area VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     removed_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
@@ -312,6 +328,22 @@ CREATE TABLE IF NOT EXISTS locations (
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${LOCATIONS_UNIQUE_FLOOR_SECTION} ON locations (floor, section);
+`;
+
+// Query to create the location_sections table
+export const CREATE_LOCATION_SECTIONS = `
+CREATE TABLE IF NOT EXISTS location_sections (
+    id BIGSERIAL PRIMARY KEY,
+    location_id BIGINT NOT NULL,
+    section VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    removed_at TIMESTAMP,
+    created_by_user_id BIGINT NOT NULL,
+    removed_by_user_id BIGINT,
+    FOREIGN KEY (location_id) REFERENCES locations(id),
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+);
 `;
 
 // Query to create the document_authors table
@@ -336,11 +368,11 @@ CREATE TABLE IF NOT EXISTS document_locations (
     assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
     removed_at TIMESTAMP,
     document_id BIGINT NOT NULL,
-    location_id BIGINT NOT NULL,
+    location_section_id BIGINT NOT NULL,
     assigned_by_user_id BIGINT NOT NULL,
     removed_by_user_id BIGINT,
     FOREIGN KEY (document_id) REFERENCES documents(id),
-    FOREIGN KEY (location_id) REFERENCES locations(id),
+    FOREIGN KEY (location_section_id) REFERENCES location_section_id(id),
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
@@ -434,24 +466,39 @@ CREATE TABLE IF NOT EXISTS languages (
 CREATE UNIQUE INDEX IF NOT EXISTS ${LANGUAGES_UNIQUE_NAME} ON languages (name);
 `
 
-// Query to create the book_models table
-export const CREATE_BOOK_MODELS = `
-CREATE TABLE IF NOT EXISTS book_models (
+// Query to create the document_languages table
+export const CREATE_DOCUMENT_LANGUAGES = `
+CREATE TABLE IF NOT EXISTS document_languages (
     id BIGSERIAL PRIMARY KEY,
     language_id BIGINT NOT NULL,
-    book_id BIGSERIAL NOT NULL,
     document_id BIGINT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     removed_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
     removed_by_user_id BIGINT,
     FOREIGN KEY (language_id) REFERENCES languages(id),
-    FOREIGN KEY (book_id) REFERENCES books(id),
     FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ${BOOK_MODELS_UNIQUE_BOOK_ID_LANGUAGE_ID} ON book_models (book_id, language_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ${BOOK_MODELS_UNIQUE_BOOK_ID_LANGUAGE_ID} ON document_languages (book_id, language_id);
+`;
+
+// Query to create the book_versions table
+export const CREATE_BOOK_VERSIONS = `
+CREATE TABLE IF NOT EXISTS book_versions (
+    id BIGSERIAL PRIMARY KEY,
+    book_id BIGSERIAL NOT NULL,
+    version VARCHAR(50),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    removed_at TIMESTAMP,
+    created_by_user_id BIGINT NOT NULL,
+    removed_by_user_id BIGINT,
+    FOREIGN KEY (book_id) REFERENCES books(id),
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS ${BOOK_MODELS_UNIQUE_BOOK_ID_LANGUAGE_ID} ON book_versions (book_id, language_id);
 `;
 
 // Query to create the book_copies table
@@ -459,12 +506,12 @@ export const CREATE_BOOK_COPIES = `
 CREATE TABLE IF NOT EXISTS book_copies (
     id BIGSERIAL PRIMARY KEY,
     uuid VARCHAR(200),
-    book_model_id BIGSERIAL NOT NULL,
+    book_version_id BIGSERIAL NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     removed_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
     removed_by_user_id BIGINT,
-    FOREIGN KEY (book_model_id) REFERENCES book_models(id),
+    FOREIGN KEY (book_version_id) REFERENCES book_versions(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
@@ -472,9 +519,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS ${BOOK_COPIES_UNIQUE_UUID} ON book_copies (uui
 `;
 
 
-// Query to create the book_copy_loans table
-export const CREATE_BOOK_COPY_LOANS = `
-CREATE TABLE IF NOT EXISTS book_copy_loans (
+// Query to create the book_model_loans table
+export const CREATE_BOOK_MODEL_LOANS = `
+CREATE TABLE IF NOT EXISTS book_model_loans (
     id BIGSERIAL PRIMARY KEY,
     reserved_at TIMESTAMP NOT NULL DEFAULT NOW(),
     reserved_until TIMESTAMP NOT NULL,
@@ -483,9 +530,11 @@ CREATE TABLE IF NOT EXISTS book_copy_loans (
     returned_at TIMESTAMP,
     loaned_by_user_id BIGINT NOT NULL,
     loaned_to_user_id BIGINT NOT NULL,
-    book_copy_id BIGINT NOT NULL,
+    book_version_id BIGINT NOT NULL,
+    book_copy_id BIGINT,
     FOREIGN KEY (loaned_by_user_id) REFERENCES users(id),
     FOREIGN KEY (loaned_to_user_id) REFERENCES users(id),
+    FOREIGN KEY (book_version_id) REFERENCES book_versions(id),
     FOREIGN KEY (book_copy_id) REFERENCES book_copies(id)
 );
 `;

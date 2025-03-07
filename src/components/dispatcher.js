@@ -81,6 +81,10 @@ export class Dispatcher {
             // Validate the request
             const body = HandleValidation(req, res, req => Validate(req, SIGN_UP));
 
+            // Check if the username contains
+            if (body.username.includes(" "))
+                throw new FieldFailError(400, "username", "username cannot contain spaces")
+
             // Hash the password
             body.password_hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS)
 
