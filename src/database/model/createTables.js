@@ -530,6 +530,8 @@ CREATE TABLE IF NOT EXISTS book_model_loans (
     returned_at TIMESTAMP,
     loaned_by_user_id BIGINT NOT NULL,
     loaned_to_user_id BIGINT NOT NULL,
+    removed_by_user_id BIGINT,
+    removed_at TIMESTAMP,
     book_version_id BIGINT NOT NULL,
     book_copy_id BIGINT,
     FOREIGN KEY (loaned_by_user_id) REFERENCES users(id),

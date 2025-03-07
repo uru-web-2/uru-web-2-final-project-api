@@ -36,6 +36,27 @@ END;
 $$ LANGUAGE plpgsql;
 `
 
+// Query to create a function that gets the objects by module ID
+export const CREATE_GET_OBJECTS_BY_MODULE_ID_FN = `
+CREATE OR REPLACE FUNCTION get_objects_by_module_id(
+    IN in_module_id BIGINT  
+) RETURNS
+TABLE (
+    id BIGINT,  
+    name VARCHAR,
+    module_id BIGINT
+) AS $$
+BEGIN
+    -- Query to select the objects by module ID
+    RETURN QUERY
+    SELECT objects.id, objects.name, objects.module_id
+    FROM objects
+    WHERE objects.module_id = in_module_id
+    AND objects.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
 // Query to create a function that gets the methods
 export const CREATE_GET_METHODS_FN = `
 CREATE OR REPLACE FUNCTION get_methods(
@@ -51,6 +72,27 @@ BEGIN
     SELECT methods.id, methods.name, methods.object_id
     FROM methods
     WHERE methods.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that gets the methods by object ID
+export const CREATE_GET_METHODS_BY_OBJECT_ID_FN = `
+CREATE OR REPLACE FUNCTION get_methods_by_object_id(
+    IN in_object_id BIGINT
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR,
+    object_id BIGINT
+) AS $$
+BEGIN
+    -- Query to select the methods by object ID
+    RETURN QUERY
+    SELECT methods.id, methods.name, methods.object_id
+    FROM methods
+    WHERE methods.object_id = in_object_id
+    AND methods.deleted_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -80,7 +122,9 @@ $$ LANGUAGE plpgsql;
 // Create a function that gets the methods IDs and names from the permissions of a profile
 export const CREATE_GET_PROFILE_PERMISSIONS_METHODS_FN = `
 CREATE OR REPLACE FUNCTION get_profile_permissions_methods(
-    IN in_profile_id BIGINT
+    IN in_profile_id BIGINT,
+    IN in_module_id BIGINT,
+    IN in_object_id BIGINT
 ) RETURNS
 TABLE (
     method_id BIGINT,
@@ -93,7 +137,13 @@ BEGIN
     FROM permissions
     INNER JOIN methods
     ON permissions.method_id = methods.id
+    INNER JOIN objects
+    ON methods.object_id = objects.id
+    WHERE permissions.profile_id = in_profile_id
+    AND objects.module_id = in_module_id
     WHERE profile_id = in_profile_id
+    AND object_id = in_object_id
+    AND module_id = in_module_id
     AND revoked_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
