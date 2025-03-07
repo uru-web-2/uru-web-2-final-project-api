@@ -10,7 +10,7 @@ import {
 import {PROFILES_UNIQUE_NAME} from "../../database/model/constraints.js";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {
-    GET_PROFILE_PERMISSIONS_METHODS_FN
+    GET_PROFILE_PERMISSIONS_METHODS_FN, SEARCH_PROFILE_BY_NAME_FN
 } from "../../database/model/functions.js";
 import Security from "../../components/security.js";
 
@@ -133,6 +133,15 @@ export class ProfileService {
         const queryRes = await DatabaseManager.rawQuery(
             GET_PROFILE_PERMISSIONS_METHODS_FN,
             body.id
+        );
+        return queryRes.rows;
+    }
+
+    // Searches for a profile by name
+    async SearchProfileByName(req, body) {
+        const queryRes = await DatabaseManager.rawQuery(
+            SEARCH_PROFILE_BY_NAME_FN,
+            body.name
         );
         return queryRes.rows;
     }

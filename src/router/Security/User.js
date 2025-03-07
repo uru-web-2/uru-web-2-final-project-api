@@ -34,6 +34,36 @@ export class User {
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
+
+    // Search a user by username
+    async SearchUserByUsername(req, res) {
+        // Validate the request
+        const body = HandleValidation(req, res, Validator.SearchUserByUsername);
+
+        // Search the user
+        const user = await Service.SearchUserByUsername(req, body);
+
+        // Log the search
+        Logger.info(`Searching user ${body.username}`);
+
+        // Send the response
+        res.status(200).json(SuccessJSendBody(user))
+    }
+
+    // Create a user
+    async CreateUser(req, res) {
+        // Validate the request
+        const body = HandleValidation(req, res, Validator.CreateUser);
+
+        // Create the user
+        const userID = await Service.CreateUser(req, body);
+
+        // Log the creation
+        Logger.info(`Created user ${userID}`);
+
+        // Send the response
+        res.status(201).json(SuccessJSendBody())
+    }
 }
 
 // Singleton instance

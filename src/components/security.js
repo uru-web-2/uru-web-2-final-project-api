@@ -26,7 +26,6 @@ export class Security {
     #methods = new Map()
     #methodsIDsByNames= new Map()
     #permissions = new Map()
-    #scripts
 
     constructor() {
         // Create the root module

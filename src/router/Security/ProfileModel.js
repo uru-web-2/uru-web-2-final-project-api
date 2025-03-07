@@ -34,3 +34,8 @@ export const DELETE_PROFILE = Joi.object({
 export const GET_PROFILE_PERMISSIONS_METHODS = Joi.object({
     id: Joi.number().required().min(1),
 })
+
+// Search for a profile by name model
+export const SEARCH_PROFILE_BY_NAME = Joi.object({
+    name: Joi.string().required().min(1),
+})

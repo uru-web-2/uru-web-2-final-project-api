@@ -1,6 +1,6 @@
-// CreateSignUpProc is a stored procedure that creates a new user in the database
-export const CREATE_SIGN_UP_PROC = `
-CREATE OR REPLACE PROCEDURE sign_up(
+// Create a stored procedure that creates a new user
+export const CREATE_CREATE_USER_PROC = `
+CREATE OR REPLACE PROCEDURE create_user(
 	IN in_user_first_name VARCHAR,
 	IN in_user_last_name VARCHAR,
 	IN in_user_username VARCHAR,

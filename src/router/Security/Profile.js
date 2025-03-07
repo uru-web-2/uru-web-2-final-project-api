@@ -94,6 +94,21 @@ export class Profile {
         // Send the response
         res.status(200).json(SuccessJSendBody({methods}))
     }
+
+    // Search a profile by name
+    async SearchProfileByName(req, res) {
+        // Validate the request
+        const body = HandleValidation(req, res, Validator.SearchProfileByName);
+
+        // Search the profile
+        const profiles = await Service.SearchProfileByName(req, body)
+
+        // Log the request
+        Logger.info(`Searching profile by name ${body.name}`)
+
+        // Send the response
+        res.status(200).json(SuccessJSendBody({profiles}))
+    }
 }
 
 // Singleton instance

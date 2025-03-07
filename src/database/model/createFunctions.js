@@ -134,3 +134,41 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 `
+
+// Query to create a function that searches for a user by username
+export const CREATE_SEARCH_USER_BY_USERNAME_FN = `
+CREATE OR REPLACE FUNCTION search_user_by_username(
+    IN in_username VARCHAR
+) AS $$
+BEGIN
+    -- Query to select the user ID by username
+    RETURN QUERY
+    SELECT users.id AS user_id, people.first_name AS user_first_name, people.last_name AS user_last_name, user_emails.email AS user_email, user_usernames.username AS user_username
+    FROM users
+    INNER JOIN people
+    ON users.person_id = people.id
+    INNER JOIN user_emails
+    ON users.id = user_emails.user_id
+    INNER JOIN user_usernames
+    ON users.id = user_usernames.user_id
+    WHERE user_usernames.username LIKE in_username;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that searches for a profile by name
+export const CREATE_SEARCH_PROFILE_BY_NAME_FN = `
+CREATE OR REPLACE FUNCTION search_profile_by_name(
+    IN in_name VARCHAR
+) AS $$
+BEGIN
+    -- Query to select the profile ID by name
+    RETURN QUERY
+    SELECT profiles.id AS profile_id, profiles.name AS profile_name, profiles.description AS profile_description INTO out_profile_id, out_profile_name, out_profile_description
+    FROM profiles
+    WHERE profiles.name LIKE in_name
+END;
+$$ LANGUAGE plpgsql;
+`
+
+

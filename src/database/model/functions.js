@@ -18,3 +18,9 @@ export const GET_PROFILES_FN = "SELECT * FROM get_profiles()"
 
 // Query to create a function that gets the permissions
 export const GET_PERMISSIONS_FN = "SELECT * FROM get_permissions()"
+
+// Query to create a function that searches for a user by username
+export const SEARCH_USER_BY_USERNAME_FN = "SELECT * FROM search_user_by_username($1)"
+
+// Query to create a function that searches for a profile by name
+export const SEARCH_PROFILE_BY_NAME_FN = "SELECT * FROM search_profile_by_name($1)"

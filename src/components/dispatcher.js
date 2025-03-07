@@ -6,7 +6,7 @@ import Logger from "./logger.js";
 import DatabaseManager from "./database.js";
 import ErrorHandler from "./handler.js";
 import {EXECUTE, LOG_IN, SIGN_UP} from "./model.js";
-import {LOG_IN_PROC, SIGN_UP_PROC} from "../database/model/storedProcedures.js";
+import {LOG_IN_PROC, CREATE_USER_PROC} from "../database/model/storedProcedures.js";
 import {GET_USER_PROFILES_FN,} from "../database/model/functions.js";
 import {
     IDENTITY_DOCUMENTS_UNIQUE_NUMBER,
@@ -50,13 +50,13 @@ export class Dispatcher {
         this.#app.use(Session.session)
 
         // Set the signup route
-        this.#app.post("/signup", this.signUp)
+        this.#app.post("/signup", this.SignUp)
 
         // Set the login route
-        this.#app.post("/login", this.logIn)
+        this.#app.post("/login", this.LogIn)
 
         // Set the logout route
-        this.#app.post("/logout", checkSession, this.logOut)
+        this.#app.post("/logout", checkSession, this.LogOut)
 
         // Set the execute route
         this.#app.post("/execute", checkSession, this.Execute)
@@ -76,12 +76,12 @@ export class Dispatcher {
     }
 
     // Handle the signup request
-    async signUp(req, res, next) {
+    async SignUp(req, res, next) {
         try {
             // Validate the request
             const body = HandleValidation(req, res, req => Validate(req, SIGN_UP));
 
-            // Check if the username contains
+            // Check if the username contains whitespaces
             if (body.username.includes(" "))
                 throw new FieldFailError(400, "username", "username cannot contain spaces")
 
@@ -90,7 +90,7 @@ export class Dispatcher {
 
             // Create the user
             let userID
-            const queryRes = await DatabaseManager.rawQuery(SIGN_UP_PROC, body.first_name, body.last_name, body.username, body.email, body.password_hash, body.document_country, body.document_type, body.document_number, null, null)
+            const queryRes = await DatabaseManager.rawQuery(CREATE_USER_PROC, body.first_name, body.last_name, body.username, body.email, body.password_hash, body.document_country, body.document_type, body.document_number, null, null)
             if (queryRes.rows.length > 0) {
                 const isCountryValid = queryRes.rows[0]?.out_is_country_valid
                 userID = queryRes.rows[0]?.out_user_id
@@ -127,7 +127,7 @@ export class Dispatcher {
     }
 
     // Handle the login request
-    async logIn(req, res, next) {
+    async LogIn(req, res, next) {
         try {
             // Check if there's already a session
             if (req.session.userID) {
@@ -199,7 +199,7 @@ export class Dispatcher {
     }
 
     // Handle the logout request
-    logOut(req, res) {
+    LogOut(req, res) {
         // Destroy the session
         Session.destroy(req)
 

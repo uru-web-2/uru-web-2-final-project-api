@@ -4,7 +4,7 @@ import {
     CREATE_PROFILE,
     DELETE_PROFILE,
     GET_PROFILE_PERMISSIONS_METHODS,
-    REVOKE_PROFILE_PERMISSION,
+    REVOKE_PROFILE_PERMISSION, SEARCH_PROFILE_BY_NAME,
     UPDATE_PROFILE
 } from "./ProfileModel.js";
 
@@ -38,6 +38,11 @@ export class ProfileValidator {
     // Validate get profile permissions methods
     GetProfilePermissionsMethods(req) {
         return Validate(req, GET_PROFILE_PERMISSIONS_METHODS);
+    }
+
+    // Validate search profile by name
+    SearchProfileByName(req) {
+        return Validate(req, SEARCH_PROFILE_BY_NAME);
     }
 }
 
