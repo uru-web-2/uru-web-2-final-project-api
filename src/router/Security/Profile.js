@@ -109,6 +109,18 @@ export class Profile {
         // Send the response
         res.status(200).json(SuccessJSendBody({profiles}))
     }
+
+    // Get all profiles
+    async GetAllProfiles(req, res) {
+        // Get all the profiles
+        const profiles = await Service.GetAllProfiles(req);
+
+        // Log the creation
+        Logger.info(`Fetching all profiles`);
+
+        // Send the response
+        res.status(200).json(SuccessJSendBody(profiles))
+    }
 }
 
 // Singleton instance

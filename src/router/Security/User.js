@@ -64,6 +64,33 @@ export class User {
         // Send the response
         res.status(201).json(SuccessJSendBody())
     }
+
+    // Get all users with pagination
+    async GetAllUsers(req, res) {
+        // Get all the users with pagination
+        const users = await Service.GetAllUsers(req);
+
+        // Log the creation
+        Logger.info(`Fetching all users`);
+
+        // Send the response
+        res.status(200).json(SuccessJSendBody(users))
+    }
+
+    // Get the user details by users ID
+    async GetUserDetailsByUserID(req, res) {
+        // Validate the request
+        const body = HandleValidation(req, res, Validator.GetUserDetailsByUserID);
+
+        // Get all the users with pagination
+        const {users, number_of_users} = await Service.GetUserDetailsByUserID(req, body);
+
+        // Log the creation
+        Logger.info(`Fetching all users`);
+
+        // Send the response
+        res.status(200).json(SuccessJSendBody({users, number_of_users}))
+    }
 }
 
 // Singleton instance

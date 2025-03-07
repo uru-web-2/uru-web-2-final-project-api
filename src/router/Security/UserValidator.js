@@ -1,5 +1,11 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
-import {ASSIGN_USER_PROFILE, CREATE_USER, REVOKE_USER_PROFILE, SEARCH_USER_BY_USERNAME} from "./UserModel.js";
+import {
+    ASSIGN_USER_PROFILE,
+    CREATE_USER,
+    GET_USER_DETAILS_BY_USER_ID,
+    REVOKE_USER_PROFILE,
+    SEARCH_USER_BY_USERNAME
+} from "./UserModel.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
 
 // Validator for the user object
@@ -21,14 +27,20 @@ export class UserValidator {
 
     // Validate create user
     CreateUser(req) {
-         const validate=Validate(req, CREATE_USER);
+         const [validatedBody, isBodyValid]=Validate(req, CREATE_USER);
 
          // Check if the username contains whitespaces
-        if (body.username.includes(" "))
+        if (isBodyValid&&validatedBody.username.includes(" "))
             throw new FieldFailError(400, "username", "username cannot contain spaces")
 
-        return validate;
+        return [validatedBody, isBodyValid]
     }
+
+    // Validate get user details by user ID
+    GetUserDetailsByUserID(req) {
+        return Validate(req, GET_USER_DETAILS_BY_USER_ID);
+    }
+
 }
 
 // Singleton instance of the UserValidator

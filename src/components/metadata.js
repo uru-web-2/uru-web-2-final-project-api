@@ -13,9 +13,12 @@ AddMetadataProfiles(Profile, "UpdateProfile", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Profile, "DeleteProfile", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Profile, "GetProfilePermissionsMethods", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Profile, "SearchProfileByName", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Profile, "GetAllProfiles", PROFILES.SUPER_ADMIN)
 
 // - User object
 AddMetadataProfiles(User, "AssignUserProfile", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(User, "RevokeUserProfile", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(User, "SearchUserByUsername", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(User, "CreateUser", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(User, "GetUserDetailsByUserID", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(User, "GetAllUsers", PROFILES.SUPER_ADMIN)

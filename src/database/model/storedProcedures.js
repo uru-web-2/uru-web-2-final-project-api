@@ -51,3 +51,6 @@ export const GET_OBJECT_ID_BY_NAME_PROC = "CALL get_object_id_by_name($1, $2)"
 
 // Query to get the method ID by name
 export const GET_METHOD_ID_BY_NAME_PROC = "CALL get_method_id_by_name($1, $2)"
+
+// Query to get the number of users
+export const GET_NUMBER_OF_USERS_PROC = "CALL get_number_of_users($1)"

@@ -711,3 +711,19 @@ BEGIN
 END;
 $$;
 `
+
+// Create a stored procedure that gets the number of users
+export const CREATE_GET_NUMBER_OF_USERS_PROC = `
+CREATE OR REPLACE PROCEDURE get_number_of_users(
+    OUT out_number_of_users BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Select the number of users
+    SELECT COUNT(*)
+    INTO out_number_of_users
+    FROM users;
+END;
+$$;
+`

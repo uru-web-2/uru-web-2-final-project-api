@@ -28,3 +28,8 @@ export const CREATE_USER = Joi.object({
     document_type: Joi.string().required().valid('identity_document', 'passport'),
     document_country: Joi.string().required().min(1),
 })
+
+// Get user details by user ID
+export const GET_USER_DETAILS_BY_USER_ID=Joi.object({
+    id: Joi.number().required().min(1),
+})

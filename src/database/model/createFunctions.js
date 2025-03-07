@@ -139,6 +139,13 @@ $$ LANGUAGE plpgsql;
 export const CREATE_SEARCH_USER_BY_USERNAME_FN = `
 CREATE OR REPLACE FUNCTION search_user_by_username(
     IN in_username VARCHAR
+) RETURNS
+TABLE (
+    user_id BIGINT,
+    user_first_name VARCHAR,
+    user_last_name VARCHAR,
+    user_email VARCHAR,
+    user_username VARCHAR
 ) AS $$
 BEGIN
     -- Query to select the user ID by username
@@ -160,15 +167,98 @@ $$ LANGUAGE plpgsql;
 export const CREATE_SEARCH_PROFILE_BY_NAME_FN = `
 CREATE OR REPLACE FUNCTION search_profile_by_name(
     IN in_name VARCHAR
+) RETURNS
+TABLE (
+    profile_id BIGINT,
+    profile_name VARCHAR,
+    profile_description VARCHAR
 ) AS $$
 BEGIN
     -- Query to select the profile ID by name
     RETURN QUERY
-    SELECT profiles.id AS profile_id, profiles.name AS profile_name, profiles.description AS profile_description INTO out_profile_id, out_profile_name, out_profile_description
+    SELECT profiles.id AS profile_id, profiles.name AS profile_name, profiles.description AS profile_description
     FROM profiles
     WHERE profiles.name LIKE in_name
 END;
 $$ LANGUAGE plpgsql;
 `
 
+// Query to create a function that gets all the profiles
+export const CREATE_GET_ALL_PROFILES_FN = `
+CREATE OR REPLACE FUNCTION get_all_profiles(
+) RETURNS
+TABLE (
+    profile_id BIGINT,
+    profile_name VARCHAR,
+    profile_description VARCHAR
+) AS $$
+BEGIN
+    -- Query to select all profiles
+    RETURN QUERY
+    SELECT profiles.id AS profile_id, profiles.name AS profile_name, profiles.description AS profile_description
+    FROM profiles
+    WHERE profiles.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
 
+// Query to create a function that gets all the users with pagination
+export const CREATE_GET_ALL_USERS_FN = `
+CREATE OR REPLACE FUNCTION get_all_users(
+    IN in_offset BIGINT,
+    IN in_limit BIGINT
+) RETURNS
+TABLE (
+    user_id BIGINT,
+    user_first_name VARCHAR,
+    user_last_name VARCHAR,
+    user_email VARCHAR,
+    user_username VARCHAR
+) AS $$
+BEGIN
+    -- Query to select all users with pagination
+    RETURN QUERY
+    SELECT users.id AS user_id, people.first_name AS user_first_name, people.last_name AS user_last_name, user_emails.email AS user_email, user_usernames.username AS user_username
+    FROM users
+    INNER JOIN people
+    ON users.person_id = people.id
+    INNER JOIN user_emails
+    ON users.id = user_emails.user_id
+    INNER JOIN user_usernames
+    ON users.id = user_usernames.user_id
+    ORDER BY users.id
+    OFFSET in_offset
+    LIMIT in_limit;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that gets the user details by user ID
+export const CREATE_GET_USER_DETAILS_BY_USER_ID_FN = `
+CREATE OR REPLACE FUNCTION get_user_details_by_user_id(
+    IN in_user_id BIGINT
+) RETURNS
+TABLE (
+    user_id BIGINT,
+    user_first_name VARCHAR,
+    user_last_name VARCHAR,
+    user_email VARCHAR,
+    user_username VARCHAR,
+    user_birthdate DATE,
+    user_profile_ids BIGINT[]
+) AS $$
+BEGIN
+    -- Query to select the user details by user ID
+    RETURN QUERY
+    SELECT users.id AS user_id, people.first_name AS user_first_name, people.last_name AS user_last_name, user_emails.email AS user_email, user_usernames.username AS user_username, people.birthdate AS user_birthdate, ARRAY(SELECT profile_id FROM user_profiles WHERE user_id = in_user_id AND revoked_at IS NULL) AS user_profile_ids
+    FROM users
+    INNER JOIN people
+    ON users.person_id = people.id
+    INNER JOIN user_emails
+    ON users.id = user_emails.user_id
+    INNER JOIN user_usernames
+    ON users.id = user_usernames.user_id
+    WHERE users.id = in_user_id;
+END;
+$$ LANGUAGE plpgsql;
+`

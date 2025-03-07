@@ -1,10 +1,14 @@
 import DatabaseManager from "../../components/database.js";
 import {
-    ASSIGN_USER_PROFILE_PROC, CREATE_USER_PROC,
+    ASSIGN_USER_PROFILE_PROC, CREATE_USER_PROC, GET_NUMBER_OF_USERS_PROC,
     REVOKE_USER_PROFILE_PROC
 } from "../../database/model/storedProcedures.js";
 import {FieldFailError, HandleValidation, SuccessJSendBody} from "@ralvarezdev/js-express";
-import {SEARCH_USER_BY_USERNAME_FN} from "../../database/model/functions.js";
+import {
+    GET_ALL_USERS_FN,
+    GET_USER_DETAILS_BY_USER_ID_FN,
+    SEARCH_USER_BY_USERNAME_FN
+} from "../../database/model/functions.js";
 import Logger from "../../components/logger.js";
 import {SALT_ROUNDS} from "../../components/bcrypt.js";
 import bcrypt from "bcrypt";
@@ -14,6 +18,8 @@ import {
     USER_EMAILS_UNIQUE_EMAIL,
     USER_USERNAMES_UNIQUE_USERNAME
 } from "../../database/model/constraints.js";
+import {GET_USER_DETAILS_BY_USER_ID} from "./UserModel.js";
+import {number} from "joi";
 
 // Service for the user object
 export class UserService {
@@ -101,6 +107,28 @@ export class UserService {
 
             throw error
         }
+    }
+
+    // Get user details by user ID
+    async GetUserDetailsByUserID(req, body) {
+        const userDetailsQueryRes = await DatabaseManager.rawQuery(
+            GET_USER_DETAILS_BY_USER_ID_FN,
+            body.id
+        );
+
+        const numberOfUsersQueryRes = await DatabaseManager.rawQuery(
+            GET_NUMBER_OF_USERS_PROC,
+            body.id
+        );
+        return {users:userDetailsQueryRes.rows, number_of_users: numberOfUsersQueryRes.rows[0]}
+    }
+
+    // Get all users
+    async GetAllUsers(req, body) {
+        const queryRes = await DatabaseManager.rawQuery(
+            GET_ALL_USERS_FN,
+        );
+        return queryRes.rows;
     }
 }
 
