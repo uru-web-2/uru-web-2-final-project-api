@@ -273,43 +273,6 @@ END;
 $$;
 `
 
-// Create a stored procedure that revokes a profile from a user
-export const CREATE_REVOKE_USER_PROFILE_PROC = `
-CREATE OR REPLACE PROCEDURE revoke_user_profile(
-    IN in_revoked_by_user_id BIGINT,
-    IN in_user_username VARCHAR,
-    IN in_profile_id BIGINT,
-    OUT out_is_profile_id_valid BOOLEAN,
-    OUT out_user_id BIGINT
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    -- Get the user ID
-    call get_user_id_by_username(in_user_username, out_user_id);
-    
-    -- Check if the user ID is valid
-    IF out_user_id IS NULL THEN
-        RETURN;
-    END IF;
-    
-    -- Check if the profile ID is valid
-    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
-    IF out_is_profile_id_valid = FALSE THEN
-        RETURN;
-    END IF;
-
-    -- Update the user_profiles table
-    UPDATE user_profiles
-    SET revoked_at = NOW(),
-        revoked_by_user_id = in_revoked_by_user_id
-    WHERE user_id = out_user_id
-    AND profile_id = in_profile_id
-    AND revoked_at IS NULL;
-END;
-$$;
-`
-
 // Create a stored procedure that assigns a permission to a profile
 export const CREATE_ASSIGN_PROFILE_PERMISSION_PROC = `
 CREATE OR REPLACE PROCEDURE assign_profile_permission(

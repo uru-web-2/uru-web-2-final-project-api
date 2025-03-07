@@ -3,13 +3,12 @@ import {
     ASSIGN_USER_PROFILE_PROC, CREATE_USER_PROC, GET_NUMBER_OF_USERS_PROC,
     REVOKE_USER_PROFILE_PROC
 } from "../../database/model/storedProcedures.js";
-import {FieldFailError, HandleValidation, SuccessJSendBody} from "@ralvarezdev/js-express";
+import {FieldFailError} from "@ralvarezdev/js-express";
 import {
     GET_ALL_USERS_FN,
     GET_USER_DETAILS_BY_USER_ID_FN,
     SEARCH_USER_BY_USERNAME_FN
 } from "../../database/model/functions.js";
-import Logger from "../../components/logger.js";
 import {SALT_ROUNDS} from "../../components/bcrypt.js";
 import bcrypt from "bcrypt";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
@@ -18,8 +17,6 @@ import {
     USER_EMAILS_UNIQUE_EMAIL,
     USER_USERNAMES_UNIQUE_USERNAME
 } from "../../database/model/constraints.js";
-import {GET_USER_DETAILS_BY_USER_ID} from "./UserModel.js";
-import {number} from "joi";
 
 // Service for the user object
 export class UserService {

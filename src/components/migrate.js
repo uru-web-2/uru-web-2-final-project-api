@@ -45,14 +45,13 @@ import {
 import {
     CREATE_GET_ALL_PROFILES_FN,
     CREATE_GET_ALL_USERS_FN, CREATE_GET_METHODS_BY_OBJECT_ID_FN,
-    CREATE_GET_METHODS_FN,
-    CREATE_GET_MODULES_FN, CREATE_GET_OBJECTS_BY_MODULE_ID_FN,
-    CREATE_GET_OBJECTS_FN,
-    CREATE_GET_PERMISSIONS_FN,
+    CREATE_GET_ALL_METHODS_FN,
+    CREATE_GET_ALL_MODULES_FN, CREATE_GET_OBJECTS_BY_MODULE_ID_FN,
+    CREATE_GET_ALL_OBJECTS_FN,
+    CREATE_GET_ALL_PERMISSIONS_FN,
     CREATE_GET_PROFILE_PERMISSIONS_METHODS_FN,
-    CREATE_GET_PROFILES_FN, CREATE_GET_USER_DETAILS_BY_USER_ID_FN,
-    CREATE_GET_USER_DETAILS_FN,
-    CREATE_GET_USER_PROFILES_FN,
+    CREATE_GET_USER_DETAILS_BY_USER_ID_FN,
+    CREATE_GET_ALL_USER_PROFILES_FN,
     CREATE_SEARCH_PROFILE_BY_NAME_FN,
     CREATE_SEARCH_USER_BY_USERNAME_FN,
 } from "../database/model/createFunctions.js";
@@ -90,7 +89,7 @@ import {
     GET_MODULE_ID_BY_NAME_PROC,
     GET_OBJECT_ID_BY_NAME_PROC
 } from "../database/model/storedProcedures.js";
-import {GET_PROFILES_FN} from "../database/model/functions.js";
+import {GET_ALL_PROFILES_FN} from "../database/model/functions.js";
 import {classNameFn, instanceNameFn, matchScriptNameFn, printModule} from "./reflection.js";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {
@@ -257,7 +256,7 @@ export default async function migrate() {
         Logger.info("Tables created")
 
         // Create the functions
-        for (const query of [CREATE_GET_MODULES_FN, CREATE_GET_OBJECTS_FN, CREATE_GET_METHODS_FN, CREATE_GET_USER_PROFILES_FN, CREATE_GET_PROFILE_PERMISSIONS_METHODS_FN, CREATE_GET_PROFILES_FN, CREATE_GET_PERMISSIONS_FN, CREATE_SEARCH_PROFILE_BY_NAME_FN, CREATE_SEARCH_USER_BY_USERNAME_FN, CREATE_GET_ALL_PROFILES_FN, CREATE_GET_ALL_USERS_FN, CREATE_GET_USER_DETAILS_BY_USER_ID_FN,
+        for (const query of [CREATE_GET_ALL_MODULES_FN, CREATE_GET_ALL_OBJECTS_FN, CREATE_GET_ALL_METHODS_FN, CREATE_GET_ALL_USER_PROFILES_FN, CREATE_GET_PROFILE_PERMISSIONS_METHODS_FN, CREATE_GET_PROFILES_FN, CREATE_GET_ALL_PERMISSIONS_FN, CREATE_SEARCH_PROFILE_BY_NAME_FN, CREATE_SEARCH_USER_BY_USERNAME_FN, CREATE_GET_ALL_PROFILES_FN, CREATE_GET_ALL_USERS_FN, CREATE_GET_USER_DETAILS_BY_USER_ID_FN,
          CREATE_GET_OBJECTS_BY_MODULE_ID_FN, CREATE_GET_METHODS_BY_OBJECT_ID_FN])
             await client.rawQuery(query)
 
@@ -297,12 +296,12 @@ export default async function migrate() {
     )
 
     // Get the profiles
-    let queryRes = await DatabaseManager.rawQuery(GET_PROFILES_FN)
+    let queryRes = await DatabaseManager.rawQuery(GET_ALL_PROFILES_FN)
     queryRes = queryRes?.rows
 
     // Create the profiles ID map
     const profilesID = queryRes.reduce((acc, profile) => {
-        acc[profile.name] = profile.id
+        acc[profile?.profile_name] = profile?.profile_id
         return acc
     }, {})
 

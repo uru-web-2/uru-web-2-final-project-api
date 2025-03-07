@@ -3,10 +3,10 @@ import {
 } from "@ralvarezdev/js-module-permissions/permissions/moduleManager.js";
 import DatabaseManager from './database.js'
 import {
-    GET_METHODS_FN,
-    GET_MODULES_FN,
-    GET_OBJECTS_FN,
-    GET_PERMISSIONS_FN
+    GET_ALL_METHODS_FN,
+    GET_ALL_MODULES_FN,
+    GET_ALL_OBJECTS_FN,
+    GET_ALL_PERMISSIONS_FN, GET_ALL_PROFILES_FN
 } from "../database/model/functions.js";
 import {FailResponseError} from "@ralvarezdev/js-express";
 import {__dirname} from "../router/constants.js";
@@ -17,6 +17,7 @@ import {
     scriptNameFn
 } from "./reflection.js";
 import path from "path";
+import Session from "./session.js";
 
 // Security component
 export class Security {
@@ -25,6 +26,7 @@ export class Security {
     #objects = new Map()
     #methods = new Map()
     #methodsIDsByNames= new Map()
+    #profiles = new Map()
     #permissions = new Map()
 
     constructor() {
@@ -34,8 +36,15 @@ export class Security {
 
     // Load the security configuration
     async load() {
+        // Get the profiles
+        const profiles = await DatabaseManager.rawQuery(GET_ALL_PROFILES_FN)
+
+        // Iterate over the profiles
+        for (const {profile_id: id, profile_name: name} of profiles.rows)
+            this.#profiles.set(id, name)
+
         // Get the modules
-        const queryRes = await DatabaseManager.rawQuery(GET_MODULES_FN)
+        const queryRes = await DatabaseManager.rawQuery(GET_ALL_MODULES_FN)
 
         // Iterate over the modules
         for (const {id, name, parent_module_id} of queryRes.rows) {
@@ -55,7 +64,7 @@ export class Security {
         }
 
         // Get the objects
-        const objects = await DatabaseManager.rawQuery(GET_OBJECTS_FN)
+        const objects = await DatabaseManager.rawQuery(GET_ALL_OBJECTS_FN)
 
         // Iterate over the objects
         for (const {id, name, module_id} of objects.rows) {
@@ -72,7 +81,7 @@ export class Security {
         }
 
         // Get the permissions
-        const permissions = await DatabaseManager.rawQuery(GET_PERMISSIONS_FN)
+        const permissions = await DatabaseManager.rawQuery(GET_ALL_PERMISSIONS_FN)
 
         // Iterate over the permissions
         for (const {profile_id, method_id} of permissions.rows)
@@ -80,7 +89,7 @@ export class Security {
             this.addPermission(profile_id, method_id)
 
         // Get the methods
-        const methods = await DatabaseManager.rawQuery(GET_METHODS_FN)
+        const methods = await DatabaseManager.rawQuery(GET_ALL_METHODS_FN)
 
         // Iterate over the methods
         for (const {id, name, object_id} of methods.rows) {
@@ -135,14 +144,45 @@ export class Security {
         this.#permissions.get(methodID).filter(permissionProfileID => permissionProfileID !== profileID)
     }
 
+    // Add a profile
+    addProfile(profileID, profileName) {
+        // Check if the profile exists
+        if (this.hasProfile(profileID))
+            throw new Error(`Profile ${profileID} already exists`)
+
+        // Set the profile
+        this.#profiles.set(profileID, profileName)
+    }
+
+    // Update profile name
+    updateProfile(profileID, profileName) {
+        // Check if the profile exists
+        if (!this.hasProfile(profileID))
+            throw new Error(`Profile ${profileID} not found`)
+
+        // Set the profile
+        this.#profiles.set(profileID, profileName)
+    }
+
     // Remove a profile
     removeProfile(profileID) {
+        if (!this.hasProfile(profileID))
+            throw new Error(`Profile ${profileID} not found`)
+
         // Iterate over the permissions
         for (const [methodID,] of this.#permissions) {
             // Check if the profile has the permission
             if (this.hasPermission(profileID, methodID))
                 this.removePermission(profileID, methodID)
         }
+
+        // Remove the profile
+        this.#profiles.delete(profileID)
+    }
+
+    // Check if a profile exists
+    hasProfile(profileID) {
+        return this.#profiles.has(profileID)
     }
 
     // Check if a profile has a permission
@@ -182,8 +222,19 @@ export class Security {
         if (!method)
             throw new Error(`Method ${methodName} not found in ${objectName}`)
 
+        // Check if the profile exists
+        const profileID = req.session.profileID
+        if (!this.hasProfile(profileID)) {
+            // Destroy the session
+            Session.destroy(req)
+
+            throw new FailResponseError(401, {
+                session: "Profile not found. Session destroyed. Log in again"
+            })
+        }
+
         // Check if the user has the permission to execute the method
-        if (!this.hasPermission(req.session.profileID, this.#methodsIDsByNames.get(methodName)))
+        if (!this.hasPermission(profileID, this.#methodsIDsByNames.get(methodName)))
             throw new FailResponseError(401, {
                 session: "You don't have permission to execute this method"
             })

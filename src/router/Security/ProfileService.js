@@ -25,7 +25,12 @@ export class ProfileService {
                 null
             );
             const queryRow = queryRes.rows?.[0];
-            return queryRow?.out_profile_id;
+            const profileID = queryRow?.out_profile_id;
+
+            // Add the profile ID to the security component
+            Security.addProfile(profileID, body.name)
+
+            return profileID;
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
@@ -43,14 +48,18 @@ export class ProfileService {
             const queryRes = await DatabaseManager.rawQuery(
                 UPDATE_PROFILE_PROC,
                 req.session.userID,
-                body.profile_id,
+                body.id,
                 body.name,
+                body.description,
                 null
             );
             const queryRow = queryRes.rows?.[0];
 
             if (queryRow?.out_is_profile_id_valid === false)
-                throw new FieldFailError('profile_id', 'Profile ID is invalid');
+                throw new FieldFailError('id', 'Profile ID is invalid');
+
+             // Update the profile to the security component
+            Security.updateProfile(body.id, body.name)
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
@@ -67,16 +76,16 @@ export class ProfileService {
         const queryRes = await DatabaseManager.rawQuery(
             DELETE_PROFILE_PROC,
             req.session.userID,
-            body.profile_id,
+            body.id,
             null
         );
         const queryRow = queryRes.rows?.[0];
 
         if (queryRow?.out_is_profile_id_valid === false)
-            throw new FieldFailError('profile_id', 'Profile ID is invalid');
+            throw new FieldFailError('id', 'Profile ID is invalid');
 
         // Remove the profile ID from the security component
-        Security.removeProfile(body.profile_id)
+        Security.removeProfile(body.id)
     }
 
     // Searches for a profile by name

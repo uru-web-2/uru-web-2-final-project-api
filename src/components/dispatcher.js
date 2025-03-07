@@ -7,7 +7,7 @@ import DatabaseManager from "./database.js";
 import ErrorHandler from "./handler.js";
 import {EXECUTE, LOG_IN, SIGN_UP} from "./model.js";
 import {LOG_IN_PROC, CREATE_USER_PROC} from "../database/model/storedProcedures.js";
-import {GET_USER_PROFILES_FN,} from "../database/model/functions.js";
+import {GET_ALL_USER_PROFILES_FN,} from "../database/model/functions.js";
 import {
     IDENTITY_DOCUMENTS_UNIQUE_NUMBER,
     PASSPORTS_UNIQUE_NUMBER,
@@ -159,7 +159,7 @@ export class Dispatcher {
                 throw new FieldFailError(401, "password", "incorrect password")
 
             // Get the user profiles
-            const userProfiles = await DatabaseManager.rawQuery(GET_USER_PROFILES_FN, userID)
+            const userProfiles = await DatabaseManager.rawQuery(GET_ALL_USER_PROFILES_FN, userID)
 
             // Parse the user profiles
             const parsedUserProfiles = []

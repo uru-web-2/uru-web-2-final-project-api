@@ -6,7 +6,7 @@ import {
 } from "../../database/model/storedProcedures.js";
 import {
     GET_METHODS_BY_OBJECT_ID_FN,
-    GET_MODULES_FN, GET_OBJECTS_BY_MODULE_ID_FN,
+    GET_ALL_MODULES_FN, GET_OBJECTS_BY_MODULE_ID_FN,
     GET_PROFILE_PERMISSIONS_METHODS_FN
 } from "../../database/model/functions.js";
 import Security from "../../components/security.js";
@@ -75,7 +75,7 @@ export class SecurityService {
     // Get all modules
     async GetModules(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
-            GET_MODULES_FN,
+            GET_ALL_MODULES_FN,
         );
         return queryRes.rows;
     }
