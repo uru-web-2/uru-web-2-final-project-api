@@ -1,25 +1,13 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
-    ASSIGN_USER_PROFILE,
     CREATE_USER,
     GET_USER_DETAILS_BY_USER_ID,
-    REVOKE_USER_PROFILE,
     SEARCH_USER_BY_USERNAME
 } from "./UserModel.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
 
 // Validator for the user object
 export class UserValidator {
-    // Validate assign user profile
-    AssignUserProfile(req) {
-        return Validate(req, ASSIGN_USER_PROFILE);
-    }
-
-    // Validate revoke user profile
-    RevokeUserProfile(req) {
-        return Validate(req, REVOKE_USER_PROFILE);
-    }
-
     // Validate search user by username
     SearchUserByUsername(req) {
         return Validate(req, SEARCH_USER_BY_USERNAME);
@@ -40,7 +28,6 @@ export class UserValidator {
     GetUserDetailsByUserID(req) {
         return Validate(req, GET_USER_DETAILS_BY_USER_ID);
     }
-
 }
 
 // Singleton instance of the UserValidator

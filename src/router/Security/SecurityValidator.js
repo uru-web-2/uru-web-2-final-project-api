@@ -1,8 +1,11 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
-    ASSIGN_PROFILE_PERMISSION, GET_METHODS_BY_OBJECT_ID, GET_OBJECTS_BY_MODULE_ID,
+    ASSIGN_PROFILE_PERMISSION,
+    ASSIGN_USER_PROFILE,
+    GET_METHODS_BY_OBJECT_ID,
+    GET_OBJECTS_BY_MODULE_ID,
     GET_PROFILE_PERMISSIONS_METHODS,
-    REVOKE_PROFILE_PERMISSION
+    REVOKE_PROFILE_PERMISSION, REVOKE_USER_PROFILE
 } from "./SecurityModel.js";
 
 // Validator for the security object
@@ -30,6 +33,16 @@ export class SecurityValidator {
     // Validate get methods by object ID
     GetMethodsByObjectID(req) {
         return Validate(req, GET_METHODS_BY_OBJECT_ID);
+    }
+
+        // Validate assign user profile
+    AssignUserProfile(req) {
+        return Validate(req, ASSIGN_USER_PROFILE);
+    }
+
+    // Validate revoke user profile
+    RevokeUserProfile(req) {
+        return Validate(req, REVOKE_USER_PROFILE);
     }
 }
 
