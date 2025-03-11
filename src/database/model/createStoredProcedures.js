@@ -139,6 +139,23 @@ END;
 $$;
 `
 
+// Create a stored procedure that revokes a user email verification by user email ID
+export const CREATE_REVOKE_USER_EMAIL_VERIFICATION_BY_USER_EMAIL_ID_PROC = `
+CREATE OR REPLACE PROCEDURE revoke_user_email_verification_by_user_email_id(
+    IN in_user_email_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the user_email_verifications table
+    UPDATE user_email_verifications
+    SET revoked_at = NOW()
+    WHERE user_email_id = in_user_email_id
+    AND revoked_at IS NULL;
+END;
+$$;
+`
+
 // Create a stored procedure that creates a new user email verification
 export const CREATE_CREATE_USER_EMAIL_VERIFICATION_PROC = `
 CREATE OR REPLACE PROCEDURE create_user_email_verification(
@@ -149,6 +166,9 @@ CREATE OR REPLACE PROCEDURE create_user_email_verification(
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Revoke the user email verification
+    call revoke_user_email_verification_by_user_email_id(in_user_email_id);
+
     -- Insert into user_email_verifications table
     INSERT INTO user_email_verifications (
         user_email_id,
@@ -163,6 +183,59 @@ BEGIN
 END;
 $$;
 `
+
+// Create a stored procedure that gets the user email information by user ID
+export const CREATE_GET_USER_EMAIL_INFO_BY_USER_ID_PROC = `
+CREATE OR REPLACE PROCEDURE get_user_email_info_by_user_id(
+    IN in_user_id BIGINT,
+    OUT out_user_first_name VARCHAR,
+    OUT out_user_last_name VARCHAR,
+    OUT out_user_email_id BIGINT,
+    OUT out_user_email VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Select the user email information
+    SELECT user_emails.id, user_emails.email, people.first_name, people.last_name
+    INTO out_user_email_id, out_user_email, out_user_first_name, out_user_last_name
+    FROM user_emails
+    INNER JOIN users
+    ON user_emails.user_id = users.id
+    INNER JOIN people
+    ON users.person_id = people.id
+    WHERE user_emails.user_id = in_user_id;
+END;
+$$;
+`
+
+// Create a stored procedure that verifies a user email verification token
+export const CREATE_VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC = `
+CREATE OR REPLACE PROCEDURE verify_user_email_verification_token(
+    IN in_user_email_verification_token VARCHAR,
+    OUT out_user_email_verification_token_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Check if the user email verification token is valid
+    SELECT TRUE
+    INTO out_user_email_verification_token_is_valid
+    FROM user_email_verifications
+    WHERE verification_token = in_user_email_verification_token
+    AND expires_at > NOW()
+    AND verified_at IS NULL;
+
+    -- Update the user_email_verifications table
+    UPDATE user_email_verifications
+    SET verified_at = NOW()
+    WHERE verification_token = in_user_email_verification_token
+    AND expires_at > NOW()
+    AND verified_at IS NULL;
+END;
+$$;
+`
+    
 
 // Create a stored procedure that creates a new user
 export const CREATE_CREATE_USER_PROC = `

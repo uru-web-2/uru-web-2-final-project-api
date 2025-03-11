@@ -98,7 +98,9 @@ export async function sendWelcomeEmail(email, name) {
 }
 
 // Send email verification
-export async function sendVerificationEmail(email, name, link) {
+export async function sendVerificationEmail(email, name, token) {
+    const link = `${process.env.URU_WEB_2_FINAL_PROJECT_VERIFY_EMAIL_URL}/${token}`
+
     const emailParams = new EmailParams()
         .setFrom(MAILER_SEND_SENT_FROM)
         .setTo([new Recipient(email, name)])
@@ -111,7 +113,9 @@ export async function sendVerificationEmail(email, name, link) {
 }
 
 // Send password reset
-export async function sendResetPassword(email, name, link) {
+export async function sendResetPassword(email, name, token) {
+    const link = `${process.env.URU_WEB_2_FINAL_PROJECT_RESET_PASSWORD_URL}/${token}`
+
     const emailParams = new EmailParams()
         .setFrom(MAILER_SEND_SENT_FROM)
         .setTo([new Recipient(email, name)])

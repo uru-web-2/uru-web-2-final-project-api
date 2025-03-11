@@ -6,10 +6,13 @@ import Session, {checkSession} from "./session.js";
 import Logger from "./logger.js";
 import DatabaseManager from "./database.js";
 import ErrorHandler from "./handler.js";
-import {EXECUTE, LOG_IN, SIGN_UP} from "./model.js";
+import {EXECUTE, LOG_IN, SIGN_UP, VERIFY_EMAIL} from "./model.js";
 import {
+    CREATE_USER_EMAIL_VERIFICATION_PROC,
     CREATE_USER_PROC,
-    LOG_IN_PROC
+    GET_USER_EMAIL_BY_USER_ID_PROC,
+    GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
+    LOG_IN_PROC, VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC
 } from "../database/model/storedProcedures.js";
 import {GET_ALL_USER_PROFILES_FN,} from "../database/model/functions.js";
 import {
@@ -68,6 +71,18 @@ export class Dispatcher {
 
         // Set the execute route
         this.#app.post("/execute", checkSession, this.Execute)
+
+        // Set the send verification email route
+        this.#app.post("/send-email-verification", checkSession, this.SendVerificationEmail)
+
+        // Set the verify email route
+        this.#app.post("/verify-email", checkSession, this.VerifyEmail)
+
+        // Set the forgot password route
+        this.#app.post("/forgot-password", this.ForgotPassword)
+
+        // Set the reset password route
+        this.#app.post("/reset-password", checkSession, this.ResetPassword)
 
         // Add the error catcher middleware
         this.#app.use(ErrorHandler.errorCatcher())
@@ -139,11 +154,12 @@ export class Dispatcher {
             // Send the response
             res.status(200).json(SuccessJSendBody())
 
-            // Send the welcome and verification email
-            await sendWelcomeEmail(body.email, body.first_name)
+            // Send the welcome and verification emails
+            const fullName = body.first_name + " " + body.last_name
+            await sendWelcomeEmail(body.email, fullName)
 
             // Send the verification email
-            await sendVerificationEmail(body.email, emailVerificationToken)
+            await sendVerificationEmail(body.email, fullName, emailVerificationToken)
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
@@ -211,7 +227,7 @@ export class Dispatcher {
                 throw new FieldFailError(401, "password", "incorrect password")
 
             // Get the user profiles
-            const userProfiles = await DatabaseManager.rawQuery(
+            const profilesRes = await DatabaseManager.rawQuery(
                 GET_ALL_USER_PROFILES_FN,
                 userID
             )
@@ -219,12 +235,12 @@ export class Dispatcher {
             // Parse the user profiles
             const parsedUserProfiles = []
             const parsedUserProfilesNames = []
-            for (let i = 0; i < userProfiles.rows.length; i++) {
+            for (let i = 0; i < profilesRes.rows.length; i++) {
                 parsedUserProfiles.push({
-                    name: userProfiles.rows[i]?.name,
-                    id: userProfiles.rows[i]?.id
+                    name: profilesRes.rows[i]?.name,
+                    id: profilesRes.rows[i]?.id
                 })
-                parsedUserProfilesNames.push(userProfiles.rows[i]?.name)
+                parsedUserProfilesNames.push(profilesRes.rows[i]?.name)
             }
 
             // Check if the user has multiple profiles
@@ -298,6 +314,73 @@ export class Dispatcher {
             // Handle the request
             await Security.executeMethod(modules, object, method, req, res)
         } catch (error) {
+            // Pass the error to the error handler
+            next(error)
+        }
+    }
+
+    // Handle the send verification email request
+    GET_USER_EMAIL_INFO_BY_USER_ID_PROC;
+    async SendVerificationEmail(req, res, next) {
+        try {
+            // Generate a random token
+            const emailVerificationToken = uuidv4()
+
+            // Get the user email information by the user ID
+            const queryRes = await DatabaseManager.rawQuery(
+                this.GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
+                req.session.userID,
+                null,
+                null,
+                null,
+            )
+            const firstName = queryRes.rows[0]?.out_user_first_name
+            const lastName = queryRes.rows[0]?.out_user_last_name
+            const fullName = firstName + " " + lastName
+            const emailID = queryRes.rows[0]?.out_user_email_id
+            const email = queryRes.rows[0]?.out_user_email
+
+            // Create the user with the new email verification token
+            await DatabaseManager.rawQuery(CREATE_USER_EMAIL_VERIFICATION_PROC,
+                emailID,
+                emailVerificationToken,
+                EMAIL_VERIFICATION_TOKEN_DURATION,
+            )
+
+            // Send the response
+            res.status(200).json(SuccessJSendBody())
+
+            // Send the verification email
+            await sendVerificationEmail(email, fullName, emailVerificationToken)
+        } catch (error) {
+            // Pass the error to the error handler
+            next(error)
+        }
+    }
+
+    // Handle the verify email request
+    async VerifyEmail(req, res, next) {
+        try {
+            // Validate the request
+            const body = HandleValidation(req,
+                res,
+                req => Validate(req, VERIFY_EMAIL)
+            );
+
+            // Verify the email
+            const queryRes = await DatabaseManager.rawQuery(
+                VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC,
+                body.token,
+                null,
+            )
+            const isTokenValid = queryRes.rows[0]?.out_user_email_verification_token_is_valid
+            if (!isTokenValid)
+                throw new FieldFailError(400, "token", "token is invalid")
+
+            // Send the response
+            res.status(200).json(SuccessJSendBody())
+        }
+        catch (error) {
             // Pass the error to the error handler
             next(error)
         }

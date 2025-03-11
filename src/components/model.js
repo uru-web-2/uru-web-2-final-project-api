@@ -28,3 +28,8 @@ export const EXECUTE = Joi.object({
     method: Joi.string().required().min(1),
     parameters: Joi.object()
 })
+
+// Verify email model
+export const VERIFY_EMAIL = Joi.object({
+    token: Joi.string().required().min(1),
+})
