@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS passports (
     passport_number VARCHAR(50) NOT NULL,
     country_id BIGINT NOT NULL,
     deleted_at TIMESTAMP,
+    verified_at TIMESTAMP,
     FOREIGN KEY (country_id) REFERENCES countries(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${PASSPORTS_UNIQUE_NUMBER} ON passports (country_id, passport_number) WHERE deleted_at IS NULL;
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS identity_documents (
     identity_document_number VARCHAR(40) NOT NULL,
     country_id BIGINT NOT NULL,
     deleted_at TIMESTAMP,
+    verified_at TIMESTAMP,
     FOREIGN KEY (country_id) REFERENCES countries(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${IDENTITY_DOCUMENTS_UNIQUE_NUMBER} ON identity_documents (country_id, identity_document_number) WHERE deleted_at IS NULL;

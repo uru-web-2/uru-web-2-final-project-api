@@ -1,11 +1,17 @@
-// Query to create a user personal document
+// Query to create a new user personal document
 export const CREATE_USER_PERSONAL_DOCUMENT_PROC = "CALL create_user_personal_document($1, $2, $3, $4, $5)"
 
-// Query to create a person
+// Query to create a new person
 export const CREATE_PERSON_PROC = "CALL create_person($1, $2, $3, $4, $5, $6, $7)"
 
-// Query to create a user
-export const CREATE_USER_PROC = "CALL create_user($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
+// Query to create a new user email
+export const CREATE_USER_EMAIL_PROC = "CALL create_user_email($1, $2, $3)"
+
+// Query to create a new user email verification
+export const CREATE_USER_EMAIL_VERIFICATION_PROC = "CALL create_user_email_verification($1, $2, $3)"
+
+// Query to create a new user
+export const CREATE_USER_PROC = "CALL create_user($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
 
 // Query to log in a user
 export const LOG_IN_PROC = "CALL log_in($1, $2, $3)"
@@ -34,19 +40,19 @@ export const UPDATE_PROFILE_PROC = "CALL update_profile($1, $2, $3, $4)"
 // Query to delete a profile
 export const DELETE_PROFILE_PROC = "CALL delete_profile($1, $2, $3)"
 
-// Query to create a module
+// Query to create a new module
 export const CREATE_MODULE_PROC = "CALL create_module($1, $2, $3, $4)"
 
-// Query to create an object
+// Query to create a new object
 export const CREATE_OBJECT_PROC = "CALL create_object($1, $2, $3, $4)"
 
-// Query to create a method
+// Query to create a new method
 export const CREATE_METHOD_PROC = "CALL create_method($1, $2, $3, $4)"
 
 // Query to delete all modules
 export const DELETE_ALL_MODULES_PROC = "CALL delete_all_modules($1)"
 
-// Query to create a method with the profiles for the permissions
+// Query to create a new method with the profiles for the permissions
 export const CREATE_METHOD_WITH_PROFILES_PROC = "CALL create_method_with_profiles($1, $2, $3, $4, $5)"
 
 // Query to get the module ID by name

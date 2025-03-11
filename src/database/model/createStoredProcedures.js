@@ -1,6 +1,7 @@
-// Create a stored procedure that creates a user personal document
+// Create a stored procedure that creates a new user personal document
 export const CREATE_CREATE_USER_PERSONAL_DOCUMENT_PROC = `
 CREATE OR REPLACE PROCEDURE create_user_personal_document(
+    IN in_created_by_user_id BIGINT,
     IN in_user_document_country VARCHAR,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR,
@@ -32,11 +33,13 @@ BEGIN
         -- Insert into identity_documents table
         INSERT INTO identity_documents (
             country_id,
-            identity_document_number
+            identity_document_number,
+            created_by_user_id
         )
         VALUES (
             out_country_id,
-            in_user_document_number
+            in_user_document_number,
+            in_created_by_user_id
         )
         RETURNING
             id INTO out_document_id;
@@ -44,7 +47,8 @@ BEGIN
         -- Insert into passports table
         INSERT INTO passports (
             country_id,
-            passport_number
+            passport_number,
+            created_by_user_id
         )
         VALUES (
             out_country_id,
@@ -57,7 +61,7 @@ END;
 $$;
 `
 
-// Create a stored procedure that creates a person
+// Create a stored procedure that creates a new person
 export const CREATE_CREATE_PERSON_PROC = `
 CREATE OR REPLACE PROCEDURE create_person(
     IN in_user_first_name VARCHAR,
@@ -110,6 +114,56 @@ END;
 $$;
 `
 
+// Create a stored procedure that creates a new user email
+export const CREATE_CREATE_USER_EMAIL_PROC = `
+CREATE OR REPLACE PROCEDURE create_user_email(
+    IN in_user_id BIGINT,
+    IN in_user_email VARCHAR,
+    OUT out_user_email_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into user_emails table
+    INSERT INTO user_emails (
+        user_id,
+        email
+    )
+    VALUES (
+        in_user_id,
+        in_user_email
+    )
+    RETURNING
+        id INTO out_user_email_id;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new user email verification
+export const CREATE_CREATE_USER_EMAIL_VERIFICATION_PROC = `
+CREATE OR REPLACE PROCEDURE create_user_email_verification(
+    IN in_user_email_id BIGINT,
+    IN in_user_email_verification_token VARCHAR,
+    IN in_user_email_verification_expires_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into user_email_verifications table
+    INSERT INTO user_email_verifications (
+        user_email_id,
+        verification_token,
+        expires_at
+    )
+    VALUES (
+        in_user_email_id,
+        in_user_email_verification_token,
+        in_user_email_verification_expires_at
+    );
+END;
+$$;
+`
+
 // Create a stored procedure that creates a new user
 export const CREATE_CREATE_USER_PROC = `
 CREATE OR REPLACE PROCEDURE create_user(
@@ -121,6 +175,8 @@ CREATE OR REPLACE PROCEDURE create_user(
 	IN in_user_document_country VARCHAR,
 	IN in_user_document_type VARCHAR,
 	IN in_user_document_number VARCHAR,
+	IN in_user_email_verification_token VARCHAR,
+	IN in_user_email_verification_expires_at TIMESTAMP,
 	OUT out_user_id BIGINT,
 	OUT out_is_country_valid BOOLEAN
 )
@@ -130,6 +186,7 @@ DECLARE
     out_person_id BIGINT;
     out_document_id BIGINT;
     out_profile_id BIGINT;
+    out_user_email_id BIGINT;
 BEGIN
     -- Create the person
     call create_person(in_user_first_name, in_user_last_name, in_user_document_country, in_user_document_type, in_user_document_number, out_is_country_valid, out_person_id);
@@ -155,14 +212,7 @@ BEGIN
 	);
 
 	-- Insert into user_emails table
-	INSERT INTO user_emails (
-		user_id, 
-		email
-	)
-	VALUES (
-		out_user_id, 
-		in_user_email
-	);
+	call create_user_email(out_user_id, in_user_email, out_user_email_id);
 
 	-- Insert into user_password_hashes table
 	INSERT INTO user_password_hashes (
@@ -188,6 +238,9 @@ BEGIN
         out_user_id, 
         out_profile_id
     );
+    
+    -- Create the user email verification
+    call create_user_email_verification(out_user_email_id, in_user_email_verification_token, in_user_email_verification_expires_at);
 END;
 $$;
 `
@@ -765,6 +818,102 @@ BEGIN
     SELECT COUNT(*)
     INTO out_number_of_users
     FROM users;
+END;
+$$;
+`
+
+// Create a stored procedure that updates the user fields to be used by administrators
+export const CREATE_UPDATE_USER_BY_ADMIN_PROC = `
+CREATE OR REPLACE PROCEDURE update_user_by_admin(
+    IN in_updated_by_user_id BIGINT,
+    IN in_user_id BIGINT,
+    IN in_user_first_name VARCHAR,
+    IN in_user_last_name VARCHAR,
+    IN in_user_username VARCHAR,
+    IN in_user_email VARCHAR,
+    IN in_user_document_country VARCHAR,
+    IN in_user_document_type VARCHAR,
+    IN in_user_document_number VARCHAR,
+    OUT out_is_country_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    out_country_id BIGINT;
+    out_person_id BIGINT;
+    out_document_id BIGINT;
+BEGIN
+    -- Get the country ID
+    SELECT 
+        id 
+    INTO out_country_id
+    FROM countries
+    WHERE name = in_user_document_country;
+    
+    -- Check if the country ID is valid
+    IF out_country_id IS NULL THEN
+        out_is_country_valid := FALSE;
+        RETURN;
+    ELSE
+        out_is_country_valid := TRUE;
+    END IF;
+
+    -- Insert into people table according to the document type
+    IF in_user_document_type = 'identity_document' THEN
+        -- Insert into identity_documents table
+        INSERT INTO identity_documents (
+            country_id,
+            identity_document_number
+        )
+        VALUES (
+            out_country_id,
+            in_user_document_number
+        )
+        RETURNING
+            id INTO out_document_id;
+        
+        -- Update the people table
+        UPDATE people
+        SET first_name = in_user_first_name,
+            last_name = in_user_last_name,
+            identity_document_id = out_document_id
+        WHERE id = in_user_id;
+    ELSE
+        -- Insert into passports table
+        INSERT INTO passports (
+            country_id,
+            passport_number
+        )
+        VALUES (
+            out_country_id,
+            in_user_document_number
+        )
+        RETURNING
+            id INTO out_document_id;
+        
+        -- Update the people table
+        UPDATE people
+        SET first_name = in_user_first_name,
+            last_name = in_user_last_name,
+            passport_id = out_document_id
+        WHERE id = in_user_id;
+    END IF;    
+        
+    -- Update the users table
+    UPDATE users
+    SET updated_at = NOW(),
+        updated_by_user_id = in_updated_by_user_id
+    WHERE id = in_user_id;
+
+    -- Update the user_usernames table
+    UPDATE user_usernames
+    SET username = in_user_username
+    WHERE user_id = in_user_id;
+
+    -- Update the user_emails table
+    UPDATE user_emails
+    SET email = in_user_email
+    WHERE user_id = in_user_id;
 END;
 $$;
 `

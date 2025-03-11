@@ -1,3 +1,4 @@
+import {v4 as uuidv4} from "uuid";
 import express from "express";
 import helmet from "helmet";
 import bcrypt from "bcrypt";
@@ -27,6 +28,10 @@ import {
     SuccessJSendBody
 } from "@ralvarezdev/js-express";
 import Security from "./security.js";
+import {
+    EMAIL_VERIFICATION_TOKEN_DURATION, sendVerificationEmail,
+    sendWelcomeEmail
+} from "./mailersend.js";
 
 // Dispatcher for handling requests
 export class Dispatcher {
@@ -97,6 +102,9 @@ export class Dispatcher {
             // Hash the password
             body.password_hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS)
 
+            // Generate a random token
+            const emailVerificationToken = uuidv4()
+
             // Create the user
             let userID
             const queryRes = await DatabaseManager.rawQuery(CREATE_USER_PROC,
@@ -108,6 +116,8 @@ export class Dispatcher {
                 body.document_country,
                 body.document_type,
                 body.document_number,
+                emailVerificationToken,
+                EMAIL_VERIFICATION_TOKEN_DURATION,
                 null,
                 null
             )
@@ -128,6 +138,12 @@ export class Dispatcher {
 
             // Send the response
             res.status(200).json(SuccessJSendBody())
+
+            // Send the welcome and verification email
+            await sendWelcomeEmail(body.email, body.first_name)
+
+            // Send the verification email
+            await sendVerificationEmail(body.email, emailVerificationToken)
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
