@@ -98,6 +98,61 @@ export class Dispatcher {
         })
     }
 
+    // Validate new password
+    ValidateNewPassword(password) {
+        // Check if the password is valid
+        if (password.length < 10)
+            throw new FieldFailError(400,
+                "password",
+                "password must be at least 10 characters long"
+            )
+
+        // Check if the password contains a lowercase letter
+        if (!/[a-z]/.test(password))
+            throw new FieldFailError(400,
+                "password",
+                "password must contain a lowercase letter"
+            )
+
+        // Check if the password contains an uppercase letter
+        if (!/[A-Z]/.test(password))
+            throw new FieldFailError(400,
+                "password",
+                "password must contain an uppercase letter"
+            )
+
+        // Check if the password contains a number
+        if (!/[0-9]/.test(password))
+            throw new FieldFailError(400,
+                "password",
+                "password must contain a number"
+            )
+
+        // Check if the password contains a special character
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
+            throw new FieldFailError(400,
+                "password",
+                "password must contain a special character"
+            )
+    }
+
+    // Validate a new username
+    ValidateNewUsername(username) {
+        // Check if the username contains whitespaces
+        if (username.includes(" "))
+            throw new FieldFailError(400,
+                "username",
+                "username cannot contain spaces"
+            )
+
+        // Check if the username contains only alphanumeric characters
+        if (!/^[a-zA-Z0-9]*$/.test(username))
+            throw new FieldFailError(400,
+                "username",
+                "username can only contain alphanumeric characters"
+            )
+    }
+
     // Handle the signup request
     async SignUp(req, res, next) {
         try {
@@ -107,12 +162,11 @@ export class Dispatcher {
                 req => Validate(req, SIGN_UP)
             );
 
-            // Check if the username contains whitespaces
-            if (body.username.includes(" "))
-                throw new FieldFailError(400,
-                    "username",
-                    "username cannot contain spaces"
-                )
+            // Validate the password
+            this.ValidateNewPassword(req.body.password)
+
+            // Validate the username
+            this.ValidateNewUsername(req.body.username)
 
             // Hash the password
             body.password_hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS)
@@ -320,7 +374,6 @@ export class Dispatcher {
     }
 
     // Handle the send verification email request
-    GET_USER_EMAIL_INFO_BY_USER_ID_PROC;
     async SendVerificationEmail(req, res, next) {
         try {
             // Generate a random token
@@ -328,7 +381,7 @@ export class Dispatcher {
 
             // Get the user email information by the user ID
             const queryRes = await DatabaseManager.rawQuery(
-                this.GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
+                GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
                 req.session.userID,
                 null,
                 null,

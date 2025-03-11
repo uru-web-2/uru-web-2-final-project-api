@@ -235,7 +235,6 @@ BEGIN
 END;
 $$;
 `
-    
 
 // Create a stored procedure that creates a new user
 export const CREATE_CREATE_USER_PROC = `

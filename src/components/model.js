@@ -31,5 +31,11 @@ export const EXECUTE = Joi.object({
 
 // Verify email model
 export const VERIFY_EMAIL = Joi.object({
-    token: Joi.string().required().min(1),
+    token: Joi.string().required().uuid()
+})
+
+// Reset password model
+export const RESET_PASSWORD = Joi.object({
+    token: Joi.string().required().uuid(),
+    password: Joi.string().required().min(1)
 })
