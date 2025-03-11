@@ -1,5 +1,8 @@
+// Query to get a country ID by name
+export const GET_COUNTRY_ID_BY_NAME_PROC = "CALL get_country_id_by_name($1, $2)"
+
 // Query to create a new user personal document
-export const CREATE_USER_PERSONAL_DOCUMENT_PROC = "CALL create_user_personal_document($1, $2, $3, $4, $5)"
+export const CREATE_USER_PERSONAL_DOCUMENT_PROC = "CALL create_user_personal_document($1, $2, $3, $4, $5, $6)"
 
 // Query to create a new person
 export const CREATE_PERSON_PROC = "CALL create_person($1, $2, $3, $4, $5, $6, $7)"

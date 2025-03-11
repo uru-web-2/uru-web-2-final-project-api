@@ -1,8 +1,4 @@
 import {EmailParams, MailerSend, Recipient, Sender} from "mailersend";
-import parseDuration from "parse-duration"
-
-// Email verification token duration
-export const EMAIL_VERIFICATION_TOKEN_DURATION = parseDuration(process.env.URU_WEB_2_FINAL_PROJECT_EMAIL_VERIFICATION_TOKEN_DURATION)
 
 // MailerSend client
 const MAILER_SEND = new MailerSend({
@@ -113,7 +109,7 @@ export async function sendVerificationEmail(email, name, token) {
 }
 
 // Send password reset
-export async function sendResetPassword(email, name, token) {
+export async function sendResetPasswordEmail(email, name, token) {
     const link = `${process.env.URU_WEB_2_FINAL_PROJECT_RESET_PASSWORD_URL}/${token}`
 
     const emailParams = new EmailParams()

@@ -111,8 +111,7 @@ BEGIN
     RETURN QUERY
     SELECT profiles.id, profiles.name
     FROM profiles
-    INNER JOIN user_profiles
-    ON profiles.id = user_profiles.profile_id
+    INNER JOIN user_profiles ON profiles.id = user_profiles.profile_id
     WHERE user_profiles.user_id = in_user_id
     AND user_profiles.revoked_at IS NULL;
 END;
@@ -135,13 +134,11 @@ BEGIN
     RETURN QUERY
     SELECT methods.id, methods.name
     FROM permissions
-    INNER JOIN methods
-    ON permissions.method_id = methods.id
-    INNER JOIN objects
-    ON methods.object_id = objects.id
+    INNER JOIN methods ON permissions.method_id = methods.id
+    INNER JOIN objects ON methods.object_id = objects.id
     WHERE permissions.profile_id = in_profile_id
     AND objects.module_id = in_module_id
-    WHERE profile_id = in_profile_id
+    AND profile_id = in_profile_id
     AND object_id = in_object_id
     AND module_id = in_module_id
     AND revoked_at IS NULL;
@@ -184,12 +181,9 @@ BEGIN
     RETURN QUERY
     SELECT users.id AS user_id, people.first_name AS user_first_name, people.last_name AS user_last_name, user_emails.email AS user_email, user_usernames.username AS user_username
     FROM users
-    INNER JOIN people
-    ON users.person_id = people.id
-    INNER JOIN user_emails
-    ON users.id = user_emails.user_id
-    INNER JOIN user_usernames
-    ON users.id = user_usernames.user_id
+    INNER JOIN people ON users.person_id = people.id
+    INNER JOIN user_emails ON users.id = user_emails.user_id
+    INNER JOIN user_usernames ON users.id = user_usernames.user_id
     WHERE user_usernames.username LIKE in_username;
 END;
 $$ LANGUAGE plpgsql;
@@ -210,7 +204,7 @@ BEGIN
     RETURN QUERY
     SELECT profiles.id AS profile_id, profiles.name AS profile_name, profiles.description AS profile_description
     FROM profiles
-    WHERE profiles.name LIKE in_name
+    WHERE profiles.name LIKE in_name;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -252,12 +246,9 @@ BEGIN
     RETURN QUERY
     SELECT users.id AS user_id, people.first_name AS user_first_name, people.last_name AS user_last_name, user_emails.email AS user_email, user_usernames.username AS user_username
     FROM users
-    INNER JOIN people
-    ON users.person_id = people.id
-    INNER JOIN user_emails
-    ON users.id = user_emails.user_id
-    INNER JOIN user_usernames
-    ON users.id = user_usernames.user_id
+    INNER JOIN people ON users.person_id = people.id
+    INNER JOIN user_emails ON users.id = user_emails.user_id
+    INNER JOIN user_usernames ON users.id = user_usernames.user_id
     ORDER BY users.id
     OFFSET in_offset
     LIMIT in_limit;

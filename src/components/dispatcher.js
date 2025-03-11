@@ -6,11 +6,16 @@ import Session, {checkSession} from "./session.js";
 import Logger from "./logger.js";
 import DatabaseManager from "./database.js";
 import ErrorHandler from "./handler.js";
-import {EXECUTE, LOG_IN, SIGN_UP, VERIFY_EMAIL} from "./model.js";
+import {
+    EXECUTE,
+    FORGOT_PASSWORD,
+    LOG_IN,
+    SIGN_UP,
+    VERIFY_EMAIL
+} from "./model.js";
 import {
     CREATE_USER_EMAIL_VERIFICATION_PROC,
     CREATE_USER_PROC,
-    GET_USER_EMAIL_BY_USER_ID_PROC,
     GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
     LOG_IN_PROC, VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC
 } from "../database/model/storedProcedures.js";
@@ -32,9 +37,11 @@ import {
 } from "@ralvarezdev/js-express";
 import Security from "./security.js";
 import {
-    EMAIL_VERIFICATION_TOKEN_DURATION, sendVerificationEmail,
+    sendResetPasswordEmail,
+    sendVerificationEmail,
     sendWelcomeEmail
 } from "./mailersend.js";
+import {EMAIL_VERIFICATION_TOKEN_DURATION} from "./constants.js";
 
 // Dispatcher for handling requests
 export class Dispatcher {
@@ -82,7 +89,7 @@ export class Dispatcher {
         this.#app.post("/forgot-password", this.ForgotPassword)
 
         // Set the reset password route
-        this.#app.post("/reset-password", checkSession, this.ResetPassword)
+        // this.#app.post("/reset-password", checkSession, this.ResetPassword)
 
         // Add the error catcher middleware
         this.#app.use(ErrorHandler.errorCatcher())
@@ -176,7 +183,7 @@ export class Dispatcher {
 
             // Create the user
             let userID
-            const queryRes = await DatabaseManager.rawQuery(CREATE_USER_PROC,
+              const queryRes = await DatabaseManager.rawQuery(CREATE_USER_PROC,
                 body.first_name,
                 body.last_name,
                 body.username,
@@ -434,6 +441,50 @@ export class Dispatcher {
             res.status(200).json(SuccessJSendBody())
         }
         catch (error) {
+            // Pass the error to the error handler
+            next(error)
+        }
+    }
+
+    // Handle the forgot password request
+    async ForgotPassword(req, res, next) {
+        try {
+            // Validate the request
+            const body = HandleValidation(req,
+                res,
+                req => Validate(req, FORGOT_PASSWORD)
+            );
+
+            // Generate a random token
+            const resetPasswordToken = uuidv4()
+
+            // Get the user email information by the user ID
+            const queryRes = await DatabaseManager.rawQuery(
+                GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
+                req.session.userID,
+                null,
+                null,
+                null,
+            )
+            const firstName = queryRes.rows[0]?.out_user_first_name
+            const lastName = queryRes.rows[0]?.out_user_last_name
+            const fullName = firstName + " " + lastName
+            const emailID = queryRes.rows[0]?.out_user_email_id
+            const email = queryRes.rows[0]?.out_user_email
+
+            // Create the new reset password token
+            await DatabaseManager.rawQuery(CREATE_USER_EMAIL_VERIFICATION_PROC,
+                emailID,
+                resetPasswordToken,
+                EMAIL_VERIFICATION_TOKEN_DURATION,
+            )
+
+            // Send the response
+            res.status(200).json(SuccessJSendBody())
+
+            // Send the reset password email
+            await sendResetPasswordEmail(email, fullName, resetPasswordToken)
+        } catch (error) {
             // Pass the error to the error handler
             next(error)
         }

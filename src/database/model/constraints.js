@@ -13,6 +13,9 @@ export const USER_EMAILS_UNIQUE_USER_ID = 'user_emails_unique_user_id';
 // Unique user email ID constraint for the user_email_verifications table
 export const USER_EMAIL_VERIFICATIONS_UNIQUE_USER_EMAIL_ID = 'user_email_verifications_unique_user_email_id';
 
+// Unique user ID constraint for the user_reset_password_tokens table
+export const USER_RESET_PASSWORD_TOKENS_UNIQUE_USER_ID = 'user_reset_password_tokens_unique_user_id';
+
 // Unique parent module ID and name constraint for the modules table
 export const MODULES_UNIQUE_PARENT_MODULE_ID_NAME = 'modules_unique_parent_module_id_name';
 
@@ -55,8 +58,8 @@ export const USER_PROFILES_UNIQUE_USER_ID_PROFILE_ID = 'user_profiles_unique_use
 // Unique user ID for the user_password_hashes table
 export const USER_PASSWORD_HASHES_UNIQUE_USER_ID = 'user_password_hashes_unique_user_id';
 
-// Unique floor section for the locations table
-export const LOCATIONS_UNIQUE_FLOOR_SECTION = 'locations_unique_floor_section';
+// Unique floor area for the locations table
+export const LOCATIONS_UNIQUE_FLOOR_AREA = 'locations_unique_floor_area';
 
 // Unique document ID and author ID for the document_authors table
 export const DOCUMENT_AUTHORS_UNIQUE_DOCUMENT_ID_AUTHOR_ID = 'document_authors_unique_document_id_author_id';
@@ -73,8 +76,8 @@ export const BOOKS_UNIQUE_ISBN = 'books_unique_isbn';
 // Unique language name for the languages table
 export const LANGUAGES_UNIQUE_NAME = 'languages_unique_name';
 
-// Unique book ID and language ID for the book_models table
-export const BOOK_MODELS_UNIQUE_BOOK_ID_LANGUAGE_ID = 'book_models_unique_book_id_language_id';
+// Unique document ID and language ID for the document_languages table
+export const DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID = 'document_languages_unique_document_id_language_id';
 
 //Unique UUID for the book_copies table
 export const BOOK_COPIES_UNIQUE_UUID = 'book_copies_unique_uuid';

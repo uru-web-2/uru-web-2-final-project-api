@@ -34,6 +34,11 @@ export const VERIFY_EMAIL = Joi.object({
     token: Joi.string().required().uuid()
 })
 
+// Forgot password model
+export const FORGOT_PASSWORD = Joi.object({
+    email: Joi.string().email().required().email()
+})
+
 // Reset password model
 export const RESET_PASSWORD = Joi.object({
     token: Joi.string().required().uuid(),

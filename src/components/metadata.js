@@ -23,10 +23,10 @@ AddMetadataProfiles(Security,
 AddMetadataProfiles(Security, "GetModules", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security, "GetObjectsByModuleID", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security, "GetMethodsByObjectID", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Security, "AssignUserProfile", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Security, "RevokeUserProfile", PROFILES.SUPER_ADMIN)
 
 // - User object
-AddMetadataProfiles(User, "AssignUserProfile", PROFILES.SUPER_ADMIN)
-AddMetadataProfiles(User, "RevokeUserProfile", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(User, "SearchUserByUsername", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(User, "CreateUser", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(User, "GetUserDetailsByUserID", PROFILES.SUPER_ADMIN)

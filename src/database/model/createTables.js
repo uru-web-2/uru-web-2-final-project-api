@@ -1,13 +1,13 @@
 import {
     BOOK_COPIES_UNIQUE_UUID,
-    BOOK_MODELS_UNIQUE_BOOK_ID_LANGUAGE_ID,
+    DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID,
     BOOKS_UNIQUE_ISBN,
     COUNTRIES_UNIQUE_NAME,
     DOCUMENT_AUTHORS_UNIQUE_DOCUMENT_ID_AUTHOR_ID,
     DOCUMENT_TOPICS_UNIQUE_DOCUMENT_ID_TOPIC_ID,
     IDENTITY_DOCUMENTS_UNIQUE_NUMBER,
     LANGUAGES_UNIQUE_NAME,
-    LOCATIONS_UNIQUE_FLOOR_SECTION,
+    LOCATIONS_UNIQUE_FLOOR_AREA,
     METHODS_UNIQUE_OBJECT_ID_NAME,
     MODULES_UNIQUE_NAME,
     MODULES_UNIQUE_PARENT_MODULE_ID_NAME,
@@ -23,6 +23,7 @@ import {
     USER_EMAILS_UNIQUE_USER_ID,
     USER_PASSWORD_HASHES_UNIQUE_USER_ID,
     USER_PROFILES_UNIQUE_USER_ID_PROFILE_ID,
+    USER_RESET_PASSWORD_TOKENS_UNIQUE_USER_ID,
     USER_USERNAMES_UNIQUE_USER_ID,
     USER_USERNAMES_UNIQUE_USERNAME,
     USERS_UNIQUE_PERSON
@@ -150,9 +151,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS ${USER_EMAILS_UNIQUE_EMAIL} ON user_emails (em
 CREATE UNIQUE INDEX IF NOT EXISTS ${USER_EMAILS_UNIQUE_USER_ID} ON user_emails (user_id) WHERE revoked_at IS NULL;
 `
 
-// Query to create the user_email_verifications table
-export const CREATE_USER_EMAIL_VERIFICATIONS = `
-CREATE TABLE IF NOT EXISTS user_email_verifications (
+// Query to create the user_email_verification_tokens table
+export const CREATE_USER_EMAIL_VERIFICATION_TOKENS = `
+CREATE TABLE IF NOT EXISTS user_email_verification_tokens (
     id BIGSERIAL PRIMARY KEY,
     user_email_id BIGINT NOT NULL,
     verification_token VARCHAR(255) NOT NULL,
@@ -162,7 +163,22 @@ CREATE TABLE IF NOT EXISTS user_email_verifications (
     revoked_at TIMESTAMP,
     FOREIGN KEY (user_email_id) REFERENCES user_emails(id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ${USER_EMAIL_VERIFICATIONS_UNIQUE_USER_EMAIL_ID} ON user_email_verifications (user_email_id) WHERE revoked_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ${USER_EMAIL_VERIFICATIONS_UNIQUE_USER_EMAIL_ID} ON user_email_verification_tokens (user_email_id) WHERE revoked_at IS NULL;
+`
+
+// Query to create the reset_password_tokens table
+export const CREATE_USER_RESET_PASSWORD_TOKENS = `
+CREATE TABLE IF NOT EXISTS user_reset_password_tokens (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    reset_token VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMP NOT NULL,
+    used_at TIMESTAMP,
+    revoked_at TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS ${USER_RESET_PASSWORD_TOKENS_UNIQUE_USER_ID} ON user_reset_password_tokens (user_id) WHERE revoked_at IS NULL;
 `
 
 // Query to create the modules table
@@ -330,7 +346,7 @@ CREATE TABLE IF NOT EXISTS locations (
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ${LOCATIONS_UNIQUE_FLOOR_SECTION} ON locations (floor, section);
+CREATE UNIQUE INDEX IF NOT EXISTS ${LOCATIONS_UNIQUE_FLOOR_AREA} ON locations (floor, area);
 `;
 
 // Query to create the location_sections table
@@ -375,7 +391,7 @@ CREATE TABLE IF NOT EXISTS document_locations (
     assigned_by_user_id BIGINT NOT NULL,
     removed_by_user_id BIGINT,
     FOREIGN KEY (document_id) REFERENCES documents(id),
-    FOREIGN KEY (location_section_id) REFERENCES location_section_id(id),
+    FOREIGN KEY (location_section_id) REFERENCES location_sections(id),
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
@@ -484,7 +500,7 @@ CREATE TABLE IF NOT EXISTS document_languages (
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ${BOOK_MODELS_UNIQUE_BOOK_ID_LANGUAGE_ID} ON document_languages (book_id, language_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID} ON document_languages (document_id, language_id);
 `;
 
 // Query to create the book_versions table
@@ -501,7 +517,6 @@ CREATE TABLE IF NOT EXISTS book_versions (
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ${BOOK_MODELS_UNIQUE_BOOK_ID_LANGUAGE_ID} ON book_versions (book_id, language_id);
 `;
 
 // Query to create the book_copies table
