@@ -1,12 +1,15 @@
 import DatabaseManager from "../../components/database.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
 import {
-    ASSIGN_PROFILE_PERMISSION_PROC, ASSIGN_USER_PROFILE_PROC,
-    REVOKE_PROFILE_PERMISSION_PROC, REVOKE_USER_PROFILE_PROC,
+    ASSIGN_PROFILE_PERMISSION_PROC,
+    ASSIGN_USER_PROFILE_PROC,
+    REVOKE_PROFILE_PERMISSION_PROC,
+    REVOKE_USER_PROFILE_PROC,
 } from "../../database/model/storedProcedures.js";
 import {
+    GET_ALL_MODULES_FN,
     GET_METHODS_BY_OBJECT_ID_FN,
-    GET_ALL_MODULES_FN, GET_OBJECTS_BY_MODULE_ID_FN,
+    GET_OBJECTS_BY_MODULE_ID_FN,
     GET_PROFILE_PERMISSIONS_METHODS_FN
 } from "../../database/model/functions.js";
 import Security from "../../components/security.js";

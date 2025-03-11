@@ -16,7 +16,10 @@ AddMetadataProfiles(Profile, "GetAllProfiles", PROFILES.SUPER_ADMIN)
 // - Security object
 AddMetadataProfiles(Security, "AssignProfilePermission", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security, "RevokeProfilePermission", PROFILES.SUPER_ADMIN)
-AddMetadataProfiles(Security, "GetProfilePermissionsMethods", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Security,
+    "GetProfilePermissionsMethods",
+    PROFILES.SUPER_ADMIN
+)
 AddMetadataProfiles(Security, "GetModules", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security, "GetObjectsByModuleID", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security, "GetMethodsByObjectID", PROFILES.SUPER_ADMIN)

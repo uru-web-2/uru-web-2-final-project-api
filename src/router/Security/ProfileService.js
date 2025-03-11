@@ -58,7 +58,7 @@ export class ProfileService {
             if (queryRow?.out_is_profile_id_valid === false)
                 throw new FieldFailError('id', 'Profile ID is invalid');
 
-             // Update the profile to the security component
+            // Update the profile to the security component
             Security.updateProfile(body.id, body.name)
         } catch (error) {
             // Check if it is a constraint violation error

@@ -8,7 +8,9 @@ export const SIGN_UP = Joi.object({
     password: Joi.string().required().min(1),
     email: Joi.string().email().required().email(),
     document_number: Joi.string().required().min(1),
-    document_type: Joi.string().required().valid('identity_document', 'passport'),
+    document_type: Joi.string().required().valid('identity_document',
+        'passport'
+    ),
     document_country: Joi.string().required().min(1),
 })
 

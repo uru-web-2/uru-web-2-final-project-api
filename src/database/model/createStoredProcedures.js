@@ -1,24 +1,16 @@
-// Create a stored procedure that creates a new user
-export const CREATE_CREATE_USER_PROC = `
-CREATE OR REPLACE PROCEDURE create_user(
-	IN in_user_first_name VARCHAR,
-	IN in_user_last_name VARCHAR,
-	IN in_user_username VARCHAR,
-	IN in_user_email VARCHAR,
-	IN in_user_password_hash VARCHAR,
-	IN in_user_document_country VARCHAR,
-	IN in_user_document_type VARCHAR,
-	IN in_user_document_number VARCHAR,
-	OUT out_user_id BIGINT,
-	OUT out_is_country_valid BOOLEAN
+// Create a stored procedure that creates a user personal document
+export const CREATE_CREATE_USER_PERSONAL_DOCUMENT_PROC = `
+CREATE OR REPLACE PROCEDURE create_user_personal_document(
+    IN in_user_document_country VARCHAR,
+    IN in_user_document_type VARCHAR,
+    IN in_user_document_number VARCHAR,
+    OUT out_is_country_valid BOOLEAN,
+    OUT out_document_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     out_country_id BIGINT;
-    out_person_id BIGINT;
-    out_document_id BIGINT;
-    out_profile_id BIGINT;
 BEGIN
     -- Get the country ID
     SELECT 
@@ -48,7 +40,44 @@ BEGIN
         )
         RETURNING
             id INTO out_document_id;
-        
+    ELSE
+        -- Insert into passports table
+        INSERT INTO passports (
+            country_id,
+            passport_number
+        )
+        VALUES (
+            out_country_id,
+            in_user_document_number
+        )
+        RETURNING
+            id INTO out_document_id;
+    END IF;
+END;    
+$$;
+`
+
+// Create a stored procedure that creates a person
+export const CREATE_CREATE_PERSON_PROC = `
+CREATE OR REPLACE PROCEDURE create_person(
+    IN in_user_first_name VARCHAR,
+    IN in_user_last_name VARCHAR,
+    IN in_user_document_country VARCHAR,
+    IN in_user_document_type VARCHAR,
+    IN in_user_document_number VARCHAR,
+    OUT out_is_country_valid BOOLEAN,
+    OUT out_person_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    out_document_id BIGINT;
+BEGIN
+    -- Create the user personal document
+    call create_user_personal_document(in_user_document_country, in_user_document_type, in_user_document_number, out_is_country_valid, out_document_id);
+
+    -- Insert into people table according to the document type
+    IF in_user_document_type = 'identity_document' THEN        
         -- Insert into people table
         INSERT INTO people (
             first_name,
@@ -62,19 +91,7 @@ BEGIN
         )
         RETURNING
             id INTO out_person_id;
-    ELSE
-        -- Insert into passports table
-        INSERT INTO passports (
-            country_id,
-            passport_number
-        )
-        VALUES (
-            out_country_id,
-            in_user_document_number
-        )
-        RETURNING
-            id INTO out_document_id;
-        
+    ELSE        
         -- Insert into people table
         INSERT INTO people (
             first_name,
@@ -88,7 +105,34 @@ BEGIN
         )
         RETURNING
             id INTO out_person_id;
-    END IF;    
+    END IF;
+END;    
+$$;
+`
+
+// Create a stored procedure that creates a new user
+export const CREATE_CREATE_USER_PROC = `
+CREATE OR REPLACE PROCEDURE create_user(
+	IN in_user_first_name VARCHAR,
+	IN in_user_last_name VARCHAR,
+	IN in_user_username VARCHAR,
+	IN in_user_email VARCHAR,
+	IN in_user_password_hash VARCHAR,
+	IN in_user_document_country VARCHAR,
+	IN in_user_document_type VARCHAR,
+	IN in_user_document_number VARCHAR,
+	OUT out_user_id BIGINT,
+	OUT out_is_country_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    out_person_id BIGINT;
+    out_document_id BIGINT;
+    out_profile_id BIGINT;
+BEGIN
+    -- Create the person
+    call create_person(in_user_first_name, in_user_last_name, in_user_document_country, in_user_document_type, in_user_document_number, out_is_country_valid, out_person_id);
         
 	-- Insert into users table
 	INSERT INTO users (
@@ -269,6 +313,40 @@ BEGIN
         in_profile_id,
         in_assigned_by_user_id
     );
+END;
+$$;
+`
+
+// Create a stored procedure that revokes a profile from a user
+export const CREATE_REVOKE_USER_PROFILE_PROC = `
+CREATE OR REPLACE PROCEDURE revoke_user_profile(
+    IN in_revoked_by_user_id BIGINT,
+    IN in_user_username VARCHAR,
+    IN in_profile_id BIGINT,
+    OUT out_is_profile_id_valid BOOLEAN,
+    OUT out_user_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Get the user ID
+    call get_user_id_by_username(in_user_username, out_user_id);
+    
+    -- Check if the user ID is valid
+    IF out_user_id IS NULL THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the profile ID is valid
+    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
+    
+    -- Update the user_profiles table
+    UPDATE user_profiles
+    SET revoked_at = NOW(),
+        revoked_by_user_id = in_revoked_by_user_id
+    WHERE user_id = out_user_id
+    AND profile_id = in_profile_id
+    AND revoked_at IS NULL;
 END;
 $$;
 `

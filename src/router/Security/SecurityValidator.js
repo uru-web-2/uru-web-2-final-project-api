@@ -5,7 +5,8 @@ import {
     GET_METHODS_BY_OBJECT_ID,
     GET_OBJECTS_BY_MODULE_ID,
     GET_PROFILE_PERMISSIONS_METHODS,
-    REVOKE_PROFILE_PERMISSION, REVOKE_USER_PROFILE
+    REVOKE_PROFILE_PERMISSION,
+    REVOKE_USER_PROFILE
 } from "./SecurityModel.js";
 
 // Validator for the security object
@@ -35,7 +36,7 @@ export class SecurityValidator {
         return Validate(req, GET_METHODS_BY_OBJECT_ID);
     }
 
-        // Validate assign user profile
+    // Validate assign user profile
     AssignUserProfile(req) {
         return Validate(req, ASSIGN_USER_PROFILE);
     }

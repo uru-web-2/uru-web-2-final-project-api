@@ -1,3 +1,9 @@
+// Query to create a user personal document
+export const CREATE_USER_PERSONAL_DOCUMENT_PROC = "CALL create_user_personal_document($1, $2, $3, $4, $5)"
+
+// Query to create a person
+export const CREATE_PERSON_PROC = "CALL create_person($1, $2, $3, $4, $5, $6, $7)"
+
 // Query to create a user
 export const CREATE_USER_PROC = "CALL create_user($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
 

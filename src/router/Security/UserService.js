@@ -1,6 +1,7 @@
 import DatabaseManager from "../../components/database.js";
 import {
-    CREATE_USER_PROC, GET_NUMBER_OF_USERS_PROC,
+    CREATE_USER_PROC,
+    GET_NUMBER_OF_USERS_PROC,
 } from "../../database/model/storedProcedures.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
 import {
@@ -12,7 +13,8 @@ import {SALT_ROUNDS} from "../../components/bcrypt.js";
 import bcrypt from "bcrypt";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {
-    IDENTITY_DOCUMENTS_UNIQUE_NUMBER, PASSPORTS_UNIQUE_NUMBER,
+    IDENTITY_DOCUMENTS_UNIQUE_NUMBER,
+    PASSPORTS_UNIQUE_NUMBER,
     USER_EMAILS_UNIQUE_EMAIL,
     USER_USERNAMES_UNIQUE_USERNAME
 } from "../../database/model/constraints.js";
@@ -34,16 +36,30 @@ export class UserService {
             // Hash the password
             body.password_hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS)
 
-             // Create the user
+            // Create the user
             let userID
-            const queryRes = await DatabaseManager.rawQuery(CREATE_USER_PROC, body.first_name, body.last_name, body.username, body.email, body.password_hash, body.document_country, body.document_type, body.document_number, null, null)
+            const queryRes = await DatabaseManager.rawQuery(CREATE_USER_PROC,
+                body.first_name,
+                body.last_name,
+                body.username,
+                body.email,
+                body.password_hash,
+                body.document_country,
+                body.document_type,
+                body.document_number,
+                null,
+                null
+            )
             if (queryRes.rows.length > 0) {
                 const isCountryValid = queryRes.rows[0]?.out_is_country_valid
                 userID = queryRes.rows[0]?.out_user_id
 
                 // Check if the country is valid
                 if (!isCountryValid)
-                    throw new FieldFailError(400, "document_country", "country not found")
+                    throw new FieldFailError(400,
+                        "document_country",
+                        "country not found"
+                    )
             }
 
             return userID
@@ -53,15 +69,24 @@ export class UserService {
 
             // Check if the username has already been registered
             if (constraintName === USER_USERNAMES_UNIQUE_USERNAME)
-                throw new FieldFailError(400, "username", "username has already been registered")
+                throw new FieldFailError(400,
+                    "username",
+                    "username has already been registered"
+                )
 
             // Check if the email has already been registered
             else if (constraintName === USER_EMAILS_UNIQUE_EMAIL)
-                throw new FieldFailError(400, "email", "email has already been registered")
+                throw new FieldFailError(400,
+                    "email",
+                    "email has already been registered"
+                )
 
             // Check if the identity document number or passport number has already been registered
             else if (constraintName === IDENTITY_DOCUMENTS_UNIQUE_NUMBER || constraintName === PASSPORTS_UNIQUE_NUMBER)
-                throw new FieldFailError(400, "document_number", "document number has already been registered")
+                throw new FieldFailError(400,
+                    "document_number",
+                    "document number has already been registered"
+                )
 
             throw error
         }
@@ -78,7 +103,10 @@ export class UserService {
             GET_NUMBER_OF_USERS_PROC,
             body.id
         );
-        return {users:userDetailsQueryRes.rows, number_of_users: numberOfUsersQueryRes.rows[0]}
+        return {
+            users: userDetailsQueryRes.rows,
+            number_of_users: numberOfUsersQueryRes.rows[0]
+        }
     }
 
     // Get all users

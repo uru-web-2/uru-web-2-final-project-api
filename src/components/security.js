@@ -6,7 +6,8 @@ import {
     GET_ALL_METHODS_FN,
     GET_ALL_MODULES_FN,
     GET_ALL_OBJECTS_FN,
-    GET_ALL_PERMISSIONS_FN, GET_ALL_PROFILES_FN
+    GET_ALL_PERMISSIONS_FN,
+    GET_ALL_PROFILES_FN
 } from "../database/model/functions.js";
 import {FailResponseError} from "@ralvarezdev/js-express";
 import {__dirname} from "../router/constants.js";
@@ -25,7 +26,7 @@ export class Security {
     #modules = new Map()
     #objects = new Map()
     #methods = new Map()
-    #methodsIDsByNames= new Map()
+    #methodsIDsByNames = new Map()
     #profiles = new Map()
     #permissions = new Map()
 
@@ -76,12 +77,17 @@ export class Security {
             const scriptPath = path.join(__dirname, module.name, scriptName)
 
             // Create the object
-            const object = module.createObject(scriptPath, scriptName, classNameFn, instanceNameFn)
+            const object = module.createObject(scriptPath,
+                scriptName,
+                classNameFn,
+                instanceNameFn
+            )
             this.#objects.set(id, object)
         }
 
         // Get the permissions
-        const permissions = await DatabaseManager.rawQuery(GET_ALL_PERMISSIONS_FN)
+        const permissions = await DatabaseManager.rawQuery(
+            GET_ALL_PERMISSIONS_FN)
 
         // Iterate over the permissions
         for (const {profile_id, method_id} of permissions.rows)
@@ -97,7 +103,9 @@ export class Security {
             const object = this.getObject(object_id)
 
             // Create the method
-            const method = object.createMethod(name, ...this.#permissions.get(id))
+            const method = object.createMethod(name,
+                ...this.#permissions.get(id)
+            )
             this.#methods.set(id, method)
             this.#methodsIDsByNames.set(name, id)
         }
@@ -131,7 +139,9 @@ export class Security {
             this.#permissions.set(methodID, [])
 
         // Set the permission
-        this.#permissions.set(methodID, [...this.#permissions.get(methodID), profileID])
+        this.#permissions.set(methodID,
+            [...this.#permissions.get(methodID), profileID]
+        )
     }
 
     // Remove a permission
@@ -234,7 +244,9 @@ export class Security {
         }
 
         // Check if the user has the permission to execute the method
-        if (!this.hasPermission(profileID, this.#methodsIDsByNames.get(methodName)))
+        if (!this.hasPermission(profileID,
+            this.#methodsIDsByNames.get(methodName)
+        ))
             throw new FailResponseError(401, {
                 session: "You don't have permission to execute this method"
             })

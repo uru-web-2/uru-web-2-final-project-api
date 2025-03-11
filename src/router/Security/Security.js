@@ -8,7 +8,10 @@ export class Security {
     // Assign a permission to a profile
     async AssignProfilePermission(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.AssignProfilePermission);
+        const body = HandleValidation(req,
+            res,
+            Validator.AssignProfilePermission
+        );
 
         // Assign the permission
         const permissionID = await Service.AssignProfilePermission(req, body)
@@ -23,7 +26,10 @@ export class Security {
     // Revoke a permission from a profile
     async RevokeProfilePermission(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.RevokeProfilePermission);
+        const body = HandleValidation(req,
+            res,
+            Validator.RevokeProfilePermission
+        );
 
         // Revoke the permission
         const permissionID = await Service.RevokeProfilePermission(req, body)
@@ -35,10 +41,13 @@ export class Security {
         res.status(200).json(SuccessJSendBody())
     }
 
-     // Get the methods IDs and names from the permissions of a profile
+    // Get the methods IDs and names from the permissions of a profile
     async GetProfilePermissionsMethods(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.GetProfilePermissionsMethods);
+        const body = HandleValidation(req,
+            res,
+            Validator.GetProfilePermissionsMethods
+        );
 
         // Get the methods
         const methods = await Service.GetProfilePermissionsMethods(req, body)

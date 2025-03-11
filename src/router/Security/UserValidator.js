@@ -15,11 +15,14 @@ export class UserValidator {
 
     // Validate create user
     CreateUser(req) {
-         const [validatedBody, isBodyValid]=Validate(req, CREATE_USER);
+        const [validatedBody, isBodyValid] = Validate(req, CREATE_USER);
 
-         // Check if the username contains whitespaces
-        if (isBodyValid&&validatedBody.username.includes(" "))
-            throw new FieldFailError(400, "username", "username cannot contain spaces")
+        // Check if the username contains whitespaces
+        if (isBodyValid && validatedBody.username.includes(" "))
+            throw new FieldFailError(400,
+                "username",
+                "username cannot contain spaces"
+            )
 
         return [validatedBody, isBodyValid]
     }

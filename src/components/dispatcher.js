@@ -6,7 +6,10 @@ import Logger from "./logger.js";
 import DatabaseManager from "./database.js";
 import ErrorHandler from "./handler.js";
 import {EXECUTE, LOG_IN, SIGN_UP} from "./model.js";
-import {LOG_IN_PROC, CREATE_USER_PROC} from "../database/model/storedProcedures.js";
+import {
+    CREATE_USER_PROC,
+    LOG_IN_PROC
+} from "../database/model/storedProcedures.js";
 import {GET_ALL_USER_PROFILES_FN,} from "../database/model/functions.js";
 import {
     IDENTITY_DOCUMENTS_UNIQUE_NUMBER,
@@ -79,25 +82,45 @@ export class Dispatcher {
     async SignUp(req, res, next) {
         try {
             // Validate the request
-            const body = HandleValidation(req, res, req => Validate(req, SIGN_UP));
+            const body = HandleValidation(req,
+                res,
+                req => Validate(req, SIGN_UP)
+            );
 
             // Check if the username contains whitespaces
             if (body.username.includes(" "))
-                throw new FieldFailError(400, "username", "username cannot contain spaces")
+                throw new FieldFailError(400,
+                    "username",
+                    "username cannot contain spaces"
+                )
 
             // Hash the password
             body.password_hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS)
 
             // Create the user
             let userID
-            const queryRes = await DatabaseManager.rawQuery(CREATE_USER_PROC, body.first_name, body.last_name, body.username, body.email, body.password_hash, body.document_country, body.document_type, body.document_number, null, null)
+            const queryRes = await DatabaseManager.rawQuery(CREATE_USER_PROC,
+                body.first_name,
+                body.last_name,
+                body.username,
+                body.email,
+                body.password_hash,
+                body.document_country,
+                body.document_type,
+                body.document_number,
+                null,
+                null
+            )
             if (queryRes.rows.length > 0) {
                 const isCountryValid = queryRes.rows[0]?.out_is_country_valid
                 userID = queryRes.rows[0]?.out_user_id
 
                 // Check if the country is valid
                 if (!isCountryValid)
-                    throw new FieldFailError(400, "document_country", "country not found")
+                    throw new FieldFailError(400,
+                        "document_country",
+                        "country not found"
+                    )
             }
 
             // Log the user ID
@@ -111,15 +134,24 @@ export class Dispatcher {
 
             // Check if the username has already been registered
             if (constraintName === USER_USERNAMES_UNIQUE_USERNAME)
-                error = new FieldFailError(400, "username", "username has already been registered")
+                error = new FieldFailError(400,
+                    "username",
+                    "username has already been registered"
+                )
 
             // Check if the email has already been registered
             else if (constraintName === USER_EMAILS_UNIQUE_EMAIL)
-                error = new FieldFailError(400, "email", "email has already been registered")
+                error = new FieldFailError(400,
+                    "email",
+                    "email has already been registered"
+                )
 
             // Check if the identity document number or passport number has already been registered
             else if (constraintName === IDENTITY_DOCUMENTS_UNIQUE_NUMBER || constraintName === PASSPORTS_UNIQUE_NUMBER)
-                error = new FieldFailError(400, "document_number", "document number has already been registered")
+                error = new FieldFailError(400,
+                    "document_number",
+                    "document number has already been registered"
+                )
 
             // Pass the error to the error handler
             next(error)
@@ -137,12 +169,16 @@ export class Dispatcher {
             }
 
             // Validate the request
-            const body = HandleValidation(req, res, req => Validate(req, LOG_IN));
+            const body = HandleValidation(req,
+                res,
+                req => Validate(req, LOG_IN)
+            );
 
             // Get the user ID and password hash
             let userID, passwordHash
             const logInRes = await DatabaseManager.rawQuery(LOG_IN_PROC,
-                body.username, null, null)
+                body.username, null, null
+            )
 
             // Check if the username was found
             if (logInRes.rows.length > 0) {
@@ -159,7 +195,10 @@ export class Dispatcher {
                 throw new FieldFailError(401, "password", "incorrect password")
 
             // Get the user profiles
-            const userProfiles = await DatabaseManager.rawQuery(GET_ALL_USER_PROFILES_FN, userID)
+            const userProfiles = await DatabaseManager.rawQuery(
+                GET_ALL_USER_PROFILES_FN,
+                userID
+            )
 
             // Parse the user profiles
             const parsedUserProfiles = []
@@ -174,14 +213,22 @@ export class Dispatcher {
 
             // Check if the user has multiple profiles
             if (parsedUserProfilesNames.length > 1 && !body.profile)
-                throw new FieldFailError(401, "profile", "multiple profiles found, specify a profile between: " + parsedUserProfilesNames.join(", "))
+                throw new FieldFailError(401,
+                    "profile",
+                    "multiple profiles found, specify a profile between: " + parsedUserProfilesNames.join(
+                        ", ")
+                )
 
             // Check if the user has the specified profile
             if (body.profile && !parsedUserProfilesNames.includes(body.profile))
-                throw new FieldFailError(401, "profile", "profile not found, specify a profile between: " + parsedUserProfilesNames.join(", "))
+                throw new FieldFailError(401,
+                    "profile",
+                    "profile not found, specify a profile between: " + parsedUserProfilesNames.join(
+                        ", ")
+                )
 
             // Create a session with the given profile
-            console.log( parsedUserProfiles.find(profile => profile.name === body.profile).id)
+            console.log(parsedUserProfiles.find(profile => profile.name === body.profile).id)
             Session.set(req, {
                 userID,
                 profileID: body.profile ? parsedUserProfiles.find(profile => profile.name === body.profile).id : parsedUserProfiles[0].id

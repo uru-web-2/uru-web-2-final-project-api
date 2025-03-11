@@ -50,10 +50,16 @@ export class User {
     // Get the user details by users ID
     async GetUserDetailsByUserID(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.GetUserDetailsByUserID);
+        const body = HandleValidation(req,
+            res,
+            Validator.GetUserDetailsByUserID
+        );
 
         // Get all the users with pagination
-        const {users, number_of_users} = await Service.GetUserDetailsByUserID(req, body);
+        const {users, number_of_users} = await Service.GetUserDetailsByUserID(
+            req,
+            body
+        );
 
         // Log the creation
         Logger.info(`Fetching all users`);
