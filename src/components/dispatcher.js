@@ -9,7 +9,7 @@ import ErrorHandler from "./handler.js";
 import {
     EXECUTE,
     FORGOT_PASSWORD,
-    LOG_IN,
+    LOG_IN, RESET_PASSWORD,
     SIGN_UP,
     VERIFY_EMAIL
 } from "./model.js";
@@ -19,7 +19,7 @@ import {
     CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
     GET_USER_EMAIL_INFO_BY_USER_EMAIL_PROC,
     GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
-    LOG_IN_PROC,
+    LOG_IN_PROC, RESET_USER_PASSWORD_PROC,
     VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC
 } from "../database/model/storedProcedures.js";
 import {GET_ALL_USER_PROFILES_FN,} from "../database/model/functions.js";
@@ -162,13 +162,13 @@ export class Dispatcher {
         )
 
         // Set the verify email route
-        this.#app.post("/verify-email", sessionExists, this.VerifyEmail)
+        this.#app.post("/verify-email", this.VerifyEmail)
 
         // Set the forgot password route
         this.#app.post("/forgot-password", this.ForgotPassword)
 
         // Set the reset password route
-        // this.#app.post("/reset-password", sessionExists, this.ResetPassword)
+        this.#app.post("/reset-password", this.ResetPassword)
 
         // Add the error catcher middleware
         this.#app.use(ErrorHandler.errorCatcher())
@@ -521,6 +521,37 @@ export class Dispatcher {
 
             // Send the reset password email
             await sendResetPasswordEmail(body.email, fullName, resetPasswordToken)
+        } catch (error) {
+            // Pass the error to the error handler
+            next(error)
+        }
+    }
+
+    // Handle the reset password request
+    async ResetPassword(req, res, next) {
+        try {
+            // Validate the request
+            const body = HandleValidation(req,
+                res,
+                req => Validate(req, RESET_PASSWORD)
+            );
+
+            // Hash the password
+            const passwordHash = bcrypt.hashSync(req.body.password, SALT_ROUNDS)
+
+            // Verify the email
+            const queryRes = await DatabaseManager.rawQuery(
+                RESET_USER_PASSWORD_PROC,
+                body.token,
+                passwordHash,
+                null,
+            )
+            const isTokenValid = queryRes.rows[0]?.out_user_reset_password_token_is_valid
+            if (!isTokenValid)
+                throw new FieldFailError(400, "token", "token is invalid")
+
+            // Send the response
+            res.status(200).json(SuccessJSendBody())
         } catch (error) {
             // Pass the error to the error handler
             next(error)

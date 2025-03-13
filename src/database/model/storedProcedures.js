@@ -28,8 +28,14 @@ export const VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC = "CALL verify_user_email
 // Query to revoke a user reset password token by user ID
 export const REVOKE_USER_RESET_PASSWORD_TOKEN_BY_USER_ID_PROC = "CALL revoke_user_reset_password_token_by_user_id($1)"
 
+// Query to update a user password
+export const UPDATE_USER_PASSWORD_PROC = "CALL update_user_password($1, $2)"
+
 // Query to create a new user reset password token
 export const CREATE_USER_RESET_PASSWORD_TOKEN_PROC = "CALL create_user_reset_password_token($1, $2, $3)"
+
+// Query to reset a user password
+export const RESET_USER_PASSWORD_PROC = "CALL reset_user_password($1, $2)"
 
 // Query to create a new user
 export const CREATE_USER_PROC = "CALL create_user($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"

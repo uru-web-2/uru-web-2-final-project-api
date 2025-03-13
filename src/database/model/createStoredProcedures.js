@@ -346,25 +346,69 @@ END;
 $$;
 `
 
-// Create a stored procedure that resets a user password
-export const CREATE_RESET_USER_PASSWORD_PROC = `
-CREATE OR REPLACE PROCEDURE reset_user_password(
-    IN in_user_reset_password_token VARCHAR,
+// Create a stored procedure that updates a user password
+export const CREATE_UPDATE_USER_PASSWORD_PROC = `
+CREATE OR REPLACE PROCEDURE update_user_password(
+    IN in_user_id BIGINT,
     IN in_user_password_hash VARCHAR
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Update the user_password_hashes table
+    -- Revoke the user password hash
     UPDATE user_password_hashes
-    SET password_hash = in_user_password_hash
-    WHERE user_id = (
-        SELECT user_id
-        FROM user_reset_password_tokens
-        WHERE reset_password_token = in_user_reset_password_token
-        AND expires_at > NOW()
-        AND revoked_at IS NULL
+    SET revoked_at = NOW()
+    WHERE user_id = in_user_id
+    AND revoked_at IS NULL;
+    
+    -- Insert into user_password_hashes table
+    INSERT INTO user_password_hashes (
+        user_id,
+        password_hash
+    )
+    VALUES (
+        in_user_id,
+        in_user_password_hash
     );
+END;
+$$;
+`
+
+// Create a stored procedure that resets a user password
+export const CREATE_RESET_USER_PASSWORD_PROC = `
+CREATE OR REPLACE PROCEDURE reset_user_password(
+    IN in_user_reset_password_token VARCHAR,
+    IN in_user_password_hash VARCHAR,
+    OUT out_user_reset_password_token_is_valid BOOLEAN,
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    out_user_reset_password_token_id BIGINT;
+    out_user_id BIGINT;
+BEGIN
+    -- Check if the user reset password token is valid
+    SELECT id, user_id
+    INTO out_user_reset_password_token_id, out_user_id
+    FROM user_reset_password_tokens
+    WHERE reset_password_token = in_user_reset_password_token
+    AND expires_at > NOW()
+    AND used_at IS NULL;
+
+    IF out_user_reset_password_token_id IS NULL THEN
+        out_user_reset_password_token_is_valid := FALSE;
+        RETURN;
+    ELSE
+        out_user_reset_password_token_is_valid := TRUE;
+    END IF;
+
+    -- Revoke the user reset password token
+    UPDATE user_reset_password_tokens
+    SET used_at = NOW()
+    WHERE id = out_user_reset_password_token_id;
+    
+    -- Update the user password
+    call update_user_password(out_user_id, in_user_password_hash);
 END;
 $$;
 `
