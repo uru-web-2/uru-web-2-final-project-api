@@ -5,16 +5,16 @@ export const GET_COUNTRY_ID_BY_NAME_PROC = "CALL get_country_id_by_name($1, $2)"
 export const CREATE_USER_PERSONAL_DOCUMENT_PROC = "CALL create_user_personal_document($1, $2, $3, $4, $5, $6)"
 
 // Query to create a new person
-export const CREATE_PERSON_PROC = "CALL create_person($1, $2, $3, $4, $5, $6, $7)"
+export const CREATE_PERSON_PROC = "CALL create_person($1, $2, $3, $4, $5, $6, $7, $8)"
 
 // Query to create a new user email
 export const CREATE_USER_EMAIL_PROC = "CALL create_user_email($1, $2, $3)"
 
-// Query to revoke a user email verification by user email ID
-export const REVOKE_USER_EMAIL_VERIFICATION_BY_USER_EMAIL_ID_PROC = "CALL revoke_user_email_verification_by_user_email_id($1)"
+// Query to revoke a user email verification token by user email ID
+export const REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC = "CALL revoke_user_email_verification_token_by_user_email_id($1)"
 
-// Query to create a new user email verification
-export const CREATE_USER_EMAIL_VERIFICATION_PROC = "CALL create_user_email_verification($1, $2, $3)"
+// Query to create a new user email verification token
+export const CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC = "CALL create_user_email_verification_token($1, $2, $3)"
 
 // Query to get the user email information by user ID
 export const GET_USER_EMAIL_INFO_BY_USER_ID_PROC = "CALL get_user_email_info_by_user_id($1, $2, $3, $4, $5)"
@@ -23,7 +23,7 @@ export const GET_USER_EMAIL_INFO_BY_USER_ID_PROC = "CALL get_user_email_info_by_
 export const VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC = "CALL verify_user_email_verification_token($1, $2)"
 
 // Query to create a new user
-export const CREATE_USER_PROC = "CALL create_user($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
+export const CREATE_USER_PROC = "CALL create_user($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"
 
 // Query to log in a user
 export const LOG_IN_PROC = "CALL log_in($1, $2, $3)"

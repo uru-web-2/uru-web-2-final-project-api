@@ -14,10 +14,11 @@ import {
     VERIFY_EMAIL
 } from "./model.js";
 import {
-    CREATE_USER_EMAIL_VERIFICATION_PROC,
+    CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
     CREATE_USER_PROC,
     GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
-    LOG_IN_PROC, VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC
+    LOG_IN_PROC,
+    VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC
 } from "../database/model/storedProcedures.js";
 import {GET_ALL_USER_PROFILES_FN,} from "../database/model/functions.js";
 import {
@@ -42,6 +43,62 @@ import {
     sendWelcomeEmail
 } from "./mailersend.js";
 import {EMAIL_VERIFICATION_TOKEN_DURATION} from "./constants.js";
+import {addDuration} from "./utils.js";
+
+// Validate new password
+function ValidateNewPassword(password) {
+    // Check if the password is valid
+    if (password.length < 10)
+        throw new FieldFailError(400,
+            "password",
+            "password must be at least 10 characters long"
+        )
+
+    // Check if the password contains a lowercase letter
+    if (!/[a-z]/.test(password))
+        throw new FieldFailError(400,
+            "password",
+            "password must contain a lowercase letter"
+        )
+
+    // Check if the password contains an uppercase letter
+    if (!/[A-Z]/.test(password))
+        throw new FieldFailError(400,
+            "password",
+            "password must contain an uppercase letter"
+        )
+
+    // Check if the password contains a number
+    if (!/[0-9]/.test(password))
+        throw new FieldFailError(400,
+            "password",
+            "password must contain a number"
+        )
+
+    // Check if the password contains a special character
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
+        throw new FieldFailError(400,
+            "password",
+            "password must contain a special character"
+        )
+}
+
+// Validate a new username
+function ValidateNewUsername(username) {
+    // Check if the username contains whitespaces
+    if (username.includes(" "))
+        throw new FieldFailError(400,
+            "username",
+            "username cannot contain spaces"
+        )
+
+    // Check if the username contains only alphanumeric characters
+    if (!/^[a-zA-Z0-9]*$/.test(username))
+        throw new FieldFailError(400,
+            "username",
+            "username can only contain alphanumeric characters"
+        )
+}
 
 // Dispatcher for handling requests
 export class Dispatcher {
@@ -80,7 +137,10 @@ export class Dispatcher {
         this.#app.post("/execute", checkSession, this.Execute)
 
         // Set the send verification email route
-        this.#app.post("/send-email-verification", checkSession, this.SendVerificationEmail)
+        this.#app.post("/send-email-verification",
+            checkSession,
+            this.SendVerificationEmail
+        )
 
         // Set the verify email route
         this.#app.post("/verify-email", checkSession, this.VerifyEmail)
@@ -105,61 +165,6 @@ export class Dispatcher {
         })
     }
 
-    // Validate new password
-    ValidateNewPassword(password) {
-        // Check if the password is valid
-        if (password.length < 10)
-            throw new FieldFailError(400,
-                "password",
-                "password must be at least 10 characters long"
-            )
-
-        // Check if the password contains a lowercase letter
-        if (!/[a-z]/.test(password))
-            throw new FieldFailError(400,
-                "password",
-                "password must contain a lowercase letter"
-            )
-
-        // Check if the password contains an uppercase letter
-        if (!/[A-Z]/.test(password))
-            throw new FieldFailError(400,
-                "password",
-                "password must contain an uppercase letter"
-            )
-
-        // Check if the password contains a number
-        if (!/[0-9]/.test(password))
-            throw new FieldFailError(400,
-                "password",
-                "password must contain a number"
-            )
-
-        // Check if the password contains a special character
-        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
-            throw new FieldFailError(400,
-                "password",
-                "password must contain a special character"
-            )
-    }
-
-    // Validate a new username
-    ValidateNewUsername(username) {
-        // Check if the username contains whitespaces
-        if (username.includes(" "))
-            throw new FieldFailError(400,
-                "username",
-                "username cannot contain spaces"
-            )
-
-        // Check if the username contains only alphanumeric characters
-        if (!/^[a-zA-Z0-9]*$/.test(username))
-            throw new FieldFailError(400,
-                "username",
-                "username can only contain alphanumeric characters"
-            )
-    }
-
     // Handle the signup request
     async SignUp(req, res, next) {
         try {
@@ -170,10 +175,10 @@ export class Dispatcher {
             );
 
             // Validate the password
-            this.ValidateNewPassword(req.body.password)
+            ValidateNewPassword(req.body.password)
 
             // Validate the username
-            this.ValidateNewUsername(req.body.username)
+            ValidateNewUsername(req.body.username)
 
             // Hash the password
             body.password_hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS)
@@ -183,7 +188,9 @@ export class Dispatcher {
 
             // Create the user
             let userID
-              const queryRes = await DatabaseManager.rawQuery(CREATE_USER_PROC,
+
+            const queryRes = await DatabaseManager.rawQuery(CREATE_USER_PROC,
+                null,
                 body.first_name,
                 body.last_name,
                 body.username,
@@ -193,7 +200,7 @@ export class Dispatcher {
                 body.document_type,
                 body.document_number,
                 emailVerificationToken,
-                EMAIL_VERIFICATION_TOKEN_DURATION,
+                addDuration(EMAIL_VERIFICATION_TOKEN_DURATION).toISOString(),
                 null,
                 null
             )
@@ -220,7 +227,10 @@ export class Dispatcher {
             await sendWelcomeEmail(body.email, fullName)
 
             // Send the verification email
-            await sendVerificationEmail(body.email, fullName, emailVerificationToken)
+            await sendVerificationEmail(body.email,
+                fullName,
+                emailVerificationToken
+            )
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
@@ -401,7 +411,7 @@ export class Dispatcher {
             const email = queryRes.rows[0]?.out_user_email
 
             // Create the user with the new email verification token
-            await DatabaseManager.rawQuery(CREATE_USER_EMAIL_VERIFICATION_PROC,
+            await DatabaseManager.rawQuery(CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
                 emailID,
                 emailVerificationToken,
                 EMAIL_VERIFICATION_TOKEN_DURATION,
@@ -439,8 +449,7 @@ export class Dispatcher {
 
             // Send the response
             res.status(200).json(SuccessJSendBody())
-        }
-        catch (error) {
+        } catch (error) {
             // Pass the error to the error handler
             next(error)
         }
@@ -473,7 +482,7 @@ export class Dispatcher {
             const email = queryRes.rows[0]?.out_user_email
 
             // Create the new reset password token
-            await DatabaseManager.rawQuery(CREATE_USER_EMAIL_VERIFICATION_PROC,
+            await DatabaseManager.rawQuery(CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
                 emailID,
                 resetPasswordToken,
                 EMAIL_VERIFICATION_TOKEN_DURATION,

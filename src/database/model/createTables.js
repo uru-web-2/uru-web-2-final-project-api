@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS passports (
     country_id BIGINT NOT NULL,
     deleted_at TIMESTAMP,
     verified_at TIMESTAMP,
+    created_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (country_id) REFERENCES countries(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${PASSPORTS_UNIQUE_NUMBER} ON passports (country_id, passport_number) WHERE deleted_at IS NULL;
@@ -59,6 +61,8 @@ CREATE TABLE IF NOT EXISTS identity_documents (
     country_id BIGINT NOT NULL,
     deleted_at TIMESTAMP,
     verified_at TIMESTAMP,
+    created_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (country_id) REFERENCES countries(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${IDENTITY_DOCUMENTS_UNIQUE_NUMBER} ON identity_documents (country_id, identity_document_number) WHERE deleted_at IS NULL;
@@ -92,6 +96,10 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (person_id) REFERENCES people(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${USERS_UNIQUE_PERSON} ON users (person_id);
+ALTER TABLE identity_documents ADD CONSTRAINT identity_documents_fk_user_id FOREIGN KEY (created_by_user_id) REFERENCES users(id);
+ALTER TABLE identity_documents ADD CONSTRAINT identity_documents_fk_deleted_by_user_id FOREIGN KEY (deleted_by_user_id) REFERENCES users(id);
+ALTER TABLE passports ADD CONSTRAINT passports_fk_user_id FOREIGN KEY (created_by_user_id) REFERENCES users(id);
+ALTER TABLE passports ADD CONSTRAINT passports_fk_deleted_by_user_id FOREIGN KEY (deleted_by_user_id) REFERENCES users(id);
 `
 
 // Query to create the person_positions table

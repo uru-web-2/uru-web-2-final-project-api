@@ -84,6 +84,7 @@ $$;
 // Create a stored procedure that creates a new person
 export const CREATE_CREATE_PERSON_PROC = `
 CREATE OR REPLACE PROCEDURE create_person(
+    IN in_created_by_user_id BIGINT,
     IN in_user_first_name VARCHAR,
     IN in_user_last_name VARCHAR,
     IN in_user_document_country VARCHAR,
@@ -98,7 +99,7 @@ DECLARE
     out_document_id BIGINT;
 BEGIN
     -- Create the user personal document
-    call create_user_personal_document(in_user_document_country, in_user_document_type, in_user_document_number, out_is_country_valid, out_document_id);
+    call create_user_personal_document(in_created_by_user_id, in_user_document_country, in_user_document_type, in_user_document_number, out_is_country_valid, out_document_id);
     
     -- Check if the country is valid
     IF out_is_country_valid = FALSE THEN
@@ -164,9 +165,9 @@ END;
 $$;
 `
 
-// Create a stored procedure that revokes a user email verification by user email ID
-export const CREATE_REVOKE_USER_EMAIL_VERIFICATION_BY_USER_EMAIL_ID_PROC = `
-CREATE OR REPLACE PROCEDURE revoke_user_email_verification_by_user_email_id(
+// Create a stored procedure that revokes a user email verification token by user email ID
+export const CREATE_REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC = `
+CREATE OR REPLACE PROCEDURE revoke_user_email_verification_token_by_user_email_id(
     IN in_user_email_id BIGINT
 )
 LANGUAGE plpgsql
@@ -181,9 +182,9 @@ END;
 $$;
 `
 
-// Create a stored procedure that creates a new user email verification
-export const CREATE_CREATE_USER_EMAIL_VERIFICATION_PROC = `
-CREATE OR REPLACE PROCEDURE create_user_email_verification(
+// Create a stored procedure that creates a new user email verification token
+export const CREATE_CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC = `
+CREATE OR REPLACE PROCEDURE create_user_email_verification_token(
     IN in_user_email_id BIGINT,
     IN in_user_email_verification_token VARCHAR,
     IN in_user_email_verification_expires_at TIMESTAMP
@@ -192,7 +193,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Revoke the user email verification
-    call revoke_user_email_verification_by_user_email_id(in_user_email_id);
+    call revoke_user_email_verification_token_by_user_email_id(in_user_email_id);
 
     -- Insert into user_email_verification_tokens table
     INSERT INTO user_email_verification_tokens (
@@ -332,6 +333,7 @@ $$;
 // Create a stored procedure that creates a new user
 export const CREATE_CREATE_USER_PROC = `
 CREATE OR REPLACE PROCEDURE create_user(
+    IN in_created_by_user_id BIGINT,
 	IN in_user_first_name VARCHAR,
 	IN in_user_last_name VARCHAR,
 	IN in_user_username VARCHAR,
@@ -344,6 +346,7 @@ CREATE OR REPLACE PROCEDURE create_user(
 	IN in_user_email_verification_expires_at TIMESTAMP,
 	OUT out_user_id BIGINT,
 	OUT out_is_country_valid BOOLEAN
+
 )
 LANGUAGE plpgsql
 AS $$
@@ -354,7 +357,7 @@ DECLARE
     out_user_email_id BIGINT;
 BEGIN
     -- Create the person
-    call create_person(in_user_first_name, in_user_last_name, in_user_document_country, in_user_document_type, in_user_document_number, out_is_country_valid, out_person_id);
+    call create_person(in_created_by_user_id, in_user_first_name, in_user_last_name, in_user_document_country, in_user_document_type, in_user_document_number, out_is_country_valid, out_person_id);
         
 	-- Insert into users table
 	INSERT INTO users (

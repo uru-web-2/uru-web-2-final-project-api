@@ -53,7 +53,7 @@ export class Security {
         const methods = await Service.GetProfilePermissionsMethods(req, body)
 
         // Log the request
-        Logger.info(`Getting methods from permissions of profile ${body.id}`)
+        Logger.info(`Getting methods from permissions of profile ${body.profile_id}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody({methods}))
@@ -77,10 +77,10 @@ export class Security {
         const body = HandleValidation(req, res, Validator.GetObjectsByModuleID);
 
         // Get the objects
-        const objects = await Service.GetObjectsByModuleID(req)
+        const objects = await Service.GetObjectsByModuleID(req, body)
 
         // Log the request
-        Logger.info(`Getting all objects by module ID ${body.id}`)
+        Logger.info(`Getting all objects by module ID ${body.module_id}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody({objects}))
@@ -92,10 +92,10 @@ export class Security {
         const body = HandleValidation(req, res, Validator.GetMethodsByObjectID);
 
         // Get the methods
-        const methods = await Service.GetMethodsByObjectID(req)
+        const methods = await Service.GetMethodsByObjectID(req, body)
 
         // Log the request
-        Logger.info(`Getting all methods by object ID ${body.id}`)
+        Logger.info(`Getting all methods by object ID ${body.object_id}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody({methods}))
