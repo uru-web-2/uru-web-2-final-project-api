@@ -2,13 +2,22 @@
 export const GET_COUNTRY_ID_BY_NAME_PROC = "CALL get_country_id_by_name($1, $2)"
 
 // Query to create a new user personal document
-export const CREATE_USER_PERSONAL_DOCUMENT_PROC = "CALL create_user_personal_document($1, $2, $3, $4, $5, $6)"
+export const CREATE_USER_PERSONAL_DOCUMENT_PROC = "CALL create_user_personal_document($1, $2, $3, $4, $5)"
+
+// Query to delete a user personal document
+export const DELETE_USER_PERSONAL_DOCUMENT_PROC = "CALL delete_user_personal_document($1, $2, $3)"
+
+// Query to replace a user personal document
+export const REPLACE_USER_PERSONAL_DOCUMENT_PROC = "CALL replace_user_personal_document($1, $2, $3, $4, $5)"
 
 // Query to create a new person
-export const CREATE_PERSON_PROC = "CALL create_person($1, $2, $3, $4, $5, $6, $7, $8)"
+export const CREATE_PERSON_PROC = "CALL create_person($1, $2, $3, $4, $5, $6, $7)"
 
 // Query to create a new user email
-export const CREATE_USER_EMAIL_PROC = "CALL create_user_email($1, $2, $3)"
+export const CREATE_USER_EMAIL_PROC = "CALL create_user_email($1, $2, $3, $4, $5)"
+
+// Query to update a user email
+export const UPDATE_USER_EMAIL_PROC = "CALL update_user_email($1, $2, $3, $4, $5)"
 
 // Query to revoke a user email verification token by user email ID
 export const REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC = "CALL revoke_user_email_verification_token_by_user_email_id($1)"
@@ -29,13 +38,13 @@ export const VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC = "CALL verify_user_email
 export const REVOKE_USER_RESET_PASSWORD_TOKEN_BY_USER_ID_PROC = "CALL revoke_user_reset_password_token_by_user_id($1)"
 
 // Query to update a user password
-export const UPDATE_USER_PASSWORD_PROC = "CALL update_user_password($1, $2)"
+export const UPDATE_USER_PASSWORD_HASH_PROC = "CALL update_user_password_hash($1, $2)"
 
 // Query to create a new user reset password token
 export const CREATE_USER_RESET_PASSWORD_TOKEN_PROC = "CALL create_user_reset_password_token($1, $2, $3)"
 
 // Query to reset a user password
-export const RESET_USER_PASSWORD_PROC = "CALL reset_user_password($1, $2)"
+
 
 // Query to create a new user
 export const CREATE_USER_PROC = "CALL create_user($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"
@@ -93,3 +102,9 @@ export const GET_METHOD_ID_BY_NAME_PROC = "CALL get_method_id_by_name($1, $2)"
 
 // Query to get the number of users
 export const GET_NUMBER_OF_USERS_PROC = "CALL get_number_of_users($1)"
+
+// Query to update a user username
+export const UPDATE_USER_USERNAME_PROC = "CALL update_user_username($1, $2)"
+
+// Query to update a user by admin
+export const UPDATE_USER_BY_ADMIN_PROC = "CALL update_user_by_admin($1, $2, $3, $4, $5, $6, $7, $8, $9)"

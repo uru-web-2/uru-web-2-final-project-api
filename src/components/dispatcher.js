@@ -536,6 +536,9 @@ export class Dispatcher {
                 req => Validate(req, RESET_PASSWORD)
             );
 
+            // Validate the password
+            ValidateNewPassword(req.body.password)
+
             // Hash the password
             const passwordHash = bcrypt.hashSync(req.body.password, SALT_ROUNDS)
 

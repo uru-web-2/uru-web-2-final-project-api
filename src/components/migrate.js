@@ -74,6 +74,7 @@ import {
     CREATE_CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
     CREATE_DELETE_ALL_MODULES_PROC,
     CREATE_DELETE_PROFILE_PROC,
+    CREATE_DELETE_USER_PERSONAL_DOCUMENT_PROC,
     CREATE_GET_COUNTRY_ID_BY_NAME_PROC,
     CREATE_GET_METHOD_ID_BY_NAME_PROC,
     CREATE_GET_MODULE_ID_BY_NAME_PROC,
@@ -85,12 +86,17 @@ import {
     CREATE_IS_METHOD_ID_VALID_PROC,
     CREATE_IS_PROFILE_ID_VALID_PROC,
     CREATE_LOG_IN_PROC,
+    CREATE_REPLACE_USER_PERSONAL_DOCUMENT_PROC,
     CREATE_RESET_USER_PASSWORD_PROC,
     CREATE_REVOKE_PROFILE_PERMISSION_PROC,
     CREATE_REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC,
     CREATE_REVOKE_USER_PROFILE_PROC,
     CREATE_REVOKE_USER_RESET_PASSWORD_TOKEN_BY_USER_ID_PROC,
-    CREATE_UPDATE_PROFILE_PROC, CREATE_UPDATE_USER_PASSWORD_PROC,
+    CREATE_UPDATE_PROFILE_PROC,
+    CREATE_UPDATE_USER_BY_ADMIN_PROC,
+    CREATE_UPDATE_USER_EMAIL_PROC,
+    CREATE_UPDATE_USER_PASSWORD_HASH_PROC,
+    CREATE_UPDATE_USER_USERNAME_PROC,
     CREATE_VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC
 } from "../database/model/createStoredProcedures.js";
 import Logger from "./logger.js";
@@ -269,143 +275,136 @@ export default async function migrate() {
     Logger.info("Migrating the database")
 
     // Create the tables
-    try {
-        await DatabaseManager.runTransaction(async (client) => {
-            for (const query of [
-                CREATE_COUNTRIES,
-                CREATE_PASSPORTS,
-                CREATE_IDENTITY_DOCUMENTS,
-                CREATE_PEOPLE,
-                CREATE_USERS,
-                CREATE_MODULES,
-                CREATE_OBJECTS,
-                CREATE_METHODS,
-                CREATE_PERSON_POSITIONS,
-                CREATE_PROFILES,
-                CREATE_PERMISSIONS,
-                CREATE_USER_USERNAMES,
-                CREATE_USER_PASSWORD_HASHES,
-                CREATE_USER_EMAILS,
-                CREATE_USER_EMAIL_VERIFICATION_TOKENS,
-                CREATE_USER_RESET_PASSWORD_TOKENS,
-                CREATE_USER_PROFILES,
-                CREATE_DOCUMENTS,
-                CREATE_POSTS,
-                CREATE_LOCATIONS,
-                CREATE_LOCATION_SECTIONS,
-                CREATE_DOCUMENT_AUTHORS,
-                CREATE_DOCUMENT_LOCATIONS,
-                CREATE_DOCUMENT_REVIEWS,
-                CREATE_TOPICS,
-                CREATE_DOCUMENT_TOPICS,
-                CREATE_PUBLISHERS,
-                CREATE_BOOKS,
-                CREATE_LANGUAGES,
-                CREATE_BOOK_VERSIONS,
-                CREATE_BOOK_COPIES,
-                CREATE_BOOK_MODEL_LOANS,
-                CREATE_WORKS,
-                CREATE_ARTICLES,
-                CREATE_ARTICLE_JURY_MEMBERS,
-                CREATE_ARTICLE_ANNOTATIONS,
-                CREATE_THESES,
-                CREATE_MAGAZINES,
-                CREATE_MAGAZINE_ISSUES,
-                CREATE_DOCUMENT_IMAGES,
-                CREATE_DOCUMENT_LANGUAGES
-            ])
-                await client.rawQuery(query)
-        })
-        Logger.info("Tables created")
-    } catch (error) {
-        Logger.error(`Tables creation failed: ${error}`)
-    }
+    await DatabaseManager.runTransaction(async (client) => {
+        for (const query of [
+            CREATE_COUNTRIES,
+            CREATE_PASSPORTS,
+            CREATE_IDENTITY_DOCUMENTS,
+            CREATE_PEOPLE,
+            CREATE_USERS,
+            CREATE_MODULES,
+            CREATE_OBJECTS,
+            CREATE_METHODS,
+            CREATE_PERSON_POSITIONS,
+            CREATE_PROFILES,
+            CREATE_PERMISSIONS,
+            CREATE_USER_USERNAMES,
+            CREATE_USER_PASSWORD_HASHES,
+            CREATE_USER_EMAILS,
+            CREATE_USER_EMAIL_VERIFICATION_TOKENS,
+            CREATE_USER_RESET_PASSWORD_TOKENS,
+            CREATE_USER_PROFILES,
+            CREATE_DOCUMENTS,
+            CREATE_POSTS,
+            CREATE_LOCATIONS,
+            CREATE_LOCATION_SECTIONS,
+            CREATE_DOCUMENT_AUTHORS,
+            CREATE_DOCUMENT_LOCATIONS,
+            CREATE_DOCUMENT_REVIEWS,
+            CREATE_TOPICS,
+            CREATE_DOCUMENT_TOPICS,
+            CREATE_PUBLISHERS,
+            CREATE_BOOKS,
+            CREATE_LANGUAGES,
+            CREATE_BOOK_VERSIONS,
+            CREATE_BOOK_COPIES,
+            CREATE_BOOK_MODEL_LOANS,
+            CREATE_WORKS,
+            CREATE_ARTICLES,
+            CREATE_ARTICLE_JURY_MEMBERS,
+            CREATE_ARTICLE_ANNOTATIONS,
+            CREATE_THESES,
+            CREATE_MAGAZINES,
+            CREATE_MAGAZINE_ISSUES,
+            CREATE_DOCUMENT_IMAGES,
+            CREATE_DOCUMENT_LANGUAGES
+        ])
+            await client.rawQuery(query)
+    })
+    Logger.info("Tables created")
 
     // Create the functions
-    try {
-        await DatabaseManager.runTransaction(async (client) => {
-            for (const query of [
-                CREATE_GET_ALL_MODULES_FN,
-                CREATE_GET_ALL_OBJECTS_FN,
-                CREATE_GET_ALL_METHODS_FN,
-                CREATE_GET_ALL_USER_PROFILES_FN,
-                CREATE_GET_PROFILE_PERMISSIONS_METHODS_FN,
-                CREATE_GET_ALL_PROFILES_FN,
-                CREATE_GET_ALL_PERMISSIONS_FN,
-                CREATE_SEARCH_PROFILE_BY_NAME_FN,
-                CREATE_SEARCH_USER_BY_USERNAME_FN,
-                CREATE_GET_ALL_USERS_FN,
-                CREATE_GET_USER_DETAILS_BY_USER_ID_FN,
-                CREATE_GET_OBJECTS_BY_MODULE_ID_FN,
-                CREATE_GET_METHODS_BY_OBJECT_ID_FN
-            ])
-                await client.rawQuery(query)
-        })
-        Logger.info("Functions created")
-    } catch (error) {
-        Logger.error(`Functions creation failed: ${error}`)
-    }
+    await DatabaseManager.runTransaction(async (client) => {
+        for (const query of [
+            CREATE_GET_ALL_MODULES_FN,
+            CREATE_GET_ALL_OBJECTS_FN,
+            CREATE_GET_ALL_METHODS_FN,
+            CREATE_GET_ALL_USER_PROFILES_FN,
+            CREATE_GET_PROFILE_PERMISSIONS_METHODS_FN,
+            CREATE_GET_ALL_PROFILES_FN,
+            CREATE_GET_ALL_PERMISSIONS_FN,
+            CREATE_SEARCH_PROFILE_BY_NAME_FN,
+            CREATE_SEARCH_USER_BY_USERNAME_FN,
+            CREATE_GET_ALL_USERS_FN,
+            CREATE_GET_USER_DETAILS_BY_USER_ID_FN,
+            CREATE_GET_OBJECTS_BY_MODULE_ID_FN,
+            CREATE_GET_METHODS_BY_OBJECT_ID_FN
+        ])
+            await client.rawQuery(query)
+    })
+    Logger.info("Functions created")
 
     // Create the stored procedures
-    try {
-        await DatabaseManager.runTransaction(async (client) => {
-            for (const query of [
-                CREATE_GET_COUNTRY_ID_BY_NAME_PROC,
-                CREATE_CREATE_USER_PERSONAL_DOCUMENT_PROC,
-                CREATE_CREATE_PERSON_PROC,
-                CREATE_CREATE_USER_EMAIL_PROC,
-                CREATE_REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC,
-                CREATE_CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
-                CREATE_GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
-                CREATE_VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC,
-                CREATE_REVOKE_USER_RESET_PASSWORD_TOKEN_BY_USER_ID_PROC,
-                CREATE_CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
-                CREATE_UPDATE_USER_PASSWORD_PROC,
-                CREATE_RESET_USER_PASSWORD_PROC,
-                CREATE_CREATE_USER_PROC,
-                CREATE_LOG_IN_PROC,
-                CREATE_IS_METHOD_ID_VALID_PROC,
-                CREATE_IS_PROFILE_ID_VALID_PROC,
-                CREATE_GET_USER_ID_BY_USERNAME_PROC,
-                CREATE_GET_USER_EMAIL_INFO_BY_USER_EMAIL_PROC,
-                CREATE_ASSIGN_USER_PROFILE_PROC,
-                CREATE_REVOKE_USER_PROFILE_PROC,
-                CREATE_ASSIGN_PROFILE_PERMISSION_PROC,
-                CREATE_REVOKE_PROFILE_PERMISSION_PROC,
-                CREATE_CREATE_PROFILE_PROC,
-                CREATE_UPDATE_PROFILE_PROC,
-                CREATE_DELETE_PROFILE_PROC,
-                CREATE_CREATE_MODULE_PROC,
-                CREATE_CREATE_OBJECT_PROC,
-                CREATE_CREATE_METHOD_PROC,
-                CREATE_DELETE_ALL_MODULES_PROC,
-                CREATE_CREATE_METHOD_WITH_PROFILES_PROC,
-                CREATE_GET_MODULE_ID_BY_NAME_PROC,
-                CREATE_GET_OBJECT_ID_BY_NAME_PROC,
-                CREATE_GET_METHOD_ID_BY_NAME_PROC,
-                CREATE_GET_NUMBER_OF_USERS_PROC
-            ])
-                await client.rawQuery(query)
-        })
-        Logger.info("Stored procedures created")
-    } catch (error) {
-        Logger.error(`Stored procedures creation failed: ${error}`)
-    }
+    await DatabaseManager.runTransaction(async (client) => {
+        for (const query of [
+            CREATE_GET_COUNTRY_ID_BY_NAME_PROC,
+            CREATE_CREATE_USER_PERSONAL_DOCUMENT_PROC,
+            CREATE_DELETE_USER_PERSONAL_DOCUMENT_PROC,
+            CREATE_REPLACE_USER_PERSONAL_DOCUMENT_PROC,
+            CREATE_CREATE_PERSON_PROC,
+            CREATE_CREATE_USER_EMAIL_PROC,
+            CREATE_UPDATE_USER_EMAIL_PROC,
+            CREATE_REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC,
+            CREATE_CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
+            CREATE_GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
+            CREATE_VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC,
+            CREATE_REVOKE_USER_RESET_PASSWORD_TOKEN_BY_USER_ID_PROC,
+            CREATE_CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
+            CREATE_UPDATE_USER_PASSWORD_HASH_PROC,
+            CREATE_RESET_USER_PASSWORD_PROC,
+            CREATE_CREATE_USER_PROC,
+            CREATE_LOG_IN_PROC,
+            CREATE_IS_METHOD_ID_VALID_PROC,
+            CREATE_IS_PROFILE_ID_VALID_PROC,
+            CREATE_GET_USER_ID_BY_USERNAME_PROC,
+            CREATE_GET_USER_EMAIL_INFO_BY_USER_EMAIL_PROC,
+            CREATE_ASSIGN_USER_PROFILE_PROC,
+            CREATE_REVOKE_USER_PROFILE_PROC,
+            CREATE_ASSIGN_PROFILE_PERMISSION_PROC,
+            CREATE_REVOKE_PROFILE_PERMISSION_PROC,
+            CREATE_CREATE_PROFILE_PROC,
+            CREATE_UPDATE_PROFILE_PROC,
+            CREATE_DELETE_PROFILE_PROC,
+            CREATE_CREATE_MODULE_PROC,
+            CREATE_CREATE_OBJECT_PROC,
+            CREATE_CREATE_METHOD_PROC,
+            CREATE_DELETE_ALL_MODULES_PROC,
+            CREATE_CREATE_METHOD_WITH_PROFILES_PROC,
+            CREATE_GET_MODULE_ID_BY_NAME_PROC,
+            CREATE_GET_OBJECT_ID_BY_NAME_PROC,
+            CREATE_GET_METHOD_ID_BY_NAME_PROC,
+            CREATE_GET_NUMBER_OF_USERS_PROC,
+            CREATE_UPDATE_USER_USERNAME_PROC,
+            CREATE_UPDATE_USER_BY_ADMIN_PROC
+        ])
+            await client.rawQuery(query)
+    })
+    Logger.info("Stored procedures created")
 
     // Insert the profiles
     try {
         await DatabaseManager.rawQuery(INSERT_PROFILES)
         Logger.info("Profiles inserted")
     } catch (error) {
-        Logger.error(`Profiles insertion failed: ${error}`)
+        Logger.error(`Error inserting profiles: ${error}`)
     }
 
     // Insert the countries
-    try {
-        await DatabaseManager.rawQuery(INSERT_COUNTRIES)
-        Logger.info("Countries inserted")
+    try{
+    await DatabaseManager.rawQuery(INSERT_COUNTRIES)
+    Logger.info("Countries inserted")
     } catch (error) {
-        Logger.error(`Countries insertion failed: ${error}`)
+        Logger.error(`Error inserting countries: ${error}`)
     }
 
     // Get the profiles

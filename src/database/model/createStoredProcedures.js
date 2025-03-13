@@ -2,7 +2,8 @@
 export const CREATE_GET_COUNTRY_ID_BY_NAME_PROC = `
 CREATE OR REPLACE PROCEDURE get_country_id_by_name(
     IN in_country_name VARCHAR,
-    OUT out_country_id BIGINT
+    OUT out_country_id BIGINT,
+    OUT out_country_name_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -13,6 +14,13 @@ BEGIN
     INTO out_country_id
     FROM countries
     WHERE name = in_country_name;
+    
+    -- Check if the country ID is valid
+    IF out_country_id IS NULL THEN
+        out_country_name_is_valid := FALSE;
+    ELSE
+        out_country_name_is_valid := TRUE;
+    END IF;
 END;
 $$;
 `
@@ -21,32 +29,14 @@ $$;
 export const CREATE_CREATE_USER_PERSONAL_DOCUMENT_PROC = `
 CREATE OR REPLACE PROCEDURE create_user_personal_document(
     IN in_created_by_user_id BIGINT,
-    IN in_user_document_country VARCHAR,
+    IN in_user_document_country_id VARCHAR,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR,
-    OUT out_is_country_valid BOOLEAN,
     OUT out_document_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
-DECLARE
-    out_country_id BIGINT;
 BEGIN
-    -- Get the country ID
-    SELECT 
-        id 
-    INTO out_country_id
-    FROM countries
-    WHERE name = in_user_document_country;
-    
-    -- Check if the country ID is valid
-    IF out_country_id IS NULL THEN
-        out_is_country_valid := FALSE;
-        RETURN;
-    ELSE
-        out_is_country_valid := TRUE;
-    END IF;
-
     -- Insert into people table according to the document type
     IF in_user_document_type = 'identity_document' THEN
         -- Insert into identity_documents table
@@ -81,30 +71,71 @@ END;
 $$;
 `
 
+// Create a stored procedure that deletes a user personal document
+export const CREATE_DELETE_USER_PERSONAL_DOCUMENT_PROC = `
+CREATE OR REPLACE PROCEDURE delete_user_personal_document(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_user_document_type VARCHAR,
+    IN in_user_document_number VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Delete the user personal document
+    IF in_user_document_type = 'identity_document' THEN
+        UPDATE identity_documents
+        SET deleted_at = NOW(),
+            deleted_by_user_id = in_deleted_by_user_id
+        WHERE identity_document_number = in_user_document_number
+        AND revoked_at IS NULL;
+    ELSE
+        UPDATE passports
+        SET deleted_at = NOW(),
+            deleted_by_user_id = in_deleted_by_user_id
+        WHERE passport_number = in_user_document_number
+        AND revoked_at IS NULL;
+    END IF;
+END;
+$$;
+`
+
+// Create a stored procedure that replaces a user personal document
+export const CREATE_REPLACE_USER_PERSONAL_DOCUMENT_PROC = `
+CREATE OR REPLACE PROCEDURE replace_user_personal_document(
+    IN in_replaced_by_user_id BIGINT,
+    IN in_user_document_country_id VARCHAR,
+    IN in_user_document_type VARCHAR,
+    IN in_user_document_number VARCHAR,
+    OUT out_document_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Delete the user personal document
+    call delete_user_personal_document(in_replaced_by_user_id, in_user_document_type, in_user_document_number);
+    
+    -- Create the user personal document
+    call create_user_personal_document(in_replaced_by_user_id, in_user_document_country_id, in_user_document_type, in_user_document_number, out_document_id);
+END;
+$$;
+`
+
 // Create a stored procedure that creates a new person
 export const CREATE_CREATE_PERSON_PROC = `
 CREATE OR REPLACE PROCEDURE create_person(
     IN in_created_by_user_id BIGINT,
     IN in_user_first_name VARCHAR,
     IN in_user_last_name VARCHAR,
-    IN in_user_document_country VARCHAR,
+    IN in_user_document_country_id VARCHAR,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR,
-    OUT out_is_country_valid BOOLEAN,
     OUT out_person_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
-DECLARE
-    out_document_id BIGINT;
 BEGIN
     -- Create the user personal document
-    call create_user_personal_document(in_created_by_user_id, in_user_document_country, in_user_document_type, in_user_document_number, out_is_country_valid, out_document_id);
-    
-    -- Check if the country is valid
-    IF out_is_country_valid = FALSE THEN
-        RETURN;
-    END IF;
+    call create_user_personal_document(in_created_by_user_id, in_user_document_country_id, in_user_document_type, in_user_document_number, out_document_id);
 
     -- Insert into people table according to the document type
     IF in_user_document_type = 'identity_document' THEN        
@@ -145,6 +176,8 @@ export const CREATE_CREATE_USER_EMAIL_PROC = `
 CREATE OR REPLACE PROCEDURE create_user_email(
     IN in_user_id BIGINT,
     IN in_user_email VARCHAR,
+    IN in_user_email_verification_token VARCHAR,
+    IN in_user_email_verification_expires_at TIMESTAMP,
     OUT out_user_email_id BIGINT
 )
 LANGUAGE plpgsql
@@ -161,9 +194,46 @@ BEGIN
     )
     RETURNING
         id INTO out_user_email_id;
+        
+    -- Insert the user email verification
+    INSERT INTO user_email_verification_tokens (
+        user_email_id,
+        verification_token,
+        expires_at
+    )
+    VALUES (
+        in_user_email_id,
+        in_user_email_verification_token,
+        in_user_email_verification_expires_at
+    );
 END;
 $$;
 `
+
+// Create a stored procedure that updates a user email
+export const CREATE_UPDATE_USER_EMAIL_PROC = `
+CREATE OR REPLACE PROCEDURE update_user_email(
+    IN in_user_id BIGINT,
+    IN in_user_email VARCHAR,
+    IN in_user_email_verification_token VARCHAR,
+    IN in_user_email_verification_expires_at TIMESTAMP,
+    OUT out_user_email_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the user email
+    UPDATE user_emails
+    SET revoked_at = NOW()
+    WHERE user_id = in_user_id
+    AND revoked_at IS NULL;
+    
+    -- Create the user email
+    call create_user_email(in_user_id, in_user_email, in_user_email_verification_token, in_user_email_verification_expires_at, out_user_email_id);
+END;
+$$;
+`
+
 
 // Create a stored procedure that revokes a user email verification token by user email ID
 export const CREATE_REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC = `
@@ -255,7 +325,7 @@ CREATE OR REPLACE PROCEDURE get_user_email_info_by_user_email(
     OUT out_user_id BIGINT,
     OUT out_user_first_name VARCHAR,
     OUT out_user_last_name VARCHAR,
-    OUT out_user_email_id BIGINT,
+    OUT out_user_email_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -270,7 +340,6 @@ BEGIN
 END;
 $$;
 `
-
 
 // Create a stored procedure that verifies a user email verification token
 export const CREATE_VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC = `
@@ -346,9 +415,9 @@ END;
 $$;
 `
 
-// Create a stored procedure that updates a user password
-export const CREATE_UPDATE_USER_PASSWORD_PROC = `
-CREATE OR REPLACE PROCEDURE update_user_password(
+// Create a stored procedure that updates a user password hash
+export const CREATE_UPDATE_USER_PASSWORD_HASH_PROC = `
+CREATE OR REPLACE PROCEDURE update_user_password_hash(
     IN in_user_id BIGINT,
     IN in_user_password_hash VARCHAR
 )
@@ -379,7 +448,7 @@ export const CREATE_RESET_USER_PASSWORD_PROC = `
 CREATE OR REPLACE PROCEDURE reset_user_password(
     IN in_user_reset_password_token VARCHAR,
     IN in_user_password_hash VARCHAR,
-    OUT out_user_reset_password_token_is_valid BOOLEAN,
+    OUT out_user_reset_password_token_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -389,7 +458,7 @@ DECLARE
 BEGIN
     -- Check if the user reset password token is valid
     SELECT id, user_id
-    INTO out_user_reset_password_token_id, out_user_id
+    INTO out_user_reset_password_token_id
     FROM user_reset_password_tokens
     WHERE reset_password_token = in_user_reset_password_token
     AND expires_at > NOW()
@@ -407,8 +476,8 @@ BEGIN
     SET used_at = NOW()
     WHERE id = out_user_reset_password_token_id;
     
-    -- Update the user password
-    call update_user_password(out_user_id, in_user_password_hash);
+    -- Update the user password hash
+    call update_user_password_hash(out_user_id, in_user_password_hash);
 END;
 $$;
 `
@@ -428,8 +497,7 @@ CREATE OR REPLACE PROCEDURE create_user(
 	IN in_user_email_verification_token VARCHAR,
 	IN in_user_email_verification_expires_at TIMESTAMP,
 	OUT out_user_id BIGINT,
-	OUT out_is_country_valid BOOLEAN
-
+    OUT out_country_name_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -439,8 +507,11 @@ DECLARE
     out_profile_id BIGINT;
     out_user_email_id BIGINT;
 BEGIN
+    -- Get the country ID
+    call get_country_id_by_name(in_user_document_country, out_country_id, out_country_name_is_valid);
+
     -- Create the person
-    call create_person(in_created_by_user_id, in_user_first_name, in_user_last_name, in_user_document_country, in_user_document_type, in_user_document_number, out_is_country_valid, out_person_id);
+    call create_person(in_created_by_user_id, in_user_first_name, in_user_last_name, in_user_document_country, in_user_document_type, in_user_document_number, out_country_name_is_valid, out_person_id);
         
 	-- Insert into users table
 	INSERT INTO users (
@@ -463,7 +534,7 @@ BEGIN
 	);
 
 	-- Insert into user_emails table
-	call create_user_email(out_user_id, in_user_email, out_user_email_id);
+	call create_user_email(out_user_id, in_user_email, out_user_email_id, in_user_email_verification_token, in_user_email_verification_expires_at);
 
 	-- Insert into user_password_hashes table
 	INSERT INTO user_password_hashes (
@@ -488,18 +559,6 @@ BEGIN
     VALUES (
         out_user_id, 
         out_profile_id
-    );
-    
-    -- Insert the user email verification
-    INSERT INTO user_email_verification_tokens (
-        user_email_id,
-        verification_token,
-        expires_at
-    )
-    VALUES (
-        in_user_email_id,
-        in_user_email_verification_token,
-        in_user_email_verification_expires_at
     );
 END;
 $$;
@@ -1088,6 +1147,34 @@ END;
 $$;
 `
 
+// Create a stored procedure that updates a user username
+export const CREATE_UPDATE_USER_USERNAME_PROC = `
+CREATE OR REPLACE PROCEDURE update_user_username(
+    IN in_user_id BIGINT,
+    IN in_user_username VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Revoke the current username
+    UPDATE user_usernames
+    SET revoked_at = NOW()
+    WHERE user_id = in_user_id
+    AND revoked_at IS NULL;
+    
+    -- Insert into user_usernames table
+    INSERT INTO user_usernames (
+        user_id,
+        username
+    )
+    VALUES (
+        in_user_id,
+        in_user_username
+    );
+END;
+$$;
+`
+
 // Create a stored procedure that updates the user fields to be used by administrators
 export const CREATE_UPDATE_USER_BY_ADMIN_PROC = `
 CREATE OR REPLACE PROCEDURE update_user_by_admin(
@@ -1096,90 +1183,47 @@ CREATE OR REPLACE PROCEDURE update_user_by_admin(
     IN in_user_first_name VARCHAR,
     IN in_user_last_name VARCHAR,
     IN in_user_username VARCHAR,
-    IN in_user_email VARCHAR,
     IN in_user_document_country VARCHAR,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR,
-    OUT out_is_country_valid BOOLEAN
+    OUT out_country_name_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    out_country_id BIGINT;
-    out_person_id BIGINT;
+    in_current_user_first_name VARCHAR;
+    in_current_user_last_name VARCHAR;
+    out_user_document_country_id BIGINT;
     out_document_id BIGINT;
 BEGIN
     -- Get the country ID
-    SELECT 
-        id 
-    INTO out_country_id
-    FROM countries
-    WHERE name = in_user_document_country;
-    
-    -- Check if the country ID is valid
-    IF out_country_id IS NULL THEN
-        out_is_country_valid := FALSE;
-        RETURN;
-    ELSE
-        out_is_country_valid := TRUE;
+    call get_country_id_by_name(in_user_document_country, out_user_document_country_id, out_country_name_is_valid);
+
+    -- Replace the user personal document
+    IF out_country_name_is_valid = TRUE AND in_user_document_type IS NOT NULL AND in_user_document_number IS NOT NULL THEN
+        call replace_user_personal_document(in_updated_by_user_id, out_user_document_country_id, in_user_document_type, in_user_document_number, out_document_id);
     END IF;
-
-    -- Insert into people table according to the document type
-    IF in_user_document_type = 'identity_document' THEN
-        -- Insert into identity_documents table
-        INSERT INTO identity_documents (
-            country_id,
-            identity_document_number
-        )
-        VALUES (
-            out_country_id,
-            in_user_document_number
-        )
-        RETURNING
-            id INTO out_document_id;
+    
+    -- Get the current user first name and last name
+    SELECT people.first_name, people.last_name
+    INTO in_current_user_first_name, in_current_user_last_name
+    FROM users
+    INNER JOIN people ON users.person_id = people.id
+    WHERE users.id = in_user_id;
         
-        -- Update the people table
-        UPDATE people
-        SET first_name = in_user_first_name,
-            last_name = in_user_last_name,
-            identity_document_id = out_document_id
-        WHERE id = in_user_id;
-    ELSE
-        -- Insert into passports table
-        INSERT INTO passports (
-            country_id,
-            passport_number
-        )
-        VALUES (
-            out_country_id,
-            in_user_document_number
-        )
-        RETURNING
-            id INTO out_document_id;
-        
-        -- Update the people table
-        UPDATE people
-        SET first_name = in_user_first_name,
-            last_name = in_user_last_name,
-            passport_id = out_document_id
-        WHERE id = in_user_id;
-    END IF;    
-        
-    -- Update the users table
-    UPDATE users
-    SET updated_at = NOW(),
-        updated_by_user_id = in_updated_by_user_id
-    WHERE id = in_user_id;
-
-    -- Update the user_usernames table
-    UPDATE user_usernames
-    SET username = in_user_username
-    WHERE user_id = in_user_id;
-
-    -- Update the user_emails table
-    UPDATE user_emails
-    SET email = in_user_email
-    WHERE user_id = in_user_id;
+    -- Update the people table
+    UPDATE people
+    SET first_name = COALESCE(in_user_first_name, in_current_user_first_name),
+        last_name = COALESCE(in_user_last_name, in_current_user_last_name)
+    FROM users
+    INNER JOIN people ON people.id = users.person_id
+    WHERE users.id = in_user_id; 
+    
+    -- Check if the username is not null
+    IF in_user_username IS NOT NULL THEN
+        -- Update the user_usernames table
+        call update_user_username(in_user_id, in_user_username);
+    END IF;
 END;
 $$;
 `
