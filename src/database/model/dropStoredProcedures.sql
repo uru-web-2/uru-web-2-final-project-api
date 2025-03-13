@@ -6,6 +6,7 @@ DROP PROCEDURE IF EXISTS create_user_email;
 DROP PROCEDURE IF EXISTS revoke_user_email_verification_token_by_user_email_id;
 DROP PROCEDURE IF EXISTS create_user_email_verification_token;
 DROP PROCEDURE IF EXISTS get_user_email_info_by_user_id;
+DROP PROCEDURE IF EXISTS get_user_email_info_by_user_email;
 DROP PROCEDURE IF EXISTS verify_user_email_verification_token;
 DROP PROCEDURE IF EXISTS create_user;
 DROP PROCEDURE IF EXISTS log_in;

@@ -16,6 +16,8 @@ import {
 import {
     CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
     CREATE_USER_PROC,
+    CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
+    GET_USER_EMAIL_INFO_BY_USER_EMAIL_PROC,
     GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
     LOG_IN_PROC,
     VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC
@@ -42,7 +44,10 @@ import {
     sendVerificationEmail,
     sendWelcomeEmail
 } from "./mailersend.js";
-import {EMAIL_VERIFICATION_TOKEN_DURATION} from "./constants.js";
+import {
+    EMAIL_VERIFICATION_TOKEN_DURATION,
+    RESET_PASSWORD_TOKEN_DURATION
+} from "./constants.js";
 import {addDuration} from "./utils.js";
 
 // Validate new password
@@ -492,8 +497,8 @@ export class Dispatcher {
 
             // Get the user email information by the user ID
             const queryRes = await DatabaseManager.rawQuery(
-                GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
-                req.session.userID,
+                GET_USER_EMAIL_INFO_BY_USER_EMAIL_PROC,
+                body.email,
                 null,
                 null,
                 null,
@@ -502,21 +507,20 @@ export class Dispatcher {
             const firstName = queryRes.rows[0]?.out_user_first_name
             const lastName = queryRes.rows[0]?.out_user_last_name
             const fullName = firstName + " " + lastName
-            const emailID = queryRes.rows[0]?.out_user_email_id
-            const email = queryRes.rows[0]?.out_user_email
+            const userID = queryRes.rows[0]?.out_user_id
 
             // Create the new reset password token
-            await DatabaseManager.rawQuery(CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
-                emailID,
+            await DatabaseManager.rawQuery(CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
+                userID,
                 resetPasswordToken,
-                addDuration(EMAIL_VERIFICATION_TOKEN_DURATION).toISOString(),
+                addDuration(RESET_PASSWORD_TOKEN_DURATION).toISOString(),
             )
 
             // Send the response
             res.status(200).json(SuccessJSendBody())
 
             // Send the reset password email
-            await sendResetPasswordEmail(email, fullName, resetPasswordToken)
+            await sendResetPasswordEmail(body.email, fullName, resetPasswordToken)
         } catch (error) {
             // Pass the error to the error handler
             next(error)

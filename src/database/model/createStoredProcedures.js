@@ -177,7 +177,9 @@ BEGIN
     UPDATE user_email_verification_tokens
     SET revoked_at = NOW()
     WHERE user_email_id = in_user_email_id
-    AND revoked_at IS NULL;
+    AND revoked_at IS NULL
+    AND expires_at > NOW()
+    AND verified_at IS NULL;
 END;
 $$;
 `
@@ -246,6 +248,30 @@ END;
 $$;
 `
 
+// Create a stored procedure that gets a user email information by user email
+export const CREATE_GET_USER_EMAIL_INFO_BY_USER_EMAIL_PROC = `
+CREATE OR REPLACE PROCEDURE get_user_email_info_by_user_email(
+    IN in_user_email VARCHAR,
+    OUT out_user_id BIGINT,
+    OUT out_user_first_name VARCHAR,
+    OUT out_user_last_name VARCHAR,
+    OUT out_user_email_id BIGINT,
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Select the user email information
+    SELECT users.id, user_emails.id, people.first_name, people.last_name
+    INTO out_user_id, out_user_email_id, out_user_first_name, out_user_last_name
+    FROM user_emails
+    INNER JOIN users ON user_emails.user_id = users.id
+    INNER JOIN people ON users.person_id = people.id
+    WHERE user_emails.email = in_user_email;
+END;
+$$;
+`
+
+
 // Create a stored procedure that verifies a user email verification token
 export const CREATE_VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC = `
 CREATE OR REPLACE PROCEDURE verify_user_email_verification_token(
@@ -285,14 +311,16 @@ BEGIN
     UPDATE user_reset_password_tokens
     SET revoked_at = NOW()
     WHERE user_id = in_user_id
-    AND revoked_at IS NULL;
+    AND revoked_at IS NULL
+    AND expires_at > NOW()
+    AND used_at IS NULL;
 END;
 $$;
 `
 
 // Create a stored procedure that creates a new user reset password token
 export const CREATE_CREATE_USER_RESET_PASSWORD_TOKEN_PROC = `
-CREATE OR REPLACE PROCEDURE create_reset_password_token(
+CREATE OR REPLACE PROCEDURE create_user_reset_password_token(
     IN in_user_id BIGINT,
     IN in_user_reset_password_token VARCHAR,
     IN in_user_reset_password_expires_at TIMESTAMP
@@ -305,7 +333,7 @@ BEGIN
     
     -- Insert into user_reset_password_tokens table
     INSERT INTO user_reset_password_tokens (
-        user_email_id,
+        user_id,
         reset_password_token,
         expires_at
     )
@@ -418,7 +446,7 @@ BEGIN
         out_profile_id
     );
     
-    -- Create the user email verification
+    -- Insert the user email verification
     INSERT INTO user_email_verification_tokens (
         user_email_id,
         verification_token,
