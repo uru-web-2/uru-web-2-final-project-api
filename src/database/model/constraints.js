@@ -79,5 +79,17 @@ export const LANGUAGES_UNIQUE_NAME = 'languages_unique_name';
 // Unique document ID and language ID for the document_languages table
 export const DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID = 'document_languages_unique_document_id_language_id';
 
-//Unique UUID for the book_copies table
+// Unique UUID for the book_copies table
 export const BOOK_COPIES_UNIQUE_UUID = 'book_copies_unique_uuid';
+
+// Created by user ID foreign key constraint for the identity_documents table
+export const IDENTITY_DOCUMENTS_CREATED_BY_USER_ID_FK = 'identity_documents_created_by_user_id_fk';
+
+// Deleted by user ID foreign key constraint for the identity_documents table
+export const IDENTITY_DOCUMENTS_DELETED_BY_USER_ID_FK = 'identity_documents_deleted_by_user_id_fk';
+
+// Created by user ID foreign key constraint for the passports table
+export const PASSPORTS_CREATED_BY_USER_ID_FK = 'passports_created_by_user_id_fk';
+
+// Deleted by user ID foreign key constraint for the passports table
+export const PASSPORTS_DELETED_BY_USER_ID_FK = 'passports_deleted_by_user_id_fk';

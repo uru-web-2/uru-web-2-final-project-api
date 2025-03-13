@@ -187,11 +187,24 @@ export const CREATE_CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC = `
 CREATE OR REPLACE PROCEDURE create_user_email_verification_token(
     IN in_user_email_id BIGINT,
     IN in_user_email_verification_token VARCHAR,
-    IN in_user_email_verification_expires_at TIMESTAMP
+    IN in_user_email_verification_expires_at TIMESTAMP,
+    OUT out_user_email_is_verified BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the user email is verified
+    SELECT verified_at IS NOT NULL
+    INTO out_user_email_is_verified
+    FROM user_email_verification_tokens
+    WHERE user_email_id = in_user_email_id
+    AND verified_at IS NOT NULL
+    AND revoked_at IS NULL;
+    
+    IF out_user_email_is_verified = TRUE THEN
+        RETURN;
+    END IF;
+
     -- Revoke the user email verification
     call revoke_user_email_verification_token_by_user_email_id(in_user_email_id);
 
@@ -223,13 +236,11 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Select the user email information
-    SELECT user_emails.id, user_emails.email, people.first_name, people.last_name
+    SELECT user_emails.id, user_emails.email, people.first_name, people.last_name, 
     INTO out_user_email_id, out_user_email, out_user_first_name, out_user_last_name
     FROM user_emails
-    INNER JOIN users
-    ON user_emails.user_id = users.id
-    INNER JOIN people
-    ON users.person_id = people.id
+    INNER JOIN users ON user_emails.user_id = users.id
+    INNER JOIN people ON users.person_id = people.id
     WHERE user_emails.user_id = in_user_id;
 END;
 $$;
@@ -418,18 +429,24 @@ export const CREATE_LOG_IN_PROC = `
 CREATE OR REPLACE PROCEDURE log_in(
     IN in_user_username VARCHAR,
     OUT out_user_id BIGINT,
-    OUT out_user_password_hash VARCHAR
+    OUT out_user_password_hash VARCHAR,
+    OUT out_user_email_is_verified BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Select the user id
-    SELECT user_usernames.user_id, user_password_hashes.password_hash
-    INTO out_user_id, out_user_password_hash
+    SELECT user_usernames.user_id, user_password_hashes.password_hash, user_email_verification_tokens.verified_at IS NOT NULL
+    INTO out_user_id, out_user_password_hash, out_user_email_is_verified
     FROM user_usernames
-    INNER JOIN user_password_hashes
-    ON user_usernames.user_id = user_password_hashes.user_id
-    WHERE username = in_user_username;
+    INNER JOIN user_password_hashes ON user_password_hashes.user_id = user_usernames.user_id
+    INNER JOIN user_emails ON user_emails.user_id = user_usernames.user_id
+    INNER JOIN user_email_verification_tokens ON user_email_verification_tokens.user_email_id = user_emails.id
+    WHERE username = in_user_username
+    AND user_usernames.revoked_at IS NULL
+    AND user_password_hashes.revoked_at IS NULL
+    AND user_emails.revoked_at IS NULL
+    AND user_email_verification_tokens.revoked_at IS NULL;
 END;
 $$;
 `

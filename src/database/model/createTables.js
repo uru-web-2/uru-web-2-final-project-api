@@ -26,7 +26,11 @@ import {
     USER_RESET_PASSWORD_TOKENS_UNIQUE_USER_ID,
     USER_USERNAMES_UNIQUE_USER_ID,
     USER_USERNAMES_UNIQUE_USERNAME,
-    USERS_UNIQUE_PERSON
+    USERS_UNIQUE_PERSON,
+    IDENTITY_DOCUMENTS_CREATED_BY_USER_ID_FK,
+    IDENTITY_DOCUMENTS_DELETED_BY_USER_ID_FK,
+    PASSPORTS_CREATED_BY_USER_ID_FK,
+    PASSPORTS_DELETED_BY_USER_ID_FK
 } from "./constraints.js";
 
 // Query to create the countries table
@@ -96,10 +100,18 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (person_id) REFERENCES people(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${USERS_UNIQUE_PERSON} ON users (person_id);
-ALTER TABLE identity_documents ADD CONSTRAINT identity_documents_fk_user_id FOREIGN KEY (created_by_user_id) REFERENCES users(id);
-ALTER TABLE identity_documents ADD CONSTRAINT identity_documents_fk_deleted_by_user_id FOREIGN KEY (deleted_by_user_id) REFERENCES users(id);
-ALTER TABLE passports ADD CONSTRAINT passports_fk_user_id FOREIGN KEY (created_by_user_id) REFERENCES users(id);
-ALTER TABLE passports ADD CONSTRAINT passports_fk_deleted_by_user_id FOREIGN KEY (deleted_by_user_id) REFERENCES users(id);
+
+ALTER TABLE identity_documents DROP CONSTRAINT IF EXISTS ${IDENTITY_DOCUMENTS_CREATED_BY_USER_ID_FK};
+ALTER TABLE identity_documents ADD CONSTRAINT ${IDENTITY_DOCUMENTS_CREATED_BY_USER_ID_FK} FOREIGN KEY (created_by_user_id) REFERENCES users(id);
+
+ALTER TABLE identity_documents DROP CONSTRAINT IF EXISTS ${IDENTITY_DOCUMENTS_DELETED_BY_USER_ID_FK};
+ALTER TABLE identity_documents ADD CONSTRAINT ${IDENTITY_DOCUMENTS_DELETED_BY_USER_ID_FK} FOREIGN KEY (deleted_by_user_id) REFERENCES users(id);
+
+ALTER TABLE passports DROP CONSTRAINT IF EXISTS ${PASSPORTS_CREATED_BY_USER_ID_FK};
+ALTER TABLE passports ADD CONSTRAINT ${PASSPORTS_CREATED_BY_USER_ID_FK} FOREIGN KEY (created_by_user_id) REFERENCES users(id);
+
+ALTER TABLE passports DROP CONSTRAINT IF EXISTS ${PASSPORTS_DELETED_BY_USER_ID_FK};
+ALTER TABLE passports ADD CONSTRAINT ${PASSPORTS_DELETED_BY_USER_ID_FK} FOREIGN KEY (deleted_by_user_id) REFERENCES users(id);
 `
 
 // Query to create the person_positions table

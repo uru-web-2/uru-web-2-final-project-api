@@ -2,7 +2,7 @@ import {v4 as uuidv4} from "uuid";
 import express from "express";
 import helmet from "helmet";
 import bcrypt from "bcrypt";
-import Session, {checkSession} from "./session.js";
+import Session, {sessionExists} from "./session.js";
 import Logger from "./logger.js";
 import DatabaseManager from "./database.js";
 import ErrorHandler from "./handler.js";
@@ -131,25 +131,25 @@ export class Dispatcher {
         this.#app.post("/login", this.LogIn)
 
         // Set the logout route
-        this.#app.post("/logout", checkSession, this.LogOut)
+        this.#app.post("/logout", sessionExists, this.LogOut)
 
         // Set the execute route
-        this.#app.post("/execute", checkSession, this.Execute)
+        this.#app.post("/execute", sessionExists, this.Execute)
 
-        // Set the send verification email route
+        // Set the send email verification route
         this.#app.post("/send-email-verification",
-            checkSession,
-            this.SendVerificationEmail
+            sessionExists,
+            this.SendEmailVerification
         )
 
         // Set the verify email route
-        this.#app.post("/verify-email", checkSession, this.VerifyEmail)
+        this.#app.post("/verify-email", sessionExists, this.VerifyEmail)
 
         // Set the forgot password route
         this.#app.post("/forgot-password", this.ForgotPassword)
 
         // Set the reset password route
-        // this.#app.post("/reset-password", checkSession, this.ResetPassword)
+        // this.#app.post("/reset-password", sessionExists, this.ResetPassword)
 
         // Add the error catcher middleware
         this.#app.use(ErrorHandler.errorCatcher())
@@ -280,7 +280,10 @@ export class Dispatcher {
             // Get the user ID and password hash
             let userID, passwordHash
             const logInRes = await DatabaseManager.rawQuery(LOG_IN_PROC,
-                body.username, null, null
+                body.username,
+                null,
+                null,
+                null,
             )
 
             // Check if the username was found
@@ -331,10 +334,10 @@ export class Dispatcher {
                 )
 
             // Create a session with the given profile
-            console.log(parsedUserProfiles.find(profile => profile.name === body.profile).id)
             Session.set(req, {
                 userID,
-                profileID: body.profile ? parsedUserProfiles.find(profile => profile.name === body.profile).id : parsedUserProfiles[0].id
+                profileID: body.profile ? parsedUserProfiles.find(profile => profile.name === body.profile).id : parsedUserProfiles[0].id,
+                isEmailVerified: logInRes.rows[0]?.out_user_email_is_verified
             })
 
             // Log the user ID
@@ -390,32 +393,41 @@ export class Dispatcher {
         }
     }
 
-    // Handle the send verification email request
-    async SendVerificationEmail(req, res, next) {
+    // Handle the send email verification request
+    async SendEmailVerification(req, res, next) {
         try {
+            console.log(req.session)
+            // Check if the email is already verified
+            if (req.session.isEmailVerified)
+                throw new FieldFailError(400, "email", "email is already verified")
+
             // Generate a random token
             const emailVerificationToken = uuidv4()
 
             // Get the user email information by the user ID
-            const queryRes = await DatabaseManager.rawQuery(
+            const getRes = await DatabaseManager.rawQuery(
                 GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
                 req.session.userID,
                 null,
                 null,
                 null,
+                null,
             )
-            const firstName = queryRes.rows[0]?.out_user_first_name
-            const lastName = queryRes.rows[0]?.out_user_last_name
+            const firstName = getRes.rows[0]?.out_user_first_name
+            const lastName = getRes.rows[0]?.out_user_last_name
             const fullName = firstName + " " + lastName
-            const emailID = queryRes.rows[0]?.out_user_email_id
-            const email = queryRes.rows[0]?.out_user_email
+            const emailID = getRes.rows[0]?.out_user_email_id
+            const email = getRes.rows[0]?.out_user_email
 
             // Create the user with the new email verification token
-            await DatabaseManager.rawQuery(CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
+            const createRes=await DatabaseManager.rawQuery(CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
                 emailID,
                 emailVerificationToken,
-                EMAIL_VERIFICATION_TOKEN_DURATION,
+                addDuration(EMAIL_VERIFICATION_TOKEN_DURATION).toISOString(),
+                null,
             )
+            if (createRes.rows[0].out_user_email_is_verified)
+                throw new FieldFailError(400, "email", "email is already verified")
 
             // Send the response
             res.status(200).json(SuccessJSendBody())
@@ -447,6 +459,9 @@ export class Dispatcher {
             if (!isTokenValid)
                 throw new FieldFailError(400, "token", "token is invalid")
 
+            // Set in the session that the email is verified
+            Session.set(req, {userID:req.session.userID, profileID:req.session.profileID, isEmailVerified: true})
+
             // Send the response
             res.status(200).json(SuccessJSendBody())
         } catch (error) {
@@ -474,6 +489,7 @@ export class Dispatcher {
                 null,
                 null,
                 null,
+                null,
             )
             const firstName = queryRes.rows[0]?.out_user_first_name
             const lastName = queryRes.rows[0]?.out_user_last_name
@@ -485,7 +501,7 @@ export class Dispatcher {
             await DatabaseManager.rawQuery(CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
                 emailID,
                 resetPasswordToken,
-                EMAIL_VERIFICATION_TOKEN_DURATION,
+                addDuration(EMAIL_VERIFICATION_TOKEN_DURATION).toISOString(),
             )
 
             // Send the response

@@ -83,7 +83,7 @@ import {
     CREATE_GET_USER_ID_BY_USERNAME_PROC,
     CREATE_IS_METHOD_ID_VALID_PROC,
     CREATE_IS_PROFILE_ID_VALID_PROC,
-    CREATE_LOG_IN_PROC,
+    CREATE_LOG_IN_PROC, CREATE_RESET_USER_PASSWORD_PROC,
     CREATE_REVOKE_PROFILE_PERMISSION_PROC,
     CREATE_REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC,
     CREATE_REVOKE_USER_PROFILE_PROC,
@@ -266,10 +266,9 @@ export default async function migrate() {
     // Log the migration
     Logger.info("Migrating the database")
 
-    // Create tables, functions, and stored procedures in the database if they do not exist
+    // Create the tables
     try {
         await DatabaseManager.runTransaction(async (client) => {
-            // Create the tables
             for (const query of [
                 CREATE_COUNTRIES,
                 CREATE_PASSPORTS,
@@ -314,10 +313,15 @@ export default async function migrate() {
                 CREATE_DOCUMENT_LANGUAGES
             ])
                 await client.rawQuery(query)
+        })
+        Logger.info("Tables created")
+    } catch (error) {
+        Logger.error(`Tables creation failed: ${error}`)
+    }
 
-            Logger.info("Tables created")
-
-            // Create the functions
+    // Create the functions
+    try {
+        await DatabaseManager.runTransaction(async (client) => {
             for (const query of [
                 CREATE_GET_ALL_MODULES_FN,
                 CREATE_GET_ALL_OBJECTS_FN,
@@ -334,10 +338,15 @@ export default async function migrate() {
                 CREATE_GET_METHODS_BY_OBJECT_ID_FN
             ])
                 await client.rawQuery(query)
+        })
+        Logger.info("Functions created")
+    } catch (error) {
+        Logger.error(`Functions creation failed: ${error}`)
+    }
 
-            Logger.info("Functions created")
-
-            // Create the stored procedures
+    // Create the stored procedures
+    try {
+        await DatabaseManager.runTransaction(async (client) => {
             for (const query of [
                 CREATE_GET_COUNTRY_ID_BY_NAME_PROC,
                 CREATE_CREATE_USER_PERSONAL_DOCUMENT_PROC,
@@ -349,6 +358,7 @@ export default async function migrate() {
                 CREATE_VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC,
                 CREATE_REVOKE_USER_RESET_PASSWORD_TOKEN_BY_USER_ID_PROC,
                 CREATE_CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
+                CREATE_RESET_USER_PASSWORD_PROC,
                 CREATE_CREATE_USER_PROC,
                 CREATE_LOG_IN_PROC,
                 CREATE_IS_METHOD_ID_VALID_PROC,
@@ -372,12 +382,10 @@ export default async function migrate() {
                 CREATE_GET_NUMBER_OF_USERS_PROC
             ])
                 await client.rawQuery(query)
-
-            Logger.info("Stored procedures created")
         })
-        Logger.info("Tables, functions, and stored procedures created")
+        Logger.info("Stored procedures created")
     } catch (error) {
-        Logger.error(`Tables, functions, and stored procedures creation failed: ${error}`)
+        Logger.error(`Stored procedures creation failed: ${error}`)
     }
 
     // Insert the profiles

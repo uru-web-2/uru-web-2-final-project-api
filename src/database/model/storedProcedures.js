@@ -14,7 +14,7 @@ export const CREATE_USER_EMAIL_PROC = "CALL create_user_email($1, $2, $3)"
 export const REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC = "CALL revoke_user_email_verification_token_by_user_email_id($1)"
 
 // Query to create a new user email verification token
-export const CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC = "CALL create_user_email_verification_token($1, $2, $3)"
+export const CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC = "CALL create_user_email_verification_token($1, $2, $3, $4)"
 
 // Query to get the user email information by user ID
 export const GET_USER_EMAIL_INFO_BY_USER_ID_PROC = "CALL get_user_email_info_by_user_id($1, $2, $3, $4, $5)"
@@ -26,7 +26,7 @@ export const VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC = "CALL verify_user_email
 export const CREATE_USER_PROC = "CALL create_user($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"
 
 // Query to log in a user
-export const LOG_IN_PROC = "CALL log_in($1, $2, $3)"
+export const LOG_IN_PROC = "CALL log_in($1, $2, $3, $4)"
 
 // Query to get the user ID by username
 export const GET_USER_ID_BY_USERNAME_PROC = "CALL get_user_id_by_username($1, $2)"
