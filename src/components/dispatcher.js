@@ -100,6 +100,20 @@ function ValidateNewUsername(username) {
         )
 }
 
+// Added email verification to session
+function AddEmailVerificationToSession(req) {
+    Session.set(req, {userID:req.session.userID, profileID:req.session.profileID, isEmailVerified: true})
+}
+
+// Set session to the response
+function SetSessionToResponse(req, userID, profileID, isEmailVerified) {
+    Session.set(req, {
+        userID,
+        profileID,
+        isEmailVerified
+    })
+}
+
 // Dispatcher for handling requests
 export class Dispatcher {
     #app
@@ -265,11 +279,8 @@ export class Dispatcher {
     async LogIn(req, res, next) {
         try {
             // Check if there's already a session
-            if (req.session.userID) {
-                // Send the response
-                res.status(400).json(FailJSendBody({session: "session already exists"}))
-                return
-            }
+            if (req.session.userID)
+                return res.status(400).json(FailJSendBody({session: "session already exists"}))
 
             // Validate the request
             const body = HandleValidation(req,
@@ -334,11 +345,9 @@ export class Dispatcher {
                 )
 
             // Create a session with the given profile
-            Session.set(req, {
-                userID,
-                profileID: body.profile ? parsedUserProfiles.find(profile => profile.name === body.profile).id : parsedUserProfiles[0].id,
-                isEmailVerified: logInRes.rows[0]?.out_user_email_is_verified
-            })
+            SetSessionToResponse(req, userID, body.profile ? parsedUserProfiles.find(profile => profile.name === body.profile).id : parsedUserProfiles[0].id,
+                logInRes.rows[0]?.out_user_email_is_verified
+            )
 
             // Log the user ID
             Logger.info(`Logged in user ${userID}`)
@@ -363,13 +372,6 @@ export class Dispatcher {
     // Handle the execute request
     async Execute(req, res, next) {
         try {
-            // Check if there's a session
-            if (!req.session.userID) {
-                // Send the response
-                res.status(400).json(FailJSendBody({session: "session not found"}))
-                return
-            }
-
             // Validate the request
             const {
                 modules,
@@ -396,7 +398,6 @@ export class Dispatcher {
     // Handle the send email verification request
     async SendEmailVerification(req, res, next) {
         try {
-            console.log(req.session)
             // Check if the email is already verified
             if (req.session.isEmailVerified)
                 throw new FieldFailError(400, "email", "email is already verified")
@@ -426,8 +427,15 @@ export class Dispatcher {
                 addDuration(EMAIL_VERIFICATION_TOKEN_DURATION).toISOString(),
                 null,
             )
-            if (createRes.rows[0].out_user_email_is_verified)
-                throw new FieldFailError(400, "email", "email is already verified")
+            if (createRes.rows[0].out_user_email_is_verified) {
+                // Set in the session that the email is verified
+                AddEmailVerificationToSession(req)
+
+                throw new FieldFailError(400,
+                    "email",
+                    "email is already verified"
+                )
+            }
 
             // Send the response
             res.status(200).json(SuccessJSendBody())
@@ -460,7 +468,7 @@ export class Dispatcher {
                 throw new FieldFailError(400, "token", "token is invalid")
 
             // Set in the session that the email is verified
-            Session.set(req, {userID:req.session.userID, profileID:req.session.profileID, isEmailVerified: true})
+            AddEmailVerificationToSession(req)
 
             // Send the response
             res.status(200).json(SuccessJSendBody())

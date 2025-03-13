@@ -236,7 +236,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Select the user email information
-    SELECT user_emails.id, user_emails.email, people.first_name, people.last_name, 
+    SELECT user_emails.id, user_emails.email, people.first_name, people.last_name
     INTO out_user_email_id, out_user_email, out_user_first_name, out_user_last_name
     FROM user_emails
     INNER JOIN users ON user_emails.user_id = users.id
@@ -419,7 +419,16 @@ BEGIN
     );
     
     -- Create the user email verification
-    call create_user_email_verification(out_user_email_id, in_user_email_verification_token, in_user_email_verification_expires_at);
+    INSERT INTO user_email_verification_tokens (
+        user_email_id,
+        verification_token,
+        expires_at
+    )
+    VALUES (
+        in_user_email_id,
+        in_user_email_verification_token,
+        in_user_email_verification_expires_at
+    );
 END;
 $$;
 `
