@@ -211,3 +211,34 @@ VALUES
 ('Zambia'),
 ('Zimbabwe');
 `
+
+// Query to insert languages (TOP 25)
+export const INSERT_LANGUAGES = `
+INSERT INTO languages (name)
+VALUES
+('English'),
+('Spanish'),
+('French'),
+('Chinese'),
+('Arabic'),
+('Russian'),
+('Portuguese'),
+('German'),
+('Japanese'),
+('Hindi'),
+('Italian'),
+('Dutch'),
+('Turkish'),
+('Korean'),
+('Polish'),
+('Vietnamese'),
+('Thai'),
+('Persian'),
+('Indonesian'),
+('Romanian'),
+('Ukrainian'),
+('Greek'),
+('Swedish'),
+('Czech'),
+('Hungarian');
+`

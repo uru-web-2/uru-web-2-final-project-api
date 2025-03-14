@@ -312,12 +312,18 @@ export const CREATE_DOCUMENTS = `
 CREATE TABLE IF NOT EXISTS documents (
     id BIGSERIAL PRIMARY KEY,
     uuid VARCHAR(36),
+    title VARCHAR(100),
+    description TEXT,
     registered_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP,
     release_date TIMESTAMP,
-    metadata TEXT,
     average_ratings FLOAT DEFAULT 0,
     number_ratings BIGINT DEFAULT 0,
-    pages INTEGER
+    pages INTEGER,
+    registered_by_user_id BIGINT NOT NULL,
+    deleted_by_user_id BIGINT,
+    FOREIGN KEY (registered_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 `;
 
@@ -328,12 +334,12 @@ CREATE TABLE IF NOT EXISTS document_images (
     document_id BIGINT NOT NULL,
     image_url VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 `;
 
@@ -341,15 +347,15 @@ CREATE TABLE IF NOT EXISTS document_images (
 export const CREATE_POSTS = `
 CREATE TABLE IF NOT EXISTS posts (
     id BIGSERIAL PRIMARY KEY,
-    available_since TIMESTAMP NOT NULL DEFAULT NOW(),
-    available_until TIMESTAMP,
-    removed_at TIMESTAMP,
     document_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP,
+    available_until TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 `;
 
@@ -360,11 +366,11 @@ CREATE TABLE IF NOT EXISTS locations (
     floor INTEGER NOT NULL,
     area VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${LOCATIONS_UNIQUE_FLOOR_AREA} ON locations (floor, area);
 `;
@@ -376,12 +382,12 @@ CREATE TABLE IF NOT EXISTS location_sections (
     location_id BIGINT NOT NULL,
     section VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (location_id) REFERENCES locations(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 `;
 
@@ -405,15 +411,15 @@ export const CREATE_DOCUMENT_LOCATIONS = `
 CREATE TABLE IF NOT EXISTS document_locations (
     id BIGSERIAL PRIMARY KEY,
     assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     document_id BIGINT NOT NULL,
     location_section_id BIGINT NOT NULL,
     assigned_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (location_section_id) REFERENCES location_sections(id),
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 `;
 
@@ -437,11 +443,11 @@ CREATE TABLE IF NOT EXISTS topics (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 `;
 
@@ -450,15 +456,15 @@ export const CREATE_DOCUMENT_TOPICS = `
 CREATE TABLE IF NOT EXISTS document_topics (
     id BIGSERIAL PRIMARY KEY,
     assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     document_id BIGINT NOT NULL,
     topic_id BIGINT NOT NULL,
     assigned_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (topic_id) REFERENCES topics(id),
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_TOPICS_UNIQUE_DOCUMENT_ID_TOPIC_ID} ON document_topics (document_id, topic_id);
 `;
@@ -469,13 +475,13 @@ CREATE TABLE IF NOT EXISTS publishers (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ${PUBLISHERS_UNIQUE_NAME} ON publishers (name) WHERE removed_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ${PUBLISHERS_UNIQUE_NAME} ON publishers (name) WHERE deleted_at IS NULL;
 `;
 
 // Query to create the books table
@@ -483,7 +489,6 @@ export const CREATE_BOOKS = `
 CREATE TABLE IF NOT EXISTS books (
     id BIGSERIAL PRIMARY KEY,
     isbn VARCHAR(150) NOT NULL,
-    title VARCHAR(100),
     publisher_id BIGSERIAL NOT NULL,
     FOREIGN KEY (publisher_id) REFERENCES publishers(id)
 );
@@ -494,13 +499,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS ${BOOKS_UNIQUE_ISBN} ON books (isbn);
 export const CREATE_LANGUAGES = `
 CREATE TABLE IF NOT EXISTS languages (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
-    created_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    name VARCHAR(100) NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${LANGUAGES_UNIQUE_NAME} ON languages (name);
 `
@@ -512,13 +511,13 @@ CREATE TABLE IF NOT EXISTS document_languages (
     language_id BIGINT NOT NULL,
     document_id BIGINT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (language_id) REFERENCES languages(id),
     FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID} ON document_languages (document_id, language_id);
 `;
@@ -530,12 +529,12 @@ CREATE TABLE IF NOT EXISTS book_versions (
     book_id BIGSERIAL NOT NULL,
     version VARCHAR(50),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (book_id) REFERENCES books(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 `;
 
@@ -546,12 +545,12 @@ CREATE TABLE IF NOT EXISTS book_copies (
     uuid VARCHAR(200),
     book_version_id BIGSERIAL NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (book_version_id) REFERENCES book_versions(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${BOOK_COPIES_UNIQUE_UUID} ON book_copies (uuid);
 `;
@@ -568,8 +567,8 @@ CREATE TABLE IF NOT EXISTS book_model_loans (
     returned_at TIMESTAMP,
     loaned_by_user_id BIGINT NOT NULL,
     loaned_to_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
-    removed_at TIMESTAMP,
+    deleted_by_user_id BIGINT,
+    deleted_at TIMESTAMP,
     book_version_id BIGINT NOT NULL,
     book_copy_id BIGINT,
     FOREIGN KEY (loaned_by_user_id) REFERENCES users(id),
@@ -583,15 +582,14 @@ CREATE TABLE IF NOT EXISTS book_model_loans (
 export const CREATE_WORKS = `
 CREATE TABLE IF NOT EXISTS works (
     id BIGSERIAL PRIMARY KEY,
-    title VARCHAR(100),
     document_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 `;
 
@@ -609,15 +607,15 @@ export const CREATE_ARTICLE_JURY_MEMBERS = `
 CREATE TABLE IF NOT EXISTS article_jury_members (
     id BIGSERIAL PRIMARY KEY,
     assigned_at TIMESTAMP,
-    removed_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     jury_member_id BIGSERIAL NOT NULL,
     article_id BIGSERIAL NOT NULL,
     assigned_by_user_id BIGINT NOT NULL,
-    removed_by_user_id BIGINT,
+    deleted_by_user_id BIGINT,
     FOREIGN KEY (jury_member_id) REFERENCES people(id),
     FOREIGN KEY (article_id) REFERENCES articles(id),
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 `;
 

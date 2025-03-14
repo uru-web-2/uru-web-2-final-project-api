@@ -108,3 +108,33 @@ export const UPDATE_USER_USERNAME_PROC = "CALL update_user_username($1, $2)"
 
 // Query to update a user by admin
 export const UPDATE_USER_BY_ADMIN_PROC = "CALL update_user_by_admin($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+
+// Query to create a new document
+export const CREATE_DOCUMENT_PROC = "CALL create_document($1, $2, $3, $4, $5)"
+
+// Query to update a document
+export const UPDATE_DOCUMENT_PROC = "CALL update_document($1, $2, $3, $4, $5)"
+
+// Query to delete a document
+export const DELETE_DOCUMENT_PROC = "CALL delete_document($1, $2)"
+
+// Query to create a new document image
+export const CREATE_DOCUMENT_IMAGE_PROC = "CALL create_document_image($1, $2, $3)"
+
+// Query to delete a document image
+export const DELETE_DOCUMENT_IMAGE_PROC = "CALL delete_document_image($1, $2)"
+
+// Query to create a new document language
+export const CREATE_DOCUMENT_LANGUAGE_PROC = "CALL create_document_language($1, $2, $3)"
+
+// Query to delete a document language
+export const DELETE_DOCUMENT_LANGUAGE_PROC = "CALL delete_document_language($1, $2)"
+
+// Query to create a new post
+export const CREATE_POST_PROC = "CALL create_post($1, $2, $3)"
+
+// Query to update a post
+export const UPDATE_POST_PROC = "CALL update_post($1, $2)"
+
+// Query to delete a post
+export const DELETE_POST_PROC = "CALL delete_post($1, $2)"

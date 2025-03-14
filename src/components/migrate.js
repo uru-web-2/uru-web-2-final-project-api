@@ -61,11 +61,15 @@ import {
 import {
     CREATE_ASSIGN_PROFILE_PERMISSION_PROC,
     CREATE_ASSIGN_USER_PROFILE_PROC,
+    CREATE_CREATE_DOCUMENT_IMAGE_PROC,
+    CREATE_CREATE_DOCUMENT_LANGUAGE_PROC,
+    CREATE_CREATE_DOCUMENT_PROC,
     CREATE_CREATE_METHOD_PROC,
     CREATE_CREATE_METHOD_WITH_PROFILES_PROC,
     CREATE_CREATE_MODULE_PROC,
     CREATE_CREATE_OBJECT_PROC,
     CREATE_CREATE_PERSON_PROC,
+    CREATE_CREATE_POST_PROC,
     CREATE_CREATE_PROFILE_PROC,
     CREATE_CREATE_USER_EMAIL_PROC,
     CREATE_CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
@@ -73,6 +77,9 @@ import {
     CREATE_CREATE_USER_PROC,
     CREATE_CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
     CREATE_DELETE_ALL_MODULES_PROC,
+    CREATE_DELETE_DOCUMENT_IMAGE_PROC,
+    CREATE_DELETE_DOCUMENT_PROC,
+    CREATE_DELETE_POST_PROC,
     CREATE_DELETE_PROFILE_PROC,
     CREATE_DELETE_USER_PERSONAL_DOCUMENT_PROC,
     CREATE_GET_COUNTRY_ID_BY_NAME_PROC,
@@ -92,6 +99,8 @@ import {
     CREATE_REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC,
     CREATE_REVOKE_USER_PROFILE_PROC,
     CREATE_REVOKE_USER_RESET_PASSWORD_TOKEN_BY_USER_ID_PROC,
+    CREATE_UPDATE_DOCUMENT_PROC,
+    CREATE_UPDATE_POST_PROC,
     CREATE_UPDATE_PROFILE_PROC,
     CREATE_UPDATE_USER_BY_ADMIN_PROC,
     CREATE_UPDATE_USER_EMAIL_PROC,
@@ -102,11 +111,15 @@ import {
 import Logger from "./logger.js";
 import {MigratePermissions} from "@ralvarezdev/js-module-permissions";
 import {__dirname} from "../router/constants.js";
-import {INSERT_COUNTRIES, INSERT_PROFILES} from "../database/model/inserts.js";
+import {
+    INSERT_COUNTRIES,
+    INSERT_LANGUAGES,
+    INSERT_PROFILES
+} from "../database/model/inserts.js";
 import {
     CREATE_METHOD_WITH_PROFILES_PROC,
     CREATE_MODULE_PROC,
-    CREATE_OBJECT_PROC,
+    CREATE_OBJECT_PROC, DELETE_DOCUMENT_LANGUAGE_PROC,
     GET_METHOD_ID_BY_NAME_PROC,
     GET_MODULE_ID_BY_NAME_PROC,
     GET_OBJECT_ID_BY_NAME_PROC
@@ -385,7 +398,17 @@ export default async function migrate() {
             CREATE_GET_METHOD_ID_BY_NAME_PROC,
             CREATE_GET_NUMBER_OF_USERS_PROC,
             CREATE_UPDATE_USER_USERNAME_PROC,
-            CREATE_UPDATE_USER_BY_ADMIN_PROC
+            CREATE_UPDATE_USER_BY_ADMIN_PROC,
+            CREATE_CREATE_DOCUMENT_PROC,
+            CREATE_UPDATE_DOCUMENT_PROC,
+            CREATE_DELETE_DOCUMENT_PROC,
+            CREATE_CREATE_DOCUMENT_IMAGE_PROC,
+            CREATE_DELETE_DOCUMENT_IMAGE_PROC,
+            CREATE_CREATE_DOCUMENT_LANGUAGE_PROC,
+            DELETE_DOCUMENT_LANGUAGE_PROC,
+            CREATE_CREATE_POST_PROC,
+            CREATE_UPDATE_POST_PROC,
+            CREATE_DELETE_POST_PROC
         ])
             await client.rawQuery(query)
     })
@@ -405,6 +428,14 @@ export default async function migrate() {
         Logger.info("Countries inserted")
     } catch (error) {
         Logger.error(`Error inserting countries: ${error}`)
+    }
+
+    // Insert the languages
+    try {
+        await DatabaseManager.rawQuery(INSERT_LANGUAGES)
+        Logger.info("Languages inserted")
+    } catch (error) {
+        Logger.error(`Error inserting languages: ${error}`)
     }
 
     // Get the profiles

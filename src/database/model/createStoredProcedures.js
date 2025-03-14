@@ -134,10 +134,10 @@ CREATE OR REPLACE PROCEDURE create_person(
 LANGUAGE plpgsql
 AS $$
 DECLARE 
-    out_document_id BIGINT;
+    var_document_id BIGINT;
 BEGIN
     -- Create the user personal document
-    call create_user_personal_document(in_created_by_user_id, in_user_document_country_id, in_user_document_type, in_user_document_number, out_document_id);
+    call create_user_personal_document(in_created_by_user_id, in_user_document_country_id, in_user_document_type, in_user_document_number, var_document_id);
 
     -- Insert into people table according to the document type
     IF in_user_document_type = 'identity_document' THEN        
@@ -150,7 +150,7 @@ BEGIN
         VALUES (
             in_user_first_name,
             in_user_last_name,
-            out_document_id
+            var_document_id
         )
         RETURNING
             id INTO out_person_id;
@@ -164,7 +164,7 @@ BEGIN
         VALUES (
             in_user_first_name,
             in_user_last_name,
-            out_document_id
+            var_document_id
         )
         RETURNING
             id INTO out_person_id;
@@ -455,18 +455,18 @@ CREATE OR REPLACE PROCEDURE reset_user_password(
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    out_user_reset_password_token_id BIGINT;
-    out_user_id BIGINT;
+    var_user_reset_password_token_id BIGINT;
+    var_user_id BIGINT;
 BEGIN
     -- Check if the user reset password token is valid
     SELECT id, user_id
-    INTO out_user_reset_password_token_id
+    INTO var_user_reset_password_token_id
     FROM user_reset_password_tokens
     WHERE reset_password_token = in_user_reset_password_token
     AND expires_at > NOW()
     AND used_at IS NULL;
 
-    IF out_user_reset_password_token_id IS NULL THEN
+    IF var_user_reset_password_token_id IS NULL THEN
         out_user_reset_password_token_is_valid := FALSE;
         RETURN;
     ELSE
@@ -476,10 +476,10 @@ BEGIN
     -- Revoke the user reset password token
     UPDATE user_reset_password_tokens
     SET used_at = NOW()
-    WHERE id = out_user_reset_password_token_id;
+    WHERE id = var_user_reset_password_token_id;
     
     -- Update the user password hash
-    call update_user_password_hash(out_user_id, in_user_password_hash);
+    call update_user_password_hash(var_user_id, in_user_password_hash);
 END;
 $$;
 `
@@ -504,24 +504,24 @@ CREATE OR REPLACE PROCEDURE create_user(
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    out_person_id BIGINT;
-    out_document_id BIGINT;
-    out_profile_id BIGINT;
-    out_user_email_id BIGINT;
-    out_user_document_country_id BIGINT;
+    var_person_id BIGINT;
+    var_document_id BIGINT;
+    var_profile_id BIGINT;
+    var_user_email_id BIGINT;
+    var_user_document_country_id BIGINT;
 BEGIN
     -- Get the country ID
-    call get_country_id_by_name(in_user_document_country, out_user_document_country_id, out_country_name_is_valid);
+    call get_country_id_by_name(in_user_document_country, var_user_document_country_id, out_country_name_is_valid);
 
     -- Create the person
-    call create_person(in_created_by_user_id, in_user_first_name, in_user_last_name, out_user_document_country_id, in_user_document_type, in_user_document_number, out_person_id);
+    call create_person(in_created_by_user_id, in_user_first_name, in_user_last_name, var_user_document_country_id, in_user_document_type, in_user_document_number, var_person_id);
         
 	-- Insert into users table
 	INSERT INTO users (
 		person_id
     )
     VALUES (
-        out_person_id
+        var_person_id
     )
     RETURNING
         id INTO out_user_id;
@@ -537,7 +537,7 @@ BEGIN
 	);
 
 	-- Insert into user_emails table
-	call create_user_email(out_user_id, in_user_email, in_user_email_verification_token, in_user_email_verification_expires_at, out_user_email_id);
+	call create_user_email(out_user_id, in_user_email, in_user_email_verification_token, in_user_email_verification_expires_at, var_user_email_id);
 
 	-- Insert into user_password_hashes table
 	INSERT INTO user_password_hashes (
@@ -550,7 +550,7 @@ BEGIN
 	);
 	
 	-- Get the profile ID for the student profile
-	SELECT id INTO out_profile_id
+	SELECT id INTO var_profile_id
 	FROM profiles
     WHERE name = 'student';
 	
@@ -561,7 +561,7 @@ BEGIN
     )
     VALUES (
         out_user_id, 
-        out_profile_id
+        var_profile_id
     );
 END;
 $$;
@@ -849,8 +849,8 @@ CREATE OR REPLACE PROCEDURE update_profile(
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    out_current_profile_name VARCHAR;
-    out_current_profile_description VARCHAR;
+    var_current_profile_name VARCHAR;
+    var_current_profile_description VARCHAR;
 BEGIN
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
@@ -860,15 +860,15 @@ BEGIN
     
     -- Select the current profile name and description
     SELECT name, description
-    INTO out_current_profile_name, out_current_profile_description
+    INTO var_current_profile_name, var_current_profile_description
     FROM profiles
     WHERE id = in_profile_id
     AND deleted_at IS NULL;
 
     -- Update the profiles table
     UPDATE profiles
-    SET name = COALESCE(in_profile_name, out_current_profile_name),
-        description = COALESCE(in_profile_description, out_current_profile_description),
+    SET name = COALESCE(in_profile_name, var_current_profile_name),
+        description = COALESCE(in_profile_description, var_current_profile_description),
         updated_at = NOW(),
         updated_by_user_id = in_updated_by_user_id
     WHERE id = in_profile_id;
@@ -1009,7 +1009,7 @@ CREATE OR REPLACE PROCEDURE create_method_with_profiles(
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    out_profile_id BIGINT;
+    var_profile_id BIGINT;
 BEGIN
     -- Insert into methods table
     INSERT INTO methods (
@@ -1025,7 +1025,7 @@ BEGIN
     RETURNING id INTO out_method_id;
     
     -- Insert into permissions table
-    FOREACH out_profile_id IN ARRAY in_profile_ids
+    FOREACH var_profile_id IN ARRAY in_profile_ids
     LOOP
         INSERT INTO permissions (
             profile_id,
@@ -1033,7 +1033,7 @@ BEGIN
             assigned_by_user_id
         )
         VALUES (
-            out_profile_id,
+            var_profile_id,
             out_method_id,
             in_created_by_user_id
         );
@@ -1194,30 +1194,30 @@ CREATE OR REPLACE PROCEDURE update_user_by_admin(
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    in_current_user_first_name VARCHAR;
-    in_current_user_last_name VARCHAR;
-    out_user_document_country_id BIGINT;
-    out_document_id BIGINT;
+    var_current_user_first_name VARCHAR;
+    var_current_user_last_name VARCHAR;
+    var_user_document_country_id BIGINT;
+    var_document_id BIGINT;
 BEGIN
     -- Get the country ID
-    call get_country_id_by_name(in_user_document_country, out_user_document_country_id, out_country_name_is_valid);
+    call get_country_id_by_name(in_user_document_country, var_user_document_country_id, out_country_name_is_valid);
 
     -- Replace the user personal document
     IF out_country_name_is_valid = TRUE AND in_user_document_type IS NOT NULL AND in_user_document_number IS NOT NULL THEN
-        call replace_user_personal_document(in_updated_by_user_id, out_user_document_country_id, in_user_document_type, in_user_document_number, out_document_id);
+        call replace_user_personal_document(in_updated_by_user_id, var_user_document_country_id, in_user_document_type, in_user_document_number, var_document_id);
     END IF;
     
     -- Get the current user first name and last name
     SELECT people.first_name, people.last_name
-    INTO in_current_user_first_name, in_current_user_last_name
+    INTO var_current_user_first_name, var_current_user_last_name
     FROM users
     INNER JOIN people ON users.person_id = people.id
     WHERE users.id = in_user_id;
         
     -- Update the people table
     UPDATE people
-    SET first_name = COALESCE(in_user_first_name, in_current_user_first_name),
-        last_name = COALESCE(in_user_last_name, in_current_user_last_name)
+    SET first_name = COALESCE(in_user_first_name, var_current_user_first_name),
+        last_name = COALESCE(in_user_last_name, var_current_user_last_name)
     FROM users
     INNER JOIN people ON people.id = users.person_id
     WHERE users.id = in_user_id; 
@@ -1227,6 +1227,247 @@ BEGIN
         -- Update the user_usernames table
         call update_user_username(in_user_id, in_user_username);
     END IF;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new document
+export const CREATE_CREATE_DOCUMENT_PROC = `
+CREATE OR REPLACE PROCEDURE create_document(
+    IN in_registered_by_user_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into documents table
+    INSERT INTO documents (
+        registered_by_user_id,
+        title,
+        description,
+        release_date,
+        pages
+    )
+    VALUES (
+        in_registered_by_user_id,
+        in_document_title,
+        in_document_description,
+        in_document_release_date,
+        in_document_pages
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that updates a document
+export const CREATE_UPDATE_DOCUMENT_PROC = `
+CREATE OR REPLACE PROCEDURE update_document(
+    IN in_document_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_current_document_title VARCHAR;
+    var_current_document_description TEXT;
+    var_current_document_release_date DATE;
+    var_current_document_pages BIGINT;
+BEGIN
+    -- Get the current document title, description, release date and pages
+    SELECT title, description, release_date, pages
+    INTO var_current_document_title, var_current_document_description, var_current_document_release_date, var_current_document_pages
+    FROM documents
+    WHERE id = in_document_id
+    AND deleted_at IS NULL;
+
+    -- Update the documents table
+    UPDATE documents
+    SET title = COALESCE(var_document_title, title),
+        description = COALESCE(var_document_description, description),
+        release_date = COALESCE(var_document_release_date, release_date),
+        pages = COALESCE(var_document_pages, pages)
+    WHERE id = in_document_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that deletes a document
+export const CREATE_DELETE_DOCUMENT_PROC = `
+CREATE OR REPLACE PROCEDURE delete_document(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_document_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the documents table
+    UPDATE documents
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_document_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new document image
+export const CREATE_CREATE_DOCUMENT_IMAGE_PROC = `
+CREATE OR REPLACE PROCEDURE create_document_image(
+    IN in_created_by_user_id BIGINT,
+    IN in_document_id BIGINT,
+    IN in_document_image_url VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into document_images table
+    INSERT INTO document_images (
+        created_by_user_id,
+        document_id,
+        image_url
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_document_id,
+        in_document_image_url
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that deletes a document image
+export const CREATE_DELETE_DOCUMENT_IMAGE_PROC = `
+CREATE OR REPLACE PROCEDURE delete_document_image(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_document_image_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the document_images table
+    UPDATE document_images
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_document_image_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new document language
+export const CREATE_CREATE_DOCUMENT_LANGUAGE_PROC = `
+CREATE OR REPLACE PROCEDURE create_document_language(
+    IN in_created_by_user_id BIGINT,
+    IN in_document_id BIGINT,
+    IN in_language_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into document_languages table
+    INSERT INTO document_languages (
+        created_by_user_id,
+        document_id,
+        language_id
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_document_id,
+        in_language_id
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that deletes a document language
+export const CREATE_DELETE_DOCUMENT_LANGUAGE_PROC = `
+CREATE OR REPLACE PROCEDURE delete_document_language(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_document_id BIGINT,
+    IN in_language_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the document_languages table
+    UPDATE document_languages
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE document_id = in_document_id
+    AND language_id = in_language_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new post
+export const CREATE_CREATE_POST_PROC = `
+CREATE OR REPLACE PROCEDURE create_post(
+    IN in_created_by_user_id BIGINT,
+    IN in_document_id BIGINT,
+    IN in_post_available_until TIMESTAMP,
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into posts table
+    INSERT INTO posts (
+        created_by_user_id,
+        document_id,
+        available_until
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_document_id,
+        in_post_available_until
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that updates a post
+export const CREATE_UPDATE_POST_PROC = `
+CREATE OR REPLACE PROCEDURE update_post(
+    IN in_post_id BIGINT,
+    IN in_post_available_until TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_current_post_available_until TIMESTAMP;
+BEGIN
+    -- Get the current post available until
+    SELECT available_until
+    INTO var_current_post_available_until
+    FROM posts
+    WHERE id = in_post_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that deletes a post
+export const CREATE_DELETE_POST_PROC = `
+CREATE OR REPLACE PROCEDURE delete_post(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_post_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the posts table
+    UPDATE posts
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_post_id
+    AND deleted_at IS NULL;
 END;
 $$;
 `
