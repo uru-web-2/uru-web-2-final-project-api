@@ -431,13 +431,20 @@ CREATE TABLE IF NOT EXISTS document_location_sections (
 export const CREATE_DOCUMENT_REVIEWS = `
 CREATE TABLE IF NOT EXISTS document_reviews (
     id BIGSERIAL PRIMARY KEY,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    rating DOUBLE PRECISION NOT NULL,
-    content TEXT,
     document_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    content TEXT,
+    rating DOUBLE PRECISION NOT NULL,
+    created_by_user_id BIGINT NOT NULL,
+    deleted_by_user_id BIGINT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP,
+    deleted_at TIMESTAMP,
+    parent_document_review_id BIGINT,
     FOREIGN KEY (document_id) REFERENCES documents(id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (parent_document_review_id) REFERENCES document_reviews(id)
 );
 `;
 
@@ -479,6 +486,7 @@ export const CREATE_PUBLISHERS = `
 CREATE TABLE IF NOT EXISTS publishers (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
+    description TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
@@ -515,14 +523,14 @@ CREATE TABLE IF NOT EXISTS document_languages (
     id BIGSERIAL PRIMARY KEY,
     language_id BIGINT NOT NULL,
     document_id BIGINT,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMP,
-    created_by_user_id BIGINT NOT NULL,
-    deleted_by_user_id BIGINT,
+    assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    revoked_at TIMESTAMP,
+    assigned_by_user_id BIGINT NOT NULL,
+    revoked_by_user_id BIGINT,
     FOREIGN KEY (language_id) REFERENCES languages(id),
     FOREIGN KEY (document_id) REFERENCES documents(id),
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (revoked_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID} ON document_languages (document_id, language_id);
 `;
@@ -588,13 +596,10 @@ export const CREATE_WORKS = `
 CREATE TABLE IF NOT EXISTS works (
     id BIGSERIAL PRIMARY KEY,
     document_id BIGINT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMP,
+    created_at DATE NOT NULL DEFAULT NOW(),
     created_by_user_id BIGINT NOT NULL,
-    deleted_by_user_id BIGINT,
     FOREIGN KEY (document_id) REFERENCES documents(id),
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id)
 );
 `;
 
@@ -612,15 +617,15 @@ export const CREATE_ARTICLE_JURY_MEMBERS = `
 CREATE TABLE IF NOT EXISTS article_jury_members (
     id BIGSERIAL PRIMARY KEY,
     assigned_at TIMESTAMP,
-    deleted_at TIMESTAMP,
+    revoked_at TIMESTAMP,
     jury_member_id BIGSERIAL NOT NULL,
     article_id BIGSERIAL NOT NULL,
     assigned_by_user_id BIGINT NOT NULL,
-    deleted_by_user_id BIGINT,
+    revoked_by_user_id BIGINT,
     FOREIGN KEY (jury_member_id) REFERENCES people(id),
     FOREIGN KEY (article_id) REFERENCES articles(id),
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (revoked_by_user_id) REFERENCES users(id)
 );
 `;
 

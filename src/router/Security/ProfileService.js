@@ -37,7 +37,7 @@ export class ProfileService {
 
             // Check if the constraint is the unique name constraint
             if (constraintName === PROFILES_UNIQUE_NAME)
-                throw new FieldFailError('name', 'Name is already taken')
+                throw new FieldFailError(400, 'name', 'Name is already taken')
             throw error
         }
     }
@@ -56,7 +56,7 @@ export class ProfileService {
             const queryRow = queryRes.rows?.[0];
 
             if (queryRow?.out_is_profile_id_valid === false)
-                throw new FieldFailError('id', 'Profile ID is invalid');
+                throw new FieldFailError(400, 'id', 'Profile ID is invalid');
 
             // Update the profile to the security component
             Security.updateProfile(body.id, body.name)
@@ -66,7 +66,7 @@ export class ProfileService {
 
             // Check if the constraint is the unique name constraint
             if (constraintName === PROFILES_UNIQUE_NAME)
-                throw new FieldFailError('name', 'Name is already taken')
+                throw new FieldFailError(400, 'name', 'Name is already taken')
             throw error
         }
     }
@@ -82,7 +82,7 @@ export class ProfileService {
         const queryRow = queryRes.rows?.[0];
 
         if (queryRow?.out_is_profile_id_valid === false)
-            throw new FieldFailError('id', 'Profile ID is invalid');
+            throw new FieldFailError(400, 'id', 'Profile ID is invalid');
 
         // Remove the profile ID from the security component
         Security.removeProfile(body.id)

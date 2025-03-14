@@ -1238,7 +1238,8 @@ CREATE OR REPLACE PROCEDURE create_document(
     IN in_document_title VARCHAR,
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
-    IN in_document_pages BIGINT
+    IN in_document_pages BIGINT,
+    OUT out_document_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -1257,7 +1258,8 @@ BEGIN
         in_document_description,
         in_document_release_date,
         in_document_pages
-    );
+    )
+    RETURNING id INTO out_document_id;
 END;
 $$;
 `
@@ -1361,10 +1363,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that creates a new document language
-export const CREATE_CREATE_DOCUMENT_LANGUAGE_PROC = `
-CREATE OR REPLACE PROCEDURE create_document_language(
-    IN in_created_by_user_id BIGINT,
+// Create a stored procedure that assigns a new document language
+export const CREATE_ASSIGN_DOCUMENT_LANGUAGE_PROC = `
+CREATE OR REPLACE PROCEDURE assign_document_language(
+    IN in_assigned_by_user_id BIGINT,
     IN in_document_id BIGINT,
     IN in_language_id BIGINT
 )
@@ -1373,12 +1375,12 @@ AS $$
 BEGIN
     -- Insert into document_languages table
     INSERT INTO document_languages (
-        created_by_user_id,
+        assigned_by_user_id,
         document_id,
         language_id
     )
     VALUES (
-        in_created_by_user_id,
+        in_assigned_by_user_id,
         in_document_id,
         in_language_id
     );
@@ -1386,10 +1388,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that deletes a document language
-export const CREATE_DELETE_DOCUMENT_LANGUAGE_PROC = `
-CREATE OR REPLACE PROCEDURE delete_document_language(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that revokes a document language
+export const CREATE_REVOKE_DOCUMENT_LANGUAGE_PROC = `
+CREATE OR REPLACE PROCEDURE revoke_document_language(
+    IN in_revoked_by_user_id BIGINT,
     IN in_document_id BIGINT,
     IN in_language_id BIGINT
 )
@@ -1398,8 +1400,8 @@ AS $$
 BEGIN
     -- Update the document_languages table
     UPDATE document_languages
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET revoked_at = NOW(),
+        revoked_by_user_id = in_deleted_by_user_id
     WHERE document_id = in_document_id
     AND language_id = in_language_id
     AND deleted_at IS NULL;
@@ -1945,6 +1947,331 @@ BEGIN
             AND revoked_at IS NULL;
         END LOOP;
     END IF;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new publisher
+export const CREATE_CREATE_PUBLISHER_PROC = `
+CREATE OR REPLACE PROCEDURE create_publisher(
+    IN in_created_by_user_id BIGINT,
+    IN in_publisher_name VARCHAR,
+    IN in_publisher_description TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into publishers table
+    INSERT INTO publishers (
+        created_by_user_id,
+        name,
+        description
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_publisher_name,
+        in_publisher_description
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that updates a publisher
+export const CREATE_UPDATE_PUBLISHER_PROC = `
+CREATE OR REPLACE PROCEDURE update_publisher(
+    IN in_publisher_id BIGINT,
+    IN in_publisher_name VARCHAR,
+    IN in_publisher_description TEXT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_current_publisher_name VARCHAR;
+    var_current_publisher_description TEXT;
+BEGIN
+    -- Get the current publisher name and description
+    SELECT name, description
+    INTO var_current_publisher_name, var_current_publisher_description
+    FROM publishers
+    WHERE id = in_publisher_id
+    AND deleted_at IS NULL;
+
+    -- Update the publishers table
+    UPDATE publishers
+    SET name = COALESCE(in_publisher_name, var_current_publisher_name),
+        description = COALESCE(in_publisher_description, var_current_publisher_description)
+    WHERE id = in_publisher_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that deletes a publisher
+export const CREATE_DELETE_PUBLISHER_PROC = `
+CREATE OR REPLACE PROCEDURE delete_publisher(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_publisher_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the publishers table
+    UPDATE publishers
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_publisher_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Query to create a stored procedure that creates a new document review
+export const CREATE_CREATE_DOCUMENT_REVIEW_PROC = `
+CREATE OR REPLACE PROCEDURE create_document_review(
+    IN in_created_by_user_id BIGINT,
+    IN in_document_id BIGINT,
+    IN in_review_title VARCHAR,
+    IN in_review_content TEXT,
+    IN in_review_rating SMALLINT,
+    IN in_review_parent_document_review_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into document_reviews table
+    INSERT INTO document_reviews (
+        created_by_user_id,
+        document_id,
+        title,
+        content,
+        rating,
+        parent_document_review_id
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_document_id,
+        in_review_title,
+        in_review_content,
+        in_review_rating,
+        in_review_parent_document_review_id
+    );
+END;
+$$;
+`
+
+// Query to create a stored procedure that updates a document review
+export const CREATE_UPDATE_DOCUMENT_REVIEW_PROC = `
+CREATE OR REPLACE PROCEDURE update_document_review(
+    IN in_review_id BIGINT,
+    IN in_review_title VARCHAR,
+    IN in_review_content TEXT,
+    IN in_review_rating SMALLINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_current_review_title VARCHAR;
+    var_current_review_content TEXT;
+    var_current_review_rating SMALLINT;
+BEGIN
+    -- Get the current review title, content and rating
+    SELECT title, content, rating
+    INTO var_current_review_title, var_current_review_content, var_current_review_rating
+    FROM document_reviews
+    WHERE id = in_review_id
+    AND deleted_at IS NULL;
+
+    -- Update the document_reviews table
+    UPDATE document_reviews
+    SET title = COALESCE(in_review_title, var_current_review_title),
+        content = COALESCE(in_review_content, var_current_review_content),
+        rating = COALESCE(in_review_rating, var_current_review_rating),
+        updated_at = NOW()
+    WHERE id = in_review_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Query to create a stored procedure that deletes a document review
+export const CREATE_DELETE_DOCUMENT_REVIEW_PROC = `
+CREATE OR REPLACE PROCEDURE delete_document_review(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_review_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the document_reviews table
+    UPDATE document_reviews
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_review_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Query to create a stored procedure that gets a document ID by book ID
+export const CREATE_GET_DOCUMENT_ID_BY_BOOK_ID_PROC = `
+CREATE OR REPLACE PROCEDURE get_document_id_by_book_id(
+    IN in_book_id BIGINT,
+    OUT out_document_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Select the document ID
+    SELECT document_id
+    INTO var_document_id
+    FROM books
+    WHERE id = in_book_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Query to create a stored procedure that creates a new book
+export const CREATE_CREATE_BOOK_PROC = `
+CREATE OR REPLACE PROCEDURE create_book(
+    IN in_registered_by_user_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT,
+    IN in_book_isbn VARCHAR,
+    IN in_book_publisher_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_document_id BIGINT;
+BEGIN
+    -- Insert into documents table
+    call create_document(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, var_document_id);
+    
+    -- Insert into books table
+    INSERT INTO books (
+        document_id,
+        isbn,
+        publisher_id
+    )
+    VALUES (
+        var_document_id,
+        in_book_isbn,
+        in_book_publisher_id
+    );
+END;
+$$;
+`
+
+// Query to create a stored procedure that updates a book
+export const CREATE_UPDATE_BOOK_PROC = `
+CREATE OR REPLACE PROCEDURE update_book(
+    IN in_book_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT,
+    IN in_book_isbn VARCHAR,
+    IN in_book_publisher_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_document_id BIGINT;
+    var_current_book_isbn VARCHAR;
+    var_current_book_publisher_id BIGINT;
+BEGIN
+    -- Get the document ID
+    call get_document_id_by_book_id(in_book_id, var_document_id);
+    
+    -- Update the documents table
+    call update_document(var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages);
+    
+    -- Select the current book ISBN and publisher ID
+    SELECT books.isbn, books.publisher_id
+    INTO var_current_book_isbn, var_current_book_publisher_id
+    FROM books
+    INNER JOIN documents ON books.document_id = documents.id
+    WHERE books.id = in_book_id
+    AND documents.deleted_at IS NULL;
+    
+    -- Update the books table
+    UPDATE books
+    SET isbn = in_book_isbn,
+        publisher_id = in_book_publisher_id
+    FROM documents
+    WHERE books.document_id = documents.id
+    AND books.id = in_book_id
+    AND documents.deleted_at IS NULL;
+END;
+$$;
+`
+
+// Query to create a stored procedure that creates a new work
+export const CREATE_CREATE_WORK_PROC = `
+CREATE OR REPLACE PROCEDURE create_work(
+    IN in_registered_by_user_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT,
+    IN in_work_created_at DATE,
+    IN in_work_created_by_user_id BIGINT,
+    OUT out_work_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_document_id BIGINT;
+BEGIN
+    -- Insert into documents table
+    call create_document(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, var_document_id);
+    
+    -- Insert into works table
+    INSERT INTO works (
+        document_id,
+        created_at,
+        created_by_user_id
+    )
+    VALUES (
+        var_document_id,
+        in_work_created_at,
+        in_work_created_by_user_id
+    )
+    RETURNING id INTO out_work_id;
+END;
+$$;
+`
+
+// Query to create a stored procedure that creates a new article
+export const CREATE_CREATE_ARTICLE_PROC = `
+CREATE OR REPLACE PROCEDURE create_article(
+    IN in_registered_by_user_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT,
+    IN in_work_created_at DATE,
+    IN in_work_created_by_user_id BIGINT,
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_document_id BIGINT;
+    var_work_id BIGINT;
+BEGIN
+    -- Create the work
+    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_work_created_at, in_work_created_by_user_id, var_work_id);
+    
+    -- Insert into articles table
+    INSERT INTO articles (
+        work_id
+    )
+    VALUES (
+        var_work_id
+    );
 END;
 $$;
 `

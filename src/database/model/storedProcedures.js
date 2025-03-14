@@ -110,7 +110,7 @@ export const UPDATE_USER_USERNAME_PROC = "CALL update_user_username($1, $2)"
 export const UPDATE_USER_BY_ADMIN_PROC = "CALL update_user_by_admin($1, $2, $3, $4, $5, $6, $7, $8, $9)"
 
 // Query to create a new document
-export const CREATE_DOCUMENT_PROC = "CALL create_document($1, $2, $3, $4, $5)"
+export const CREATE_DOCUMENT_PROC = "CALL create_document($1, $2, $3, $4, $5, $6)"
 
 // Query to update a document
 export const UPDATE_DOCUMENT_PROC = "CALL update_document($1, $2, $3, $4, $5)"
@@ -124,11 +124,11 @@ export const CREATE_DOCUMENT_IMAGE_PROC = "CALL create_document_image($1, $2, $3
 // Query to delete a document image
 export const DELETE_DOCUMENT_IMAGE_PROC = "CALL delete_document_image($1, $2)"
 
-// Query to create a new document language
-export const CREATE_DOCUMENT_LANGUAGE_PROC = "CALL create_document_language($1, $2, $3)"
+// Query to assign a new document language
+export const ASSIGN_DOCUMENT_LANGUAGE_PROC = "CALL assign_document_language($1, $2, $3)"
 
-// Query to delete a document language
-export const DELETE_DOCUMENT_LANGUAGE_PROC = "CALL delete_document_language($1, $2)"
+// Query to revoke a document language
+export const REVOKE_DOCUMENT_LANGUAGE_PROC = "CALL revoke_document_language($1, $2)"
 
 // Query to create a new post
 export const CREATE_POST_PROC = "CALL create_post($1, $2, $3)"
@@ -186,3 +186,36 @@ export const DELETE_MAGAZINE_PROC = "CALL delete_magazine($1, $2)"
 
 // Query to set the profile permissions
 export const SET_PROFILE_PERMISSIONS_PROC = "CALL set_profile_permissions($1, $2, $3, $4)"
+
+// Query to create a new publisher
+export const CREATE_PUBLISHER_PROC = "CALL create_publisher($1, $2, $3)"
+
+// Query to update a publisher
+export const UPDATE_PUBLISHER_PROC = "CALL update_publisher($1, $2, $3)"
+
+// Query to delete a publisher
+export const DELETE_PUBLISHER_PROC = "CALL delete_publisher($1, $2)"
+
+// Query to create a new document review
+export const CREATE_DOCUMENT_REVIEW_PROC = "CALL create_document_review($1, $2, $3, $4, $5, $6)"
+
+// Query to update a document review
+export const UPDATE_DOCUMENT_REVIEW_PROC = "CALL update_document_review($1, $2, $3, $4)"
+
+// Query to delete a document review
+export const DELETE_DOCUMENT_REVIEW_PROC = "CALL delete_document_review($1, $2)"
+
+// Query to get the document ID by book ID
+export const GET_DOCUMENT_ID_BY_BOOK_ID_PROC = "CALL get_document_id_by_book_id($1, $2)"
+
+// Query to create a new book
+export const CREATE_BOOK_PROC = "CALL create_book($1, $2, $3, $4, $5, $6, $7)"
+
+// Query to update a book
+export const UPDATE_BOOK_PROC = "CALL update_book($1, $2, $3, $4, $5, $6, $7)"
+
+// Query to create a new work
+export const CREATE_WORK_PROC = "CALL create_work($1, $2, $3, $4, $5, $6)"
+
+// Query to create a new article
+export const CREATE_ARTICLE_PROC = "CALL create_article($1, $2, $3, $4, $5, $6, $7)"
