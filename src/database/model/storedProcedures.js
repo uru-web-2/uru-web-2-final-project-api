@@ -44,7 +44,7 @@ export const UPDATE_USER_PASSWORD_HASH_PROC = "CALL update_user_password_hash($1
 export const CREATE_USER_RESET_PASSWORD_TOKEN_PROC = "CALL create_user_reset_password_token($1, $2, $3)"
 
 // Query to reset a user password
-
+export const RESET_USER_PASSWORD_PROC = "CALL reset_user_password($1, $2, $3)"
 
 // Query to create a new user
 export const CREATE_USER_PROC = "CALL create_user($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"

@@ -29,7 +29,7 @@ $$;
 export const CREATE_CREATE_USER_PERSONAL_DOCUMENT_PROC = `
 CREATE OR REPLACE PROCEDURE create_user_personal_document(
     IN in_created_by_user_id BIGINT,
-    IN in_user_document_country_id VARCHAR,
+    IN in_user_document_country_id BIGINT,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR,
     OUT out_document_id BIGINT
@@ -46,7 +46,7 @@ BEGIN
             created_by_user_id
         )
         VALUES (
-            out_country_id,
+            in_user_document_country_id,
             in_user_document_number,
             in_created_by_user_id
         )
@@ -60,7 +60,7 @@ BEGIN
             created_by_user_id
         )
         VALUES (
-            out_country_id,
+            in_user_document_country_id,
             in_user_document_number,
             in_created_by_user_id
         )
@@ -103,7 +103,7 @@ $$;
 export const CREATE_REPLACE_USER_PERSONAL_DOCUMENT_PROC = `
 CREATE OR REPLACE PROCEDURE replace_user_personal_document(
     IN in_replaced_by_user_id BIGINT,
-    IN in_user_document_country_id VARCHAR,
+    IN in_user_document_country_id BIGINT,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR,
     OUT out_document_id BIGINT
@@ -126,13 +126,15 @@ CREATE OR REPLACE PROCEDURE create_person(
     IN in_created_by_user_id BIGINT,
     IN in_user_first_name VARCHAR,
     IN in_user_last_name VARCHAR,
-    IN in_user_document_country_id VARCHAR,
+    IN in_user_document_country_id BIGINT,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR,
     OUT out_person_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE 
+    out_document_id BIGINT;
 BEGIN
     -- Create the user personal document
     call create_user_personal_document(in_created_by_user_id, in_user_document_country_id, in_user_document_type, in_user_document_number, out_document_id);
@@ -202,7 +204,7 @@ BEGIN
         expires_at
     )
     VALUES (
-        in_user_email_id,
+        out_user_email_id,
         in_user_email_verification_token,
         in_user_email_verification_expires_at
     );
@@ -506,12 +508,13 @@ DECLARE
     out_document_id BIGINT;
     out_profile_id BIGINT;
     out_user_email_id BIGINT;
+    out_user_document_country_id BIGINT;
 BEGIN
     -- Get the country ID
-    call get_country_id_by_name(in_user_document_country, out_country_id, out_country_name_is_valid);
+    call get_country_id_by_name(in_user_document_country, out_user_document_country_id, out_country_name_is_valid);
 
     -- Create the person
-    call create_person(in_created_by_user_id, in_user_first_name, in_user_last_name, in_user_document_country, in_user_document_type, in_user_document_number, out_country_name_is_valid, out_person_id);
+    call create_person(in_created_by_user_id, in_user_first_name, in_user_last_name, out_user_document_country_id, in_user_document_type, in_user_document_number, out_person_id);
         
 	-- Insert into users table
 	INSERT INTO users (
@@ -534,7 +537,7 @@ BEGIN
 	);
 
 	-- Insert into user_emails table
-	call create_user_email(out_user_id, in_user_email, out_user_email_id, in_user_email_verification_token, in_user_email_verification_expires_at);
+	call create_user_email(out_user_id, in_user_email, in_user_email_verification_token, in_user_email_verification_expires_at, out_user_email_id);
 
 	-- Insert into user_password_hashes table
 	INSERT INTO user_password_hashes (

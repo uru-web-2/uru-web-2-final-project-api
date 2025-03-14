@@ -1,6 +1,4 @@
-import Session, {
-    checkSession
-} from "@ralvarezdev/js-session"
+import Session, {checkSession} from "@ralvarezdev/js-session"
 import Logger from "./logger.js";
 import {IS_PROD} from "@ralvarezdev/js-mode";
 import {FailJSendBody} from "@ralvarezdev/js-express";
@@ -21,7 +19,7 @@ const SESSION_CONFIG = {
 export default new Session(SESSION_CONFIG)
 
 // Middleware for checking if the session exists
-export const sessionExists = checkSession((req, res)=>{
+export const sessionExists = checkSession((req, res) => {
     if (req.session.userID)
         return true
 

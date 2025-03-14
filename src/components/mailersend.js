@@ -2,11 +2,13 @@ import {EmailParams, MailerSend, Recipient, Sender} from "mailersend";
 
 // MailerSend client
 const MAILER_SEND = new MailerSend({
-  apiKey: process.env.URU_WEB_2_FINAL_PROJECT_MAILER_SEND_API_KEY,
+    apiKey: process.env.URU_WEB_2_FINAL_PROJECT_MAILER_SEND_API_KEY,
 });
 
 // Email sender
-const MAILER_SEND_SENT_FROM = new Sender(`noreply@${process.env.URU_WEB_2_FINAL_PROJECT_MAILER_SEND_DOMAIN}`, "UBOOK");
+const MAILER_SEND_SENT_FROM = new Sender(`noreply@${process.env.URU_WEB_2_FINAL_PROJECT_MAILER_SEND_DOMAIN}`,
+    "UBOOK"
+);
 
 // Email footer
 const FOOTER_HTML = `
@@ -42,7 +44,7 @@ ${FOOTER_TEXT}
 const VERIFY_EMAIL_SUBJECT = "Verify your email address"
 
 const VERIFY_EMAIL_HTML = (name, link) => {
-        return `
+    return `
 <h1>Hi ${name},</h1>
 <p>Click the link below to verify your email address.</p>
 <a href="${link}">Verify Email</a>

@@ -105,7 +105,7 @@ export class UserService {
         );
         return {
             users: userDetailsQueryRes.rows,
-            number_of_users: numberOfUsersQueryRes.rows[0]
+            number_of_users: numberOfUsersQueryRes.rows[0]?.out_number_of_users
         }
     }
 

@@ -400,9 +400,9 @@ export default async function migrate() {
     }
 
     // Insert the countries
-    try{
-    await DatabaseManager.rawQuery(INSERT_COUNTRIES)
-    Logger.info("Countries inserted")
+    try {
+        await DatabaseManager.rawQuery(INSERT_COUNTRIES)
+        Logger.info("Countries inserted")
     } catch (error) {
         Logger.error(`Error inserting countries: ${error}`)
     }

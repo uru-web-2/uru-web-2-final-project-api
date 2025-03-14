@@ -273,7 +273,7 @@ TABLE (
 BEGIN
     -- Query to select the user details by user ID
     RETURN QUERY
-    SELECT users.id AS user_id, people.first_name AS user_first_name, people.last_name AS user_last_name, user_emails.email AS user_email, user_usernames.username AS user_username, people.birthdate AS user_birthdate, ARRAY(SELECT profile_id FROM user_profiles WHERE user_id = in_user_id AND revoked_at IS NULL) AS user_profile_ids
+    SELECT users.id AS user_id, people.first_name AS user_first_name, people.last_name AS user_last_name, user_emails.email AS user_email, user_usernames.username AS user_username, people.birthdate AS user_birthdate, ARRAY(SELECT profile_id FROM user_profiles WHERE user_profiles.user_id = in_user_id AND revoked_at IS NULL) AS user_profile_ids
     FROM users
     INNER JOIN people
     ON users.person_id = people.id

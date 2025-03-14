@@ -9,7 +9,8 @@ import ErrorHandler from "./handler.js";
 import {
     EXECUTE,
     FORGOT_PASSWORD,
-    LOG_IN, RESET_PASSWORD,
+    LOG_IN,
+    RESET_PASSWORD,
     SIGN_UP,
     VERIFY_EMAIL
 } from "./model.js";
@@ -19,7 +20,8 @@ import {
     CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
     GET_USER_EMAIL_INFO_BY_USER_EMAIL_PROC,
     GET_USER_EMAIL_INFO_BY_USER_ID_PROC,
-    LOG_IN_PROC, RESET_USER_PASSWORD_PROC,
+    LOG_IN_PROC,
+    RESET_USER_PASSWORD_PROC,
     VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC
 } from "../database/model/storedProcedures.js";
 import {GET_ALL_USER_PROFILES_FN,} from "../database/model/functions.js";
@@ -107,7 +109,13 @@ function ValidateNewUsername(username) {
 
 // Added email verification to session
 function AddEmailVerificationToSession(req) {
-    Session.set(req, {userID:req.session.userID, profileID:req.session.profileID, isEmailVerified: true})
+    Session.set(req,
+        {
+            userID: req.session.userID,
+            profileID: req.session.profileID,
+            isEmailVerified: true
+        }
+    )
 }
 
 // Set session to the response
@@ -224,7 +232,7 @@ export class Dispatcher {
                 null
             )
             if (queryRes.rows.length > 0) {
-                const isCountryValid = queryRes.rows[0]?.out_is_country_valid
+                const isCountryValid = queryRes.rows[0]?.out_country_name_is_valid
                 userID = queryRes.rows[0]?.out_user_id
 
                 // Check if the country is valid
@@ -350,7 +358,9 @@ export class Dispatcher {
                 )
 
             // Create a session with the given profile
-            SetSessionToResponse(req, userID, body.profile ? parsedUserProfiles.find(profile => profile.name === body.profile).id : parsedUserProfiles[0].id,
+            SetSessionToResponse(req,
+                userID,
+                body.profile ? parsedUserProfiles.find(profile => profile.name === body.profile).id : parsedUserProfiles[0].id,
                 logInRes.rows[0]?.out_user_email_is_verified
             )
 
@@ -405,7 +415,10 @@ export class Dispatcher {
         try {
             // Check if the email is already verified
             if (req.session.isEmailVerified)
-                throw new FieldFailError(400, "email", "email is already verified")
+                throw new FieldFailError(400,
+                    "email",
+                    "email is already verified"
+                )
 
             // Generate a random token
             const emailVerificationToken = uuidv4()
@@ -426,7 +439,8 @@ export class Dispatcher {
             const email = getRes.rows[0]?.out_user_email
 
             // Create the user with the new email verification token
-            const createRes=await DatabaseManager.rawQuery(CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
+            const createRes = await DatabaseManager.rawQuery(
+                CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC,
                 emailID,
                 emailVerificationToken,
                 addDuration(EMAIL_VERIFICATION_TOKEN_DURATION).toISOString(),
@@ -520,7 +534,10 @@ export class Dispatcher {
             res.status(200).json(SuccessJSendBody())
 
             // Send the reset password email
-            await sendResetPasswordEmail(body.email, fullName, resetPasswordToken)
+            await sendResetPasswordEmail(body.email,
+                fullName,
+                resetPasswordToken
+            )
         } catch (error) {
             // Pass the error to the error handler
             next(error)
