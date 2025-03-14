@@ -25,6 +25,8 @@ AddMetadataProfiles(Security, "GetObjectsByModuleID", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security, "GetMethodsByObjectID", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security, "AssignUserProfile", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security, "RevokeUserProfile", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Security, "SetProfilePermissions", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Security, "GetMethodsByProfileIDObjectID", PROFILES.SUPER_ADMIN)
 
 // - User object
 AddMetadataProfiles(User, "SearchUserByUsername", PROFILES.SUPER_ADMIN)

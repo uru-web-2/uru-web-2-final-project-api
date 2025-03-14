@@ -174,3 +174,15 @@ export const ASSIGN_DOCUMENT_TOPIC_PROC = "CALL assign_document_topic($1, $2, $3
 
 // Query to remove a topic from a document
 export const REMOVE_DOCUMENT_TOPIC_PROC = "CALL remove_document_topic($1, $2, $3)"
+
+// Query to create a new magazine
+export const CREATE_MAGAZINE_PROC = "CALL create_magazine($1, $2, $3)"
+
+// Query to update a magazine
+export const UPDATE_MAGAZINE_PROC = "CALL update_magazine($1, $2, $3)"
+
+// Query to delete a magazine
+export const DELETE_MAGAZINE_PROC = "CALL delete_magazine($1, $2)"
+
+// Query to set the profile permissions
+export const SET_PROFILE_PERMISSIONS_PROC = "CALL set_profile_permissions($1, $2, $3, $4)"

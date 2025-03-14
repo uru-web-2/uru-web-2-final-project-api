@@ -307,6 +307,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${USER_PROFILES_UNIQUE_USER_ID_PROFILE_ID} ON user_profiles (user_id, profile_id) WHERE revoked_at IS NULL;
 `
+
 // Query to create the documents table
 export const CREATE_DOCUMENTS = `
 CREATE TABLE IF NOT EXISTS documents (
@@ -432,7 +433,7 @@ CREATE TABLE IF NOT EXISTS document_reviews (
     id BIGSERIAL PRIMARY KEY,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     rating DOUBLE PRECISION NOT NULL,
-    content VARCHAR(100),
+    content TEXT,
     document_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     FOREIGN KEY (document_id) REFERENCES documents(id),
@@ -642,7 +643,8 @@ CREATE TABLE IF NOT EXISTS article_annotations (
 export const CREATE_MAGAZINES = `
 CREATE TABLE IF NOT EXISTS magazines (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(100)
+    name VARCHAR(100),
+    description TEXT,
 );
 `;
 

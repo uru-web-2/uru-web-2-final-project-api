@@ -45,3 +45,12 @@ export const GET_ALL_USERS_FN = "SELECT * FROM get_all_users($1, $2)"
 
 // Query to get the user details
 export const GET_USER_DETAILS_BY_USER_ID_FN = "SELECT * FROM get_user_details_by_user_id($1)"
+
+// Query to get all the topics name
+export const GET_ALL_TOPICS_NAME_FN = "SELECT * FROM get_all_topics_name()"
+
+// Query to get all the topics
+export const GET_ALL_TOPICS_FN = "SELECT * FROM get_all_topics()"
+
+// Query to get all the languages
+export const GET_ALL_LANGUAGES_FN = "SELECT * FROM get_all_languages()"

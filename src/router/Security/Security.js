@@ -130,6 +130,42 @@ export class Security {
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
+
+    // Get methods by profile ID and object ID
+    async GetMethodsByProfileIDObjectID(req, res) {
+        // Validate the request
+        const body = HandleValidation(req,
+            res,
+            Validator.GetMethodsByProfileIDObjectID
+        );
+
+        // Get the methods
+        const methods = await Service.GetMethodsByProfileIDObjectID(req, body)
+
+        // Log the request
+        Logger.info(`Getting methods from profile ${body.profile_id} and object ${body.object_id}`)
+
+        // Send the response
+        res.status(200).json(SuccessJSendBody({methods}))
+    }
+
+    // Set profile permissions
+    async SetProfilePermissions(req, res) {
+        // Validate the request
+        const body = HandleValidation(req,
+            res,
+            Validator.SetProfilePermissions
+        );
+
+        // Set the permissions
+        await Service.SetProfilePermissions(req, body)
+
+        // Log the request
+        Logger.info(`Setting permissions for profile ${body.profile_id}`)
+
+        // Send the response
+        res.status(200).json(SuccessJSendBody())
+    }
 }
 
 // Singleton instance

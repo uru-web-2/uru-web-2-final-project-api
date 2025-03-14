@@ -4,11 +4,11 @@ import {
     ASSIGN_PROFILE_PERMISSION_PROC,
     ASSIGN_USER_PROFILE_PROC,
     REVOKE_PROFILE_PERMISSION_PROC,
-    REVOKE_USER_PROFILE_PROC,
+    REVOKE_USER_PROFILE_PROC, SET_PROFILE_PERMISSIONS_PROC,
 } from "../../database/model/storedProcedures.js";
 import {
     GET_ALL_MODULES_FN,
-    GET_METHODS_BY_OBJECT_ID_FN,
+    GET_METHODS_BY_OBJECT_ID_FN, GET_METHODS_BY_PROFILE_ID_OBJECT_ID_FN,
     GET_OBJECTS_BY_MODULE_ID_FN,
     GET_PROFILE_PERMISSIONS_METHODS_FN
 } from "../../database/model/functions.js";
@@ -137,6 +137,27 @@ export class SecurityService {
         if (queryRow?.out_user_id === null)
             throw new FieldFailError('username', 'Username is invalid');
         return queryRow?.out_user_id
+    }
+
+    // Get methods by profile ID and object ID
+    async GetMethodsByProfileIDObjectID(req, body) {
+        const queryRes = await DatabaseManager.rawQuery(
+            GET_METHODS_BY_PROFILE_ID_OBJECT_ID_FN,
+            body.profile_id,
+            body.object_id
+        );
+        return queryRes.rows;
+    }
+
+    // Set profile permissions
+    async SetProfilePermissions(req, body) {
+        await DatabaseManager.rawQuery(
+            SET_PROFILE_PERMISSIONS_PROC,
+            req.session.userID,
+            body.profile_id,
+            body.assign_method_ids,
+            body.revoke_method_ids,
+        )
     }
 }
 

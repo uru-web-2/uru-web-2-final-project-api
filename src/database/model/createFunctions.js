@@ -132,13 +132,12 @@ CREATE OR REPLACE FUNCTION get_methods_by_object_id(
 ) RETURNS
 TABLE (
     id BIGINT,
-    name VARCHAR,
-    object_id BIGINT
+    name VARCHAR
 ) AS $$
 BEGIN
     -- Query to select the methods by object ID
     RETURN QUERY
-    SELECT methods.id, methods.name, methods.object_id
+    SELECT methods.id, methods.name
     FROM methods
     WHERE methods.object_id = in_object_id
     AND methods.deleted_at IS NULL;
@@ -155,14 +154,14 @@ CREATE OR REPLACE FUNCTION get_methods_by_profile_id_object_id(
 TABLE (
     id BIGINT,
     name VARCHAR,
-    object_id BIGINT
+    is_allowed BOOLEAN
 ) AS $$
 BEGIN
     -- Query to select the methods by profile ID and object ID
     RETURN QUERY
-    SELECT methods.id, methods.name, methods.object_id
+    SELECT methods.id, methods.name, permissions.id IS NOT NULL AS is_allowed
     FROM methods
-    INNER JOIN permissions ON methods.id = permissions.method_id
+    LEFT JOIN permissions ON methods.id = permissions.method_id
     WHERE permissions.profile_id = in_profile_id
     AND methods.object_id = in_object_id
     AND methods.deleted_at IS NULL;
@@ -355,6 +354,61 @@ BEGIN
     INNER JOIN user_usernames
     ON users.id = user_usernames.user_id
     WHERE users.id = in_user_id;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that gets all the topics name
+export const CREATE_GET_ALL_TOPICS_NAME_FN = `
+CREATE OR REPLACE FUNCTION get_all_topics_name(
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR
+) AS $$
+BEGIN
+    -- Query to select all topics
+    RETURN QUERY
+    SELECT topics.id, topics.name
+    FROM topics
+    WHERE topics.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that gets all the topics
+export const CREATE_GET_ALL_TOPICS_FN = `
+CREATE OR REPLACE FUNCTION get_all_topics(
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR,
+    description VARCHAR
+) AS $$
+BEGIN
+    -- Query to select all topics
+    RETURN QUERY
+    SELECT topics.id, topics.name, topics.description
+    FROM topics
+    WHERE topics.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that gets all the languages
+export const CREATE_GET_ALL_LANGUAGES_FN = `
+CREATE OR REPLACE FUNCTION get_all_languages(
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR
+) AS $$
+BEGIN
+    -- Query to select all languages
+    RETURN QUERY
+    SELECT languages.id, languages.name
+    FROM languages
+    WHERE languages.deleted_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `

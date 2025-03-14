@@ -40,3 +40,16 @@ export const REVOKE_USER_PROFILE = Joi.object({
     username: Joi.string().required().min(1),
     profile_id: Joi.number().required().min(1),
 })
+
+// Get methods by profile ID and object ID model
+export const GET_METHODS_BY_PROFILE_ID_OBJECT_ID = Joi.object({
+    profile_id: Joi.number().required().min(1),
+    object_id: Joi.number().required().min(1),
+})
+
+// Set profile permissions model
+export const SET_PROFILE_PERMISSIONS = Joi.object({
+    profile_id: Joi.number().required().min(1),
+    assign_method_ids: Joi.array().items(Joi.number().required().min(1)),
+    revoke_method_ids: Joi.array().items(Joi.number().required().min(1)),
+})

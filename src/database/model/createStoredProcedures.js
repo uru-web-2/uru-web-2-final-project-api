@@ -1828,3 +1828,123 @@ BEGIN
 END;
 $$;
 `
+
+// Create a stored procedure that creates a new magazine
+export const CREATE_CREATE_MAGAZINE_PROC = `
+CREATE OR REPLACE PROCEDURE create_magazine(
+    IN in_created_by_user_id BIGINT,
+    IN in_magazine_name VARCHAR,
+    IN in_magazine_description TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into magazines table
+    INSERT INTO magazines (
+        created_by_user_id,
+        name,
+        description
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_magazine_name,
+        in_magazine_description
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that updates a magazine
+export const CREATE_UPDATE_MAGAZINE_PROC = `
+CREATE OR REPLACE PROCEDURE update_magazine(
+    IN in_magazine_id BIGINT,
+    IN in_magazine_name VARCHAR,
+    IN in_magazine_description TEXT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_current_magazine_name VARCHAR;
+    var_current_magazine_description TEXT;
+BEGIN
+    -- Get the current magazine name and description
+    SELECT name, description
+    INTO var_current_magazine_name, var_current_magazine_description
+    FROM magazines
+    WHERE id = in_magazine_id
+    AND deleted_at IS NULL;
+
+    -- Update the magazines table
+    UPDATE magazines
+    SET name = COALESCE(in_magazine_name, var_current_magazine_name),
+        description = COALESCE(in_magazine_description, var_current_magazine_description)
+    WHERE id = in_magazine_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that deletes a magazine
+export const CREATE_DELETE_MAGAZINE_PROC = `
+CREATE OR REPLACE PROCEDURE delete_magazine(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_magazine_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the magazines table
+    UPDATE magazines
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_magazine_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that sets permissions to a profile
+export const CREATE_SET_PROFILE_PERMISSIONS_PROC = `
+CREATE OR REPLACE PROCEDURE set_profile_permissions(
+    IN in_set_by_user_id BIGINT,
+    IN in_profile_id BIGINT,
+    IN in_assign_method_ids BIGINT[],
+    IN in_revoke_method_ids BIGINT[]
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_method_id BIGINT;
+BEGIN
+    -- Assign methods
+    IF in_assign_method_ids IS NOT NULL THEN
+        FOREACH var_method_id IN ARRAY in_assign_method_ids
+        LOOP
+            INSERT INTO permissions (
+                profile_id,
+                method_id,
+                assigned_by_user_id
+            )
+            VALUES (
+                in_profile_id,
+                var_method_id,
+                in_set_by_user_id
+            );
+        END LOOP;
+    END IF;
+    
+    -- Revoke permissions
+    IF in_revoke_method_ids IS NOT NULL THEN
+        FOREACH var_method_id IN ARRAY in_revoke_method_ids
+        LOOP
+            UPDATE permissions
+            SET revoked_at = NOW(),
+                revoked_by_user_id = in_set_by_user_id
+            WHERE profile_id = in_profile_id
+            AND method_id = var_method_id
+            AND revoked_at IS NULL;
+        END LOOP;
+    END IF;
+END;
+$$;
+`
