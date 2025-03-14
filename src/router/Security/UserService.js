@@ -113,6 +113,8 @@ export class UserService {
     async GetAllUsers(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_ALL_USERS_FN,
+            body.offset,
+            body.limit
         );
         return queryRes.rows;
     }

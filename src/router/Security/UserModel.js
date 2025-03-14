@@ -19,6 +19,12 @@ export const CREATE_USER = Joi.object({
     document_country: Joi.string().required().min(1),
 })
 
+// Get all users model
+export const GET_ALL_USERS = Joi.object({
+    offset: Joi.number().min(1),
+    limit: Joi.number().min(1),
+})
+
 // Get user details by user ID
 export const GET_USER_DETAILS_BY_USER_ID = Joi.object({
     id: Joi.number().required().min(1),

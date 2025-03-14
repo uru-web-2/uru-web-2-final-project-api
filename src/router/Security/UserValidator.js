@@ -1,6 +1,6 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
-    CREATE_USER,
+    CREATE_USER, GET_ALL_USERS,
     GET_USER_DETAILS_BY_USER_ID,
     SEARCH_USER_BY_USERNAME, UPDATE_USER_BY_ADMIN
 } from "./UserModel.js";
@@ -25,6 +25,11 @@ export class UserValidator {
             )
 
         return [validatedBody, isBodyValid]
+    }
+
+    // Validate get all users
+    GetAllUsers(req) {
+        return Validate(req, GET_ALL_USERS);
     }
 
     // Validate get user details by user ID
