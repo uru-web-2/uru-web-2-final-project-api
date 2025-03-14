@@ -1471,3 +1471,360 @@ BEGIN
 END;
 $$;
 `
+
+// Create a stored procedure that creates a new location
+export const CREATE_CREATE_LOCATION_PROC = `
+CREATE OR REPLACE PROCEDURE create_location(
+    IN in_created_by_user_id BIGINT,
+    IN in_location_floor VARCHAR,
+    IN in_location_area VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into locations table
+    INSERT INTO locations (
+        created_by_user_id,
+        floor,
+        area
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_location_floor,
+        in_location_area
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that updates a location
+export const CREATE_UPDATE_LOCATION_PROC = `
+CREATE OR REPLACE PROCEDURE update_location(
+    IN in_location_id BIGINT,
+    IN in_location_floor VARCHAR,
+    IN in_location_area VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_current_location_floor VARCHAR;
+    var_current_location_area VARCHAR;
+BEGIN
+    -- Get the current location floor and area
+    SELECT floor, area
+    INTO var_current_location_floor, var_current_location_area
+    FROM locations
+    WHERE id = in_location_id
+    AND deleted_at IS NULL;
+
+    -- Update the locations table
+    UPDATE locations
+    SET floor = COALESCE(in_location_floor, var_current_location_floor),
+        area = COALESCE(in_location_area, var_current_location_area)
+    WHERE id = in_location_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that deletes a location
+export const CREATE_DELETE_LOCATION_PROC = `
+CREATE OR REPLACE PROCEDURE delete_location(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_location_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the locations table
+    UPDATE locations
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_location_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new location section
+export const CREATE_CREATE_LOCATION_SECTION_PROC = `
+CREATE OR REPLACE PROCEDURE create_location_section(
+    IN in_created_by_user_id BIGINT,
+    IN in_location_id BIGINT,
+    IN in_location_section_name VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into location_sections table
+    INSERT INTO location_sections (
+        created_by_user_id,
+        location_id,
+        name
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_location_id,
+        in_location_section_name
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that updates a location section
+export const CREATE_UPDATE_LOCATION_SECTION_PROC = `
+CREATE OR REPLACE PROCEDURE update_location_section(
+    IN in_location_section_id BIGINT,
+    IN in_location_section_name VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_current_location_section_name VARCHAR;
+BEGIN
+    -- Get the current location section name
+    SELECT name
+    INTO var_current_location_section_name
+    FROM location_sections
+    WHERE id = in_location_section_id
+    AND deleted_at IS NULL;
+
+    -- Update the location_sections table
+    UPDATE location_sections
+    SET name = COALESCE(in_location_section_name, var_current_location_section_name)
+    WHERE id = in_location_section_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that deletes a location section
+export const CREATE_DELETE_LOCATION_SECTION_PROC = `
+CREATE OR REPLACE PROCEDURE delete_location_section(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_location_section_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the location_sections table
+    UPDATE location_sections
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_location_section_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that assign an author to a document
+export const CREATE_ASSIGN_DOCUMENT_AUTHOR_PROC = `
+CREATE OR REPLACE PROCEDURE assign_document_author(
+    IN in_assigned_by_user_id BIGINT,
+    IN in_document_id BIGINT,
+    IN in_author_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into document_authors table
+    INSERT INTO document_authors (
+        assigned_by_user_id,
+        document_id,
+        author_id
+    )
+    VALUES (
+        in_assigned_by_user_id,
+        in_document_id,
+        in_author_id
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that remove an author from a document
+export const CREATE_REMOVE_DOCUMENT_AUTHOR_PROC = `
+CREATE OR REPLACE PROCEDURE remove_document_author(
+    IN in_removed_by_user_id BIGINT,
+    IN in_document_id BIGINT,
+    IN in_author_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the document_authors table
+    UPDATE document_authors
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
+    WHERE document_id = in_document_id
+    AND author_id = in_author_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that assigns a location section to a document
+export const CREATE_ASSIGN_DOCUMENT_LOCATION_SECTION_PROC = `
+CREATE OR REPLACE PROCEDURE assign_document_location_section(
+    IN in_assigned_by_user_id BIGINT,
+    IN in_document_id BIGINT,
+    IN in_location_section_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into document_location_sections table
+    INSERT INTO document_location_sections (
+        assigned_by_user_id,
+        document_id,
+        location_section_id
+    )
+    VALUES (
+        in_assigned_by_user_id,
+        in_document_id,
+        in_location_section_id
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that removes a location section from a document
+export const CREATE_REMOVE_DOCUMENT_LOCATION_SECTION_PROC = `
+CREATE OR REPLACE PROCEDURE remove_document_location_section(
+    IN in_removed_by_user_id BIGINT,
+    IN in_document_id BIGINT,
+    IN in_location_section_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the document_location_sections table
+    UPDATE document_location_sections
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
+    WHERE document_id = in_document_id
+    AND location_section_id = in_location_section_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new topic
+export const CREATE_CREATE_TOPIC_PROC = `
+CREATE OR REPLACE PROCEDURE create_topic(
+    IN in_created_by_user_id BIGINT,
+    IN in_topic_name VARCHAR,
+    IN in_topic_description TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into topics table
+    INSERT INTO topics (
+        created_by_user_id,
+        name,
+        description
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_topic_name,
+        in_topic_description
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that updates a topic
+export const CREATE_UPDATE_TOPIC_PROC = `
+CREATE OR REPLACE PROCEDURE update_topic(
+    IN in_topic_id BIGINT,
+    IN in_topic_name VARCHAR,
+    IN in_topic_description TEXT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_current_topic_name VARCHAR;
+    var_current_topic_description TEXT;
+BEGIN
+    -- Get the current topic name and description
+    SELECT name, description
+    INTO var_current_topic_name, var_current_topic_description
+    FROM topics
+    WHERE id = in_topic_id
+    AND deleted_at IS NULL;
+
+    -- Update the topics table
+    UPDATE topics
+    SET name = COALESCE(in_topic_name, var_current_topic_name),
+        description = COALESCE(in_topic_description, var_current_topic_description)
+    WHERE id = in_topic_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that deletes a topic
+export const CREATE_DELETE_TOPIC_PROC = `
+CREATE OR REPLACE PROCEDURE delete_topic(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_topic_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the topics table
+    UPDATE topics
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_topic_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that assigns a topic to a document
+export const CREATE_ASSIGN_DOCUMENT_TOPIC_PROC = `
+CREATE OR REPLACE PROCEDURE assign_document_topic(
+    IN in_assigned_by_user_id BIGINT,
+    IN in_document_id BIGINT,
+    IN in_topic_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into document_topics table
+    INSERT INTO document_topics (
+        assigned_by_user_id,
+        document_id,
+        topic_id
+    )
+    VALUES (
+        in_assigned_by_user_id,
+        in_document_id,
+        in_topic_id
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that removes a topic from a document
+export const CREATE_REMOVE_DOCUMENT_TOPIC_PROC = `
+CREATE OR REPLACE PROCEDURE remove_document_topic(
+    IN in_removed_by_user_id BIGINT,
+    IN in_document_id BIGINT,
+    IN in_topic_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the document_topics table
+    UPDATE document_topics
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
+    WHERE document_id = in_document_id
+    AND topic_id = in_topic_id
+    AND removed_at IS NULL;
+END;
+$$;
+`

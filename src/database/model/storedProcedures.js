@@ -138,3 +138,39 @@ export const UPDATE_POST_PROC = "CALL update_post($1, $2)"
 
 // Query to delete a post
 export const DELETE_POST_PROC = "CALL delete_post($1, $2)"
+
+// Query to create a new location
+export const CREATE_LOCATION_PROC = "CALL create_location($1, $2, $3)"
+
+// Query to update a location
+export const UPDATE_LOCATION_PROC = "CALL update_location($1, $2, $3)"
+
+// Query to delete a location
+export const DELETE_LOCATION_PROC = "CALL delete_location($1, $2)"
+
+// Query to assign an author to a document
+export const ASSIGN_DOCUMENT_AUTHOR_PROC = "CALL assign_document_author($1, $2, $3)"
+
+// Query to remove an author from a document
+export const REMOVE_DOCUMENT_AUTHOR_PROC = "CALL remove_document_author($1, $2, $3)"
+
+// Query to assign a location section to a document
+export const ASSIGN_DOCUMENT_LOCATION_SECTION_PROC = "CALL assign_document_location_section($1, $2, $3)"
+
+// Query to remove a location section from a document
+export const REMOVE_DOCUMENT_LOCATION_SECTION_PROC = "CALL remove_document_location_section($1, $2, $3)"
+
+// Query to create a new topic
+export const CREATE_TOPIC_PROC = "CALL create_topic($1, $2, $3)"
+
+// Query to update a topic
+export const UPDATE_TOPIC_PROC = "CALL update_topic($1, $2, $3)"
+
+// Query to delete a topic
+export const DELETE_TOPIC_PROC = "CALL delete_topic($1, $2)"
+
+// Query to assign a topic to a document
+export const ASSIGN_DOCUMENT_TOPIC_PROC = "CALL assign_document_topic($1, $2, $3)"
+
+// Query to remove a topic from a document
+export const REMOVE_DOCUMENT_TOPIC_PROC = "CALL remove_document_topic($1, $2, $3)"

@@ -17,6 +17,30 @@ END;
 $$ LANGUAGE plpgsql;
 `
 
+// Query to create a function that gets all the modules by profile ID
+export const CREATE_GET_MODULES_BY_PROFILE_ID_FN = `
+CREATE OR REPLACE FUNCTION get_modules_by_profile_id(
+    IN in_profile_id BIGINT
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR,
+    parent_module_id BIGINT
+) AS $$
+BEGIN
+    -- Query to select the modules by profile ID
+    RETURN QUERY
+    SELECT modules.id, modules.name, modules.parent_module_id
+    FROM modules
+    INNER JOIN objects ON modules.id = objects.module_id
+    INNER JOIN methods ON objects.id = methods.object_id
+    INNER JOIN permissions ON methods.id = permissions.method_id
+    WHERE permissions.profile_id = in_profile_id
+    AND modules.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
 // Query to create a function that gets all the objects
 export const CREATE_GET_ALL_OBJECTS_FN = `
 CREATE OR REPLACE FUNCTION get_all_objects(
@@ -57,6 +81,31 @@ END;
 $$ LANGUAGE plpgsql;
 `
 
+// Query to create a function that gets all the objects by profile ID and module ID
+export const CREATE_GET_OBJECTS_BY_PROFILE_ID_MODULE_ID_FN = `
+CREATE OR REPLACE FUNCTION get_objects_by_profile_id_module_id(
+    IN in_profile_id BIGINT,
+    IN in_module_id BIGINT
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR,
+    module_id BIGINT
+) AS $$
+BEGIN
+    -- Query to select the objects by profile ID and module ID
+    RETURN QUERY
+    SELECT objects.id, objects.name, objects.module_id
+    FROM objects
+    INNER JOIN methods ON objects.id = methods.object_id
+    INNER JOIN permissions ON methods.id = permissions.method_id
+    WHERE permissions.profile_id = in_profile_id
+    AND objects.module_id = in_module_id
+    AND objects.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
 // Query to create a function that gets all the methods
 export const CREATE_GET_ALL_METHODS_FN = `
 CREATE OR REPLACE FUNCTION get_all_methods(
@@ -92,6 +141,30 @@ BEGIN
     SELECT methods.id, methods.name, methods.object_id
     FROM methods
     WHERE methods.object_id = in_object_id
+    AND methods.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that gets all the methods by profile ID and object ID
+export const CREATE_GET_METHODS_BY_PROFILE_ID_OBJECT_ID_FN = `
+CREATE OR REPLACE FUNCTION get_methods_by_profile_id_object_id(
+    IN in_profile_id BIGINT,
+    IN in_object_id BIGINT
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR,
+    object_id BIGINT
+) AS $$
+BEGIN
+    -- Query to select the methods by profile ID and object ID
+    RETURN QUERY
+    SELECT methods.id, methods.name, methods.object_id
+    FROM methods
+    INNER JOIN permissions ON methods.id = permissions.method_id
+    WHERE permissions.profile_id = in_profile_id
+    AND methods.object_id = in_object_id
     AND methods.deleted_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;

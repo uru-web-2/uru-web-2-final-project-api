@@ -380,7 +380,7 @@ export const CREATE_LOCATION_SECTIONS = `
 CREATE TABLE IF NOT EXISTS location_sections (
     id BIGSERIAL PRIMARY KEY,
     location_id BIGINT NOT NULL,
-    section VARCHAR(50) NOT NULL,
+    name VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
@@ -399,27 +399,30 @@ CREATE TABLE IF NOT EXISTS document_authors (
     document_id BIGINT NOT NULL,
     assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
     assigned_by_user_id BIGINT NOT NULL,
+    removed_at TIMESTAMP,
+    removed_by_user_id BIGINT,
     FOREIGN KEY (author_id) REFERENCES people(id),
     FOREIGN KEY (document_id) REFERENCES documents(id),
-    FOREIGN KEY (assigned_by_user_id) REFERENCES users(id)      
+    FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)      
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_AUTHORS_UNIQUE_DOCUMENT_ID_AUTHOR_ID} ON document_authors (author_id, document_id);
 `;
 
-// Query to create the document_locations table
-export const CREATE_DOCUMENT_LOCATIONS = `
-CREATE TABLE IF NOT EXISTS document_locations (
+// Query to create the document_location_sections table
+export const CREATE_DOCUMENT_LOCATION_SECTIONS = `
+CREATE TABLE IF NOT EXISTS document_location_sections (
     id BIGSERIAL PRIMARY KEY,
-    assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMP,
     document_id BIGINT NOT NULL,
     location_section_id BIGINT NOT NULL,
+    assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    removed_at TIMESTAMP,
     assigned_by_user_id BIGINT NOT NULL,
-    deleted_by_user_id BIGINT,
+    removed_by_user_id BIGINT,
     FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (location_section_id) REFERENCES location_sections(id),
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
 `;
 
@@ -442,6 +445,7 @@ export const CREATE_TOPICS = `
 CREATE TABLE IF NOT EXISTS topics (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
+    description TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
@@ -456,15 +460,15 @@ export const CREATE_DOCUMENT_TOPICS = `
 CREATE TABLE IF NOT EXISTS document_topics (
     id BIGSERIAL PRIMARY KEY,
     assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMP,
+    removed_at TIMESTAMP,
     document_id BIGINT NOT NULL,
     topic_id BIGINT NOT NULL,
     assigned_by_user_id BIGINT NOT NULL,
-    deleted_by_user_id BIGINT,
+    removed_by_user_id BIGINT,
     FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (topic_id) REFERENCES topics(id),
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_TOPICS_UNIQUE_DOCUMENT_ID_TOPIC_ID} ON document_topics (document_id, topic_id);
 `;
