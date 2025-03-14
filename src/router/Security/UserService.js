@@ -1,7 +1,7 @@
 import DatabaseManager from "../../components/database.js";
 import {
     CREATE_USER_PROC,
-    GET_NUMBER_OF_USERS_PROC,
+    GET_NUMBER_OF_USERS_PROC, UPDATE_USER_BY_ADMIN_PROC,
 } from "../../database/model/storedProcedures.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
 import {
@@ -115,6 +115,29 @@ export class UserService {
             GET_ALL_USERS_FN,
         );
         return queryRes.rows;
+    }
+
+    // Update a user by admin
+    async UpdateUserByAdmin(req, body) {
+        // Update the user
+        const queryRes = await DatabaseManager.rawQuery(
+            UPDATE_USER_BY_ADMIN_PROC,
+            req.session.userID,
+            body.id,
+            body.first_name,
+            body.last_name,
+            body.username,
+            body.document_country,
+            body.document_type,
+            body.document_number,
+            null
+        );
+        const queryRow = queryRes.rows?.[0];
+        if (!queryRow?.out_country_name_is_valid)
+            throw new FieldFailError(400,
+                "document_country",
+                "country not found"
+            )
     }
 }
 

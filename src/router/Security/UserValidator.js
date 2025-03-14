@@ -2,7 +2,7 @@ import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
     CREATE_USER,
     GET_USER_DETAILS_BY_USER_ID,
-    SEARCH_USER_BY_USERNAME
+    SEARCH_USER_BY_USERNAME, UPDATE_USER_BY_ADMIN
 } from "./UserModel.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
 
@@ -30,6 +30,11 @@ export class UserValidator {
     // Validate get user details by user ID
     GetUserDetailsByUserID(req) {
         return Validate(req, GET_USER_DETAILS_BY_USER_ID);
+    }
+
+    // Validate update user by admin
+    UpdateUserByAdmin(req) {
+        return Validate(req, UPDATE_USER_BY_ADMIN);
     }
 }
 

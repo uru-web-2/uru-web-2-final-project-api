@@ -67,6 +67,21 @@ export class User {
         // Send the response
         res.status(200).json(SuccessJSendBody({users, number_of_users}))
     }
+
+    // Update a user by admin
+    async UpdateUserByAdmin(req, res) {
+        // Validate the request
+        const body = HandleValidation(req, res, Validator.UpdateUserByAdmin);
+
+        // Update the user by admin
+        await Service.UpdateUserByAdmin(req, body);
+
+        // Log the update
+        Logger.info(`Updated user ${body.id} by admin ${req.session.userID}`);
+
+        // Send the response
+        res.status(200).json(SuccessJSendBody())
+    }
 }
 
 // Singleton instance
