@@ -70,8 +70,8 @@ export const DOCUMENT_TOPICS_UNIQUE_DOCUMENT_ID_TOPIC_ID = 'document_topics_uniq
 // Unique publishers name for the publishers table
 export const PUBLISHERS_UNIQUE_NAME = 'publishers_unique_name';
 
-// Unique ISBN for the books table
-export const BOOKS_UNIQUE_ISBN = 'books_unique_isbn';
+// Unique ISBN for the book_versions table
+export const BOOK_VERSIONS_UNIQUE_ISBN = 'book_versions_unique_isbn';
 
 // Unique language name for the languages table
 export const LANGUAGES_UNIQUE_NAME = 'languages_unique_name';

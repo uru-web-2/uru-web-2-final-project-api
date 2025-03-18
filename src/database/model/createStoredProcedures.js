@@ -460,7 +460,7 @@ DECLARE
 BEGIN
     -- Check if the user reset password token is valid
     SELECT id, user_id
-    INTO var_user_reset_password_token_id
+    INTO var_user_reset_password_token_id, var_user_id
     FROM user_reset_password_tokens
     WHERE reset_password_token = in_user_reset_password_token
     AND expires_at > NOW()
@@ -476,7 +476,7 @@ BEGIN
     -- Revoke the user reset password token
     UPDATE user_reset_password_tokens
     SET used_at = NOW()
-    WHERE id = var_user_reset_password_token_id;
+    WHERE id = var_user_reset_password_token_id;    
     
     -- Update the user password hash
     call update_user_password_hash(var_user_id, in_user_password_hash);
@@ -1218,9 +1218,7 @@ BEGIN
     UPDATE people
     SET first_name = COALESCE(in_user_first_name, var_current_user_first_name),
         last_name = COALESCE(in_user_last_name, var_current_user_last_name)
-    FROM users
-    INNER JOIN people ON people.id = users.person_id
-    WHERE users.id = in_user_id; 
+    WHERE people.id = (SELECT person_id FROM users WHERE id = in_user_id);
     
     -- Check if the username is not null
     IF in_user_username IS NOT NULL THEN
@@ -1414,7 +1412,7 @@ export const CREATE_CREATE_POST_PROC = `
 CREATE OR REPLACE PROCEDURE create_post(
     IN in_created_by_user_id BIGINT,
     IN in_document_id BIGINT,
-    IN in_post_available_until TIMESTAMP,
+    IN in_post_available_until TIMESTAMP
 )
 LANGUAGE plpgsql
 AS $$
@@ -2123,7 +2121,7 @@ AS $$
 BEGIN
     -- Select the document ID
     SELECT document_id
-    INTO var_document_id
+    INTO out_document_id
     FROM books
     WHERE id = in_book_id
     AND deleted_at IS NULL;
@@ -2139,7 +2137,6 @@ CREATE OR REPLACE PROCEDURE create_book(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
-    IN in_book_isbn VARCHAR,
     IN in_book_publisher_id BIGINT
 )
 LANGUAGE plpgsql
@@ -2153,12 +2150,10 @@ BEGIN
     -- Insert into books table
     INSERT INTO books (
         document_id,
-        isbn,
         publisher_id
     )
     VALUES (
         var_document_id,
-        in_book_isbn,
         in_book_publisher_id
     );
 END;
@@ -2173,14 +2168,12 @@ CREATE OR REPLACE PROCEDURE update_book(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
-    IN in_book_isbn VARCHAR,
     IN in_book_publisher_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
-    var_current_book_isbn VARCHAR;
     var_current_book_publisher_id BIGINT;
 BEGIN
     -- Get the document ID
@@ -2190,8 +2183,8 @@ BEGIN
     call update_document(var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages);
     
     -- Select the current book ISBN and publisher ID
-    SELECT books.isbn, books.publisher_id
-    INTO var_current_book_isbn, var_current_book_publisher_id
+    SELECT books.publisher_id
+    INTO var_current_book_publisher_id
     FROM books
     INNER JOIN documents ON books.document_id = documents.id
     WHERE books.id = in_book_id
@@ -2199,8 +2192,7 @@ BEGIN
     
     -- Update the books table
     UPDATE books
-    SET isbn = in_book_isbn,
-        publisher_id = in_book_publisher_id
+    SET publisher_id = in_book_publisher_id
     FROM documents
     WHERE books.document_id = documents.id
     AND books.id = in_book_id
@@ -2245,6 +2237,67 @@ END;
 $$;
 `
 
+// Query to create a stored procedure that gets a work ID by document ID
+export const CREATE_GET_WORK_ID_BY_DOCUMENT_ID_PROC = `
+CREATE OR REPLACE PROCEDURE get_work_by_document_id(
+    IN in_document_id BIGINT,
+    OUT out_work_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Select the document ID
+    SELECT document_id
+    INTO out_work_id
+    FROM works
+    WHERE id = in_work_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Query to create a stored procedure that gets a document ID by work ID
+export const CREATE_GET_DOCUMENT_ID_BY_WORK_ID_PROC = `
+CREATE OR REPLACE PROCEDURE get_document_id_by_work_id(
+    IN in_work_id BIGINT,
+    OUT out_document_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Select the document ID
+    SELECT document_id
+    INTO out_document_id
+    FROM works
+    WHERE id = in_work_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Query to create a stored procedure that updates a work
+export const CREATE_UPDATE_WORK_PROC = `
+CREATE OR REPLACE PROCEDURE update_work(
+    IN in_work_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_document_id BIGINT;
+BEGIN
+    -- Get the document ID
+    call get_document_id_by_work_id(in_work_id, var_document_id);
+    
+    -- Update the documents table
+    call update_document(var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages);
+END;
+$$;
+`
+
 // Query to create a stored procedure that creates a new article
 export const CREATE_CREATE_ARTICLE_PROC = `
 CREATE OR REPLACE PROCEDURE create_article(
@@ -2254,7 +2307,7 @@ CREATE OR REPLACE PROCEDURE create_article(
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
     IN in_work_created_at DATE,
-    IN in_work_created_by_user_id BIGINT,
+    IN in_work_created_by_user_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -2272,6 +2325,29 @@ BEGIN
     VALUES (
         var_work_id
     );
+END;
+$$;
+`
+
+// Query to create a stored procedure that updates an article
+export const CREATE_UPDATE_ARTICLE_PROC = `
+CREATE OR REPLACE PROCEDURE update_article(
+    IN in_article_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_work_id BIGINT;
+BEGIN
+    -- Get the work ID
+    call get_work_by_document_id(in_article_id, var_work_id);
+    
+    -- Update the work
+    call update_work(var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages);
 END;
 $$;
 `

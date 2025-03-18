@@ -209,13 +209,25 @@ export const DELETE_DOCUMENT_REVIEW_PROC = "CALL delete_document_review($1, $2)"
 export const GET_DOCUMENT_ID_BY_BOOK_ID_PROC = "CALL get_document_id_by_book_id($1, $2)"
 
 // Query to create a new book
-export const CREATE_BOOK_PROC = "CALL create_book($1, $2, $3, $4, $5, $6, $7)"
+export const CREATE_BOOK_PROC = "CALL create_book($1, $2, $3, $4, $5, $6)"
 
 // Query to update a book
-export const UPDATE_BOOK_PROC = "CALL update_book($1, $2, $3, $4, $5, $6, $7)"
+export const UPDATE_BOOK_PROC = "CALL update_book($1, $2, $3, $4, $5, $6)"
 
 // Query to create a new work
 export const CREATE_WORK_PROC = "CALL create_work($1, $2, $3, $4, $5, $6)"
 
+// Query to get a document ID by work ID
+export const GET_DOCUMENT_ID_BY_WORK_ID_PROC = "CALL get_document_id_by_work_id($1, $2)"
+
+// Query to get a work ID by document ID
+export const GET_WORK_ID_BY_DOCUMENT_ID_PROC = "CALL get_work_id_by_document_id($1, $2)"
+
+// Query to update a work
+export const UPDATE_WORK_PROC = "CALL update_work($1, $2, $3, $4, $5)"
+
 // Query to create a new article
 export const CREATE_ARTICLE_PROC = "CALL create_article($1, $2, $3, $4, $5, $6, $7)"
+
+// Query to update an article
+export const UPDATE_ARTICLE_PROC = "CALL update_article($1, $2, $3, $4, $5)"
