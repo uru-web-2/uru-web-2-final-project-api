@@ -176,10 +176,10 @@ export const ASSIGN_DOCUMENT_TOPIC_PROC = "CALL assign_document_topic($1, $2, $3
 export const REMOVE_DOCUMENT_TOPIC_PROC = "CALL remove_document_topic($1, $2, $3)"
 
 // Query to create a new magazine
-export const CREATE_MAGAZINE_PROC = "CALL create_magazine($1, $2, $3)"
+export const CREATE_MAGAZINE_PROC = "CALL create_magazine($1, $2, $3, $4)"
 
 // Query to update a magazine
-export const UPDATE_MAGAZINE_PROC = "CALL update_magazine($1, $2, $3)"
+export const UPDATE_MAGAZINE_PROC = "CALL update_magazine($1, $2, $3, $4)"
 
 // Query to delete a magazine
 export const DELETE_MAGAZINE_PROC = "CALL delete_magazine($1, $2)"
@@ -209,10 +209,10 @@ export const DELETE_DOCUMENT_REVIEW_PROC = "CALL delete_document_review($1, $2)"
 export const GET_DOCUMENT_ID_BY_BOOK_ID_PROC = "CALL get_document_id_by_book_id($1, $2)"
 
 // Query to create a new book
-export const CREATE_BOOK_PROC = "CALL create_book($1, $2, $3, $4, $5, $6)"
+export const CREATE_BOOK_PROC = "CALL create_book($1, $2, $3, $4, $5, $6, $7)"
 
 // Query to update a book
-export const UPDATE_BOOK_PROC = "CALL update_book($1, $2, $3, $4, $5, $6)"
+export const UPDATE_BOOK_PROC = "CALL update_book($1, $2, $3, $4, $5, $6, $7)"
 
 // Query to create a new work
 export const CREATE_WORK_PROC = "CALL create_work($1, $2, $3, $4, $5, $6)"
@@ -227,7 +227,28 @@ export const GET_WORK_ID_BY_DOCUMENT_ID_PROC = "CALL get_work_id_by_document_id(
 export const UPDATE_WORK_PROC = "CALL update_work($1, $2, $3, $4, $5)"
 
 // Query to create a new article
-export const CREATE_ARTICLE_PROC = "CALL create_article($1, $2, $3, $4, $5, $6, $7)"
+export const CREATE_ARTICLE_PROC = "CALL create_article($1, $2, $3, $4, $5)"
 
 // Query to update an article
 export const UPDATE_ARTICLE_PROC = "CALL update_article($1, $2, $3, $4, $5)"
+
+// Query to create a new book copy
+export const CREATE_BOOK_COPY_PROC = "CALL create_book_copy($1, $2, $3)"
+
+// Query to update a book copy
+export const UPDATE_BOOK_COPY_PROC = "CALL update_book_copy($1, $2)"
+
+// Query to delete a book copy
+export const DELETE_BOOK_COPY_PROC = "CALL delete_book_copy($1, $2)"
+
+// Query to create a new magazine issue
+export const CREATE_MAGAZINE_ISSUE_PROC = "CALL create_magazine_issue($1, $2, $3, $4, $5, $6, $7)"
+
+// Query to update a magazine issue
+export const UPDATE_MAGAZINE_ISSUE_PROC = "CALL update_magazine_issue($1, $2, $3, $4, $5, $6)"
+
+// Query to create a new thesis
+export const CREATE_THESIS_PROC = "CALL create_thesis($1, $2, $3, $4, $5)"
+
+// Query to update a thesis
+export const UPDATE_THESIS_PROC = "CALL update_thesis($1, $2, $3, $4, $5)"

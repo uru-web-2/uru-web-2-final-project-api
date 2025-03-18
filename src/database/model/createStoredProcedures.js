@@ -1292,8 +1292,7 @@ BEGIN
         description = COALESCE(var_document_description, description),
         release_date = COALESCE(var_document_release_date, release_date),
         pages = COALESCE(var_document_pages, pages)
-    WHERE id = in_document_id
-    AND deleted_at IS NULL;
+    WHERE id = in_document_id;
 END;
 $$;
 `
@@ -1521,8 +1520,7 @@ BEGIN
     UPDATE locations
     SET floor = COALESCE(in_location_floor, var_current_location_floor),
         area = COALESCE(in_location_area, var_current_location_area)
-    WHERE id = in_location_id
-    AND deleted_at IS NULL;
+    WHERE id = in_location_id;
 END;
 $$;
 `
@@ -1592,8 +1590,7 @@ BEGIN
     -- Update the location_sections table
     UPDATE location_sections
     SET name = COALESCE(in_location_section_name, var_current_location_section_name)
-    WHERE id = in_location_section_id
-    AND deleted_at IS NULL;
+    WHERE id = in_location_section_id;
 END;
 $$;
 `
@@ -1758,8 +1755,7 @@ BEGIN
     UPDATE topics
     SET name = COALESCE(in_topic_name, var_current_topic_name),
         description = COALESCE(in_topic_description, var_current_topic_description)
-    WHERE id = in_topic_id
-    AND deleted_at IS NULL;
+    WHERE id = in_topic_id;
 END;
 $$;
 `
@@ -1834,7 +1830,8 @@ export const CREATE_CREATE_MAGAZINE_PROC = `
 CREATE OR REPLACE PROCEDURE create_magazine(
     IN in_created_by_user_id BIGINT,
     IN in_magazine_name VARCHAR,
-    IN in_magazine_description TEXT
+    IN in_magazine_description TEXT,
+    IN in_magazine_release_date DATE
 )
 LANGUAGE plpgsql
 AS $$
@@ -1843,12 +1840,14 @@ BEGIN
     INSERT INTO magazines (
         created_by_user_id,
         name,
-        description
+        description,
+        release_date
     )
     VALUES (
         in_created_by_user_id,
         in_magazine_name,
-        in_magazine_description
+        in_magazine_description,
+        in_magazine_release_date
     );
 END;
 $$;
@@ -1859,17 +1858,19 @@ export const CREATE_UPDATE_MAGAZINE_PROC = `
 CREATE OR REPLACE PROCEDURE update_magazine(
     IN in_magazine_id BIGINT,
     IN in_magazine_name VARCHAR,
-    IN in_magazine_description TEXT
+    IN in_magazine_description TEXT,
+    IN in_magazine_release_date DATE
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_current_magazine_name VARCHAR;
     var_current_magazine_description TEXT;
+    var_current_magazine_release_date DATE;
 BEGIN
     -- Get the current magazine name and description
-    SELECT name, description
-    INTO var_current_magazine_name, var_current_magazine_description
+    SELECT name, description, release_date
+    INTO var_current_magazine_name, var_current_magazine_description, var_current_magazine_release_date
     FROM magazines
     WHERE id = in_magazine_id
     AND deleted_at IS NULL;
@@ -1877,9 +1878,9 @@ BEGIN
     -- Update the magazines table
     UPDATE magazines
     SET name = COALESCE(in_magazine_name, var_current_magazine_name),
-        description = COALESCE(in_magazine_description, var_current_magazine_description)
-    WHERE id = in_magazine_id
-    AND deleted_at IS NULL;
+        description = COALESCE(in_magazine_description, var_current_magazine_description),
+        release_date = COALESCE(in_magazine_release_date, var_current_magazine_release_date)
+    WHERE id = in_magazine_id;
 END;
 $$;
 `
@@ -1998,8 +1999,7 @@ BEGIN
     UPDATE publishers
     SET name = COALESCE(in_publisher_name, var_current_publisher_name),
         description = COALESCE(in_publisher_description, var_current_publisher_description)
-    WHERE id = in_publisher_id
-    AND deleted_at IS NULL;
+    WHERE id = in_publisher_id;
 END;
 $$;
 `
@@ -2085,8 +2085,7 @@ BEGIN
         content = COALESCE(in_review_content, var_current_review_content),
         rating = COALESCE(in_review_rating, var_current_review_rating),
         updated_at = NOW()
-    WHERE id = in_review_id
-    AND deleted_at IS NULL;
+    WHERE id = in_review_id;
 END;
 $$;
 `
@@ -2137,6 +2136,7 @@ CREATE OR REPLACE PROCEDURE create_book(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_book_isbn VARCHAR,
     IN in_book_publisher_id BIGINT
 )
 LANGUAGE plpgsql
@@ -2150,11 +2150,13 @@ BEGIN
     -- Insert into books table
     INSERT INTO books (
         document_id,
-        publisher_id
+        publisher_id,
+        isbn
     )
     VALUES (
         var_document_id,
-        in_book_publisher_id
+        in_book_publisher_id,
+        in_book_isbn
     );
 END;
 $$;
@@ -2168,12 +2170,14 @@ CREATE OR REPLACE PROCEDURE update_book(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_book_isbn VARCHAR,
     IN in_book_publisher_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
+    var_current_book_isbn VARCHAR;
     var_current_book_publisher_id BIGINT;
 BEGIN
     -- Get the document ID
@@ -2183,8 +2187,8 @@ BEGIN
     call update_document(var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages);
     
     -- Select the current book ISBN and publisher ID
-    SELECT books.publisher_id
-    INTO var_current_book_publisher_id
+    SELECT books.isbn, books.publisher_id
+    INTO var_current_book_isbn, var_current_book_publisher_id
     FROM books
     INNER JOIN documents ON books.document_id = documents.id
     WHERE books.id = in_book_id
@@ -2192,11 +2196,9 @@ BEGIN
     
     -- Update the books table
     UPDATE books
-    SET publisher_id = in_book_publisher_id
-    FROM documents
-    WHERE books.document_id = documents.id
-    AND books.id = in_book_id
-    AND documents.deleted_at IS NULL;
+    SET publisher_id = COALESCE(in_book_publisher_id, var_current_book_publisher_id),
+        isbn = COALESCE(in_book_isbn, var_current_book_isbn)
+    WHERE books.id = in_book_id;
 END;
 $$;
 `
@@ -2208,9 +2210,7 @@ CREATE OR REPLACE PROCEDURE create_work(
     IN in_document_title VARCHAR,
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
-    IN in_document_pages BIGINT,
-    IN in_work_created_at DATE,
-    IN in_work_created_by_user_id BIGINT,
+    IN in_document_pages BIGINT
     OUT out_work_id BIGINT
 )
 LANGUAGE plpgsql
@@ -2223,14 +2223,10 @@ BEGIN
     
     -- Insert into works table
     INSERT INTO works (
-        document_id,
-        created_at,
-        created_by_user_id
+        document_id
     )
     VALUES (
-        var_document_id,
-        in_work_created_at,
-        in_work_created_by_user_id
+        var_document_id
     )
     RETURNING id INTO out_work_id;
 END;
@@ -2305,9 +2301,7 @@ CREATE OR REPLACE PROCEDURE create_article(
     IN in_document_title VARCHAR,
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
-    IN in_document_pages BIGINT,
-    IN in_work_created_at DATE,
-    IN in_work_created_by_user_id BIGINT
+    IN in_document_pages BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -2316,7 +2310,7 @@ DECLARE
     var_work_id BIGINT;
 BEGIN
     -- Create the work
-    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_work_created_at, in_work_created_by_user_id, var_work_id);
+    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, var_work_id);
     
     -- Insert into articles table
     INSERT INTO articles (
@@ -2345,6 +2339,199 @@ DECLARE
 BEGIN
     -- Get the work ID
     call get_work_by_document_id(in_article_id, var_work_id);
+    
+    -- Update the work
+    call update_work(var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages);
+END;
+$$;
+`
+
+// Query to create a stored procedure that creates a new book copy
+export const CREATE_CREATE_BOOK_COPY_PROC = `
+CREATE OR REPLACE PROCEDURE create_book_copy(
+    IN in_created_by_user_id BIGINT,
+    IN in_book_id BIGINT,
+    IN in_book_copy_uuid VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into book_copies table
+    INSERT INTO book_copies (
+        created_by_user_id,
+        book_id,
+        uuid
+    )
+    VALUES (
+        in_created_by_user_id,
+        in_book_id,
+        in_book_copy_uuid
+    );
+END;
+$$;
+`
+
+// Query to create a stored procedure that updates a book copy
+export const CREATE_UPDATE_BOOK_COPY_PROC = `
+CREATE OR REPLACE PROCEDURE update_book_copy(
+    IN in_book_copy_id BIGINT,
+    IN in_book_copy_uuid VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_current_book_copy_uuid VARCHAR;
+BEGIN
+    -- Get the current book copy UUID
+    SELECT uuid
+    INTO var_current_book_copy_uuid
+    FROM book_copies
+    WHERE id = in_book_copy_id
+    AND deleted_at IS NULL;
+
+    -- Update the book_copies table
+    UPDATE book_copies
+    SET uuid = COALESCE(in_book_copy_uuid, var_current_book_copy_uuid)
+    WHERE id = in_book_copy_id;
+END;
+$$;
+`
+
+// Query to create a stored procedure that deletes a book copy
+export const CREATE_DELETE_BOOK_COPY_PROC = `
+CREATE OR REPLACE PROCEDURE delete_book_copy(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_book_copy_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the book_copies table
+    UPDATE book_copies
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_book_copy_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
+
+// Query to create a stored procedure that creates a new magazine issue
+export const CREATE_CREATE_MAGAZINE_ISSUE_PROC = `
+CREATE OR REPLACE PROCEDURE create_magazine_issue(
+    IN in_registered_by_user_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT,
+    IN in_magazine_id BIGINT,
+    IN in_magazine_issue_number BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Create the work
+    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, var_work_id);
+    
+    -- Insert into magazine_issues table
+    INSERT INTO magazine_issues (
+        work_id,
+        magazine_id,
+        issue_number
+    )
+    VALUES (
+        var_work_id,
+        in_magazine_id,
+        in_magazine_issue_number
+    );
+END;
+$$;
+`
+
+// Query to create a stored procedure that updates a magazine issue
+export const CREATE_UPDATE_MAGAZINE_ISSUE_PROC = `
+CREATE OR REPLACE PROCEDURE update_magazine_issue(
+    IN in_magazine_issue_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT,
+    IN in_magazine_issue_number BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_work_id BIGINT;
+    var_current_magazine_issue_number BIGINT;
+BEGIN
+    -- Get the work ID
+    call get_work_by_document_id(in_magazine_issue_id, var_work_id);
+    
+    -- Update the work
+    call update_work(var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages);
+    
+    -- Select the current magazine issue number
+    SELECT issue_number
+    INTO var_current_magazine_issue_number
+    FROM magazine_issues
+    INNER JOIN works ON magazine_issues.work_id = works.id
+    INNER JOIN documents ON works.document_id = documents.id
+    WHERE magazine_issues.id = in_magazine_issue_id
+    AND documents.deleted_at IS NULL;
+    
+    -- Update the magazine_issues table
+    UPDATE magazine_issues
+    SET issue_number = COALESCE(in_magazine_issue_number, var_current_magazine_issue_number)
+    WHERE work_id = var_work_id;
+END;
+$$;
+`
+
+// Query to create a stored procedure that creates a new thesis
+export const CREATE_CREATE_THESIS_PROC = `
+CREATE OR REPLACE PROCEDURE create_thesis(
+    IN in_registered_by_user_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_document_id BIGINT;
+    var_work_id BIGINT;
+BEGIN
+    -- Create the work
+    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, var_work_id);
+    
+    -- Insert into theses table
+    INSERT INTO theses (
+        work_id
+    )
+    VALUES (
+        var_work_id
+    );
+END;
+$$;
+`
+
+// Query to create a stored procedure that updates a thesis
+export const CREATE_UPDATE_THESIS_PROC = `
+CREATE OR REPLACE PROCEDURE update_thesis(
+    IN in_thesis_id BIGINT,
+    IN in_document_title VARCHAR,
+    IN in_document_description TEXT,
+    IN in_document_release_date DATE,
+    IN in_document_pages BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_work_id BIGINT;
+BEGIN
+    -- Get the work ID
+    call get_work_by_document_id(in_thesis_id, var_work_id);
     
     -- Update the work
     call update_work(var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages);

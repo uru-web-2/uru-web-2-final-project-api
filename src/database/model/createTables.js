@@ -1,6 +1,6 @@
 import {
     BOOK_COPIES_UNIQUE_UUID,
-    BOOK_VERSIONS_UNIQUE_ISBN,
+    BOOKS_UNIQUE_ISBN,
     COUNTRIES_UNIQUE_NAME,
     DOCUMENT_AUTHORS_UNIQUE_DOCUMENT_ID_AUTHOR_ID,
     DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID,
@@ -500,9 +500,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS ${PUBLISHERS_UNIQUE_NAME} ON publishers (name)
 export const CREATE_BOOKS = `
 CREATE TABLE IF NOT EXISTS books (
     id BIGSERIAL PRIMARY KEY,
+    isbn VARCHAR(150) NOT NULL,
     publisher_id BIGSERIAL NOT NULL,
     FOREIGN KEY (publisher_id) REFERENCES publishers(id)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS ${BOOKS_UNIQUE_ISBN} ON books (isbn);
 `;
 
 // Query to create the languages table
@@ -532,13 +534,12 @@ CREATE TABLE IF NOT EXISTS document_languages (
 CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID} ON document_languages (document_id, language_id);
 `;
 
-// Query to create the book_versions table
-export const CREATE_BOOK_VERSIONS = `
-CREATE TABLE IF NOT EXISTS book_versions (
+// Query to create the book_copies table
+export const CREATE_BOOK_COPIES = `
+CREATE TABLE IF NOT EXISTS book_copies (
     id BIGSERIAL PRIMARY KEY,
-    isbn VARCHAR(150) NOT NULL,
+    uuid VARCHAR(200) NOT NULL,
     book_id BIGSERIAL NOT NULL,
-    version VARCHAR(50),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
@@ -547,30 +548,12 @@ CREATE TABLE IF NOT EXISTS book_versions (
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
     FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ${BOOK_VERSIONS_UNIQUE_ISBN} ON book_versions (isbn);
-`;
-
-// Query to create the book_copies table
-export const CREATE_BOOK_COPIES = `
-CREATE TABLE IF NOT EXISTS book_copies (
-    id BIGSERIAL PRIMARY KEY,
-    uuid VARCHAR(200),
-    book_version_id BIGSERIAL NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMP,
-    created_by_user_id BIGINT NOT NULL,
-    deleted_by_user_id BIGINT,
-    FOREIGN KEY (book_version_id) REFERENCES book_versions(id),
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
-);
 CREATE UNIQUE INDEX IF NOT EXISTS ${BOOK_COPIES_UNIQUE_UUID} ON book_copies (uuid);
 `;
 
-
-// Query to create the book_model_loans table
-export const CREATE_BOOK_MODEL_LOANS = `
-CREATE TABLE IF NOT EXISTS book_model_loans (
+// Query to create the book_copy_loans table
+export const CREATE_BOOK_COPY_LOANS = `
+CREATE TABLE IF NOT EXISTS book_copy_loans (
     id BIGSERIAL PRIMARY KEY,
     reserved_at TIMESTAMP NOT NULL DEFAULT NOW(),
     reserved_until TIMESTAMP NOT NULL,
@@ -595,10 +578,7 @@ export const CREATE_WORKS = `
 CREATE TABLE IF NOT EXISTS works (
     id BIGSERIAL PRIMARY KEY,
     document_id BIGINT NOT NULL,
-    created_at DATE NOT NULL DEFAULT NOW(),
-    created_by_user_id BIGINT NOT NULL,
-    FOREIGN KEY (document_id) REFERENCES documents(id),
-    FOREIGN KEY (created_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (document_id) REFERENCES documents(id)
 );
 `;
 
@@ -648,7 +628,14 @@ export const CREATE_MAGAZINES = `
 CREATE TABLE IF NOT EXISTS magazines (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100),
-    description TEXT
+    description TEXT,
+    registered_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP,
+    release_date TIMESTAMP,
+    registered_by_user_id BIGINT NOT NULL,
+    deleted_by_user_id BIGINT,
+    FOREIGN KEY (registered_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
 `;
 
@@ -656,9 +643,9 @@ CREATE TABLE IF NOT EXISTS magazines (
 export const CREATE_MAGAZINE_ISSUES = `
 CREATE TABLE IF NOT EXISTS magazine_issues (
     id BIGSERIAL PRIMARY KEY,
-    issue_number INTEGER,
     magazine_id BIGSERIAL NOT NULL,
-    FOREIGN KEY (magazine_id) REFERENCES magazines(id)    
+    issue_number INTEGER NOT NULL, 
+    FOREIGN KEY (magazine_id) REFERENCES magazines(id)
 );
 `;
 
