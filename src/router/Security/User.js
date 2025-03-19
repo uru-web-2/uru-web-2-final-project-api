@@ -59,7 +59,7 @@ export class User {
         );
 
         // Get all the users with pagination
-        const {users, number_of_users} = await Service.GetUserDetailsByUserID(
+        const userDetails = await Service.GetUserDetailsByUserID(
             req,
             body
         );
@@ -68,7 +68,7 @@ export class User {
         Logger.info(`Fetching all users`);
 
         // Send the response
-        res.status(200).json(SuccessJSendBody({users, number_of_users}))
+        res.status(200).json(SuccessJSendBody(userDetails))
     }
 
     // Update a user by admin

@@ -16,7 +16,7 @@
     "@ralvarezdev/js-dbmanager": "^0.1.25",
     "@ralvarezdev/js-decorator": "^0.2.3",
     "@ralvarezdev/js-deep-freeze": "^0.1.1",
-    "@ralvarezdev/js-express": "^0.1.4",
+    "@ralvarezdev/js-express": "^0.1.5",
     "@ralvarezdev/js-joi-parser": "^0.1.10",
     "@ralvarezdev/js-logger": "^0.1.13",
     "@ralvarezdev/js-mode": "^0.1.4",

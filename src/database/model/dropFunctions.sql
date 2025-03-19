@@ -14,7 +14,6 @@ DROP FUNCTION IF EXISTS search_user_by_username;
 DROP FUNCTION IF EXISTS search_profile_by_name;
 DROP FUNCTION IF EXISTS get_all_profiles;
 DROP FUNCTION IF EXISTS get_all_users;
-DROP FUNCTION IF EXISTS get_user_details_by_user_id;
 DROP FUNCTION IF EXISTS get_all_topics_name;
 DROP FUNCTION IF EXISTS get_all_topics;
 DROP FUNCTION IF EXISTS get_all_languages;

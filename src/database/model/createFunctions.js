@@ -328,36 +328,6 @@ END;
 $$ LANGUAGE plpgsql;
 `
 
-// Query to create a function that gets the user details by user ID
-export const CREATE_GET_USER_DETAILS_BY_USER_ID_FN = `
-CREATE OR REPLACE FUNCTION get_user_details_by_user_id(
-    IN in_user_id BIGINT
-) RETURNS
-TABLE (
-    user_id BIGINT,
-    user_first_name VARCHAR,
-    user_last_name VARCHAR,
-    user_email VARCHAR,
-    user_username VARCHAR,
-    user_birthdate DATE,
-    user_profile_ids BIGINT[]
-) AS $$
-BEGIN
-    -- Query to select the user details by user ID
-    RETURN QUERY
-    SELECT users.id AS user_id, people.first_name AS user_first_name, people.last_name AS user_last_name, user_emails.email AS user_email, user_usernames.username AS user_username, people.birthdate AS user_birthdate, ARRAY(SELECT profile_id FROM user_profiles WHERE user_profiles.user_id = in_user_id AND revoked_at IS NULL) AS user_profile_ids
-    FROM users
-    INNER JOIN people
-    ON users.person_id = people.id
-    INNER JOIN user_emails
-    ON users.id = user_emails.user_id
-    INNER JOIN user_usernames
-    ON users.id = user_usernames.user_id
-    WHERE users.id = in_user_id;
-END;
-$$ LANGUAGE plpgsql;
-`
-
 // Query to create a function that gets all the topics name
 export const CREATE_GET_ALL_TOPICS_NAME_FN = `
 CREATE OR REPLACE FUNCTION get_all_topics_name(

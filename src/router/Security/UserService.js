@@ -1,12 +1,13 @@
 import DatabaseManager from "../../components/database.js";
 import {
     CREATE_USER_PROC,
-    GET_NUMBER_OF_USERS_PROC, UPDATE_USER_BY_ADMIN_PROC,
+    GET_NUMBER_OF_USERS_PROC,
+    GET_USER_DETAILS_BY_USER_ID_PROC,
+    UPDATE_USER_BY_ADMIN_PROC,
 } from "../../database/model/storedProcedures.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
 import {
     GET_ALL_USERS_FN,
-    GET_USER_DETAILS_BY_USER_ID_FN,
     SEARCH_USER_BY_USERNAME_FN
 } from "../../database/model/functions.js";
 import {SALT_ROUNDS} from "../../components/bcrypt.js";
@@ -94,29 +95,39 @@ export class UserService {
 
     // Get user details by user ID
     async GetUserDetailsByUserID(req, body) {
-        const userDetailsQueryRes = await DatabaseManager.rawQuery(
-            GET_USER_DETAILS_BY_USER_ID_FN,
-            body.id
+        const queryRes = await DatabaseManager.rawQuery(
+            GET_USER_DETAILS_BY_USER_ID_PROC,
+            body.id,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
         );
-
-        const numberOfUsersQueryRes = await DatabaseManager.rawQuery(
-            GET_NUMBER_OF_USERS_PROC,
-            body.id
-        );
-        return {
-            users: userDetailsQueryRes.rows,
-            number_of_users: numberOfUsersQueryRes.rows[0]?.out_number_of_users
-        }
+        return queryRes.rows[0]
     }
 
     // Get all users
     async GetAllUsers(req, body) {
-        const queryRes = await DatabaseManager.rawQuery(
+        const usersRes = await DatabaseManager.rawQuery(
             GET_ALL_USERS_FN,
             body.offset,
             body.limit
         );
-        return queryRes.rows;
+
+         const numberOfUsersQueryRes = await DatabaseManager.rawQuery(
+            GET_NUMBER_OF_USERS_PROC,
+            body.id
+        );
+        return {
+            users: usersRes.rows,
+            number_of_users: numberOfUsersQueryRes.rows[0]?.out_number_of_users
+        }
     }
 
     // Update a user by admin

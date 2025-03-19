@@ -252,3 +252,6 @@ export const CREATE_THESIS_PROC = "CALL create_thesis($1, $2, $3, $4, $5)"
 
 // Query to update a thesis
 export const UPDATE_THESIS_PROC = "CALL update_thesis($1, $2, $3, $4, $5)"
+
+// Query to get the user details by user ID
+export const GET_USER_DETAILS_BY_USER_ID_PROC = "CALL get_user_details_by_user_id($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"

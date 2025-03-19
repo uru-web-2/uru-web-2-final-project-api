@@ -564,11 +564,9 @@ CREATE TABLE IF NOT EXISTS book_copy_loans (
     loaned_to_user_id BIGINT NOT NULL,
     deleted_by_user_id BIGINT,
     deleted_at TIMESTAMP,
-    book_version_id BIGINT NOT NULL,
     book_copy_id BIGINT,
     FOREIGN KEY (loaned_by_user_id) REFERENCES users(id),
     FOREIGN KEY (loaned_to_user_id) REFERENCES users(id),
-    FOREIGN KEY (book_version_id) REFERENCES book_versions(id),
     FOREIGN KEY (book_copy_id) REFERENCES book_copies(id)
 );
 `;

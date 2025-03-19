@@ -2210,7 +2210,7 @@ CREATE OR REPLACE PROCEDURE create_work(
     IN in_document_title VARCHAR,
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
-    IN in_document_pages BIGINT
+    IN in_document_pages BIGINT,
     OUT out_work_id BIGINT
 )
 LANGUAGE plpgsql
@@ -2535,6 +2535,96 @@ BEGIN
     
     -- Update the work
     call update_work(var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages);
+END;
+$$;
+`
+
+// Query to create a stored procedure that gets the user details by user ID
+export const CREATE_GET_USER_DETAILS_BY_USER_ID_PROC = `
+CREATE OR REPLACE PROCEDURE get_user_details_by_user_id(
+    IN in_user_id BIGINT,
+    OUT out_user_id BIGINT,
+    OUT out_user_first_name VARCHAR,
+    OUT out_user_last_name VARCHAR,
+    OUT out_user_email VARCHAR,
+    OUT out_user_username VARCHAR,
+    OUT out_user_birthdate DATE,
+    OUT out_user_profile_ids BIGINT[],
+    OUT out_user_document_country VARCHAR,
+    OUT out_user_document_type VARCHAR,
+    OUT out_user_document_number VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Query to select the user profile IDs by user ID
+    SELECT ARRAY(
+        SELECT profile_id
+        FROM user_profiles
+        WHERE user_profiles.user_id = in_user_id 
+        AND revoked_at IS NULL
+    )
+    INTO out_user_profile_ids;
+    
+    -- Query to select the document country by user ID
+    SELECT 
+        CASE 
+            WHEN people.identity_document_id IS NOT NULL THEN (
+                SELECT name
+                FROM countries
+                INNER JOIN identity_documents
+                ON countries.id = identity_documents.country_id
+                WHERE identity_documents.id = people.identity_document_id
+                AND identity_documents.deleted_at IS NULL
+            )
+            ELSE (
+                SELECT name
+                FROM countries
+                INNER JOIN passports
+                ON countries.id = passports.country_id
+                WHERE passports.id = people.passport_id
+                AND passports.deleted_at IS NULL
+            )
+        END AS document_country,
+        CASE 
+            WHEN people.passport_id IS NOT NULL THEN 'passport'
+            ELSE 'identity_document_id'
+        END AS document_type,
+        CASE
+            WHEN people.passport_id IS NOT NULL THEN (
+                SELECT passport_number
+                FROM passports
+                INNER JOIN people AS p ON p.passport_id = passports.id
+                WHERE passports.id = people.passport_id
+                AND passports.deleted_at IS NULL
+            )
+            ELSE (
+                SELECT identity_document_number
+                FROM identity_documents
+                INNER JOIN people AS p ON p.identity_document_id = identity_documents.id
+                WHERE identity_documents.id = people.identity_document_id
+                AND identity_documents.deleted_at IS NULL
+            )
+        END AS document_number
+    INTO out_user_document_country, out_user_document_type, out_user_document_number
+    FROM users
+    INNER JOIN people ON users.person_id = people.id
+    WHERE users.id = in_user_id
+    AND people.deleted_at IS NULL;
+
+    -- Query to select the user details by user ID
+    SELECT users.id, people.first_name, people.last_name, user_emails.email, user_usernames.username, people.birthdate
+    INTO out_user_id, out_user_first_name, out_user_last_name, out_user_email, out_user_username, out_user_birthdate
+    FROM users
+    INNER JOIN people
+    ON users.person_id = people.id
+    INNER JOIN user_emails
+    ON users.id = user_emails.user_id
+    INNER JOIN user_usernames
+    ON users.id = user_usernames.user_id
+    WHERE users.id = in_user_id
+    AND user_emails.revoked_at IS NULL
+    AND user_usernames.revoked_at IS NULL;
 END;
 $$;
 `

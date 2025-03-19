@@ -81,3 +81,4 @@ DROP PROCEDURE IF EXISTS get_document_id_by_work_id;
 DROP PROCEDURE IF EXISTS update_work;
 DROP PROCEDURE IF EXISTS create_article;
 DROP PROCEDURE IF EXISTS update_article;
+DROP PROCEDURE IF EXISTS get_user_details_by_user_id;

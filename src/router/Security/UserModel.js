@@ -21,7 +21,7 @@ export const CREATE_USER = Joi.object({
 
 // Get all users model
 export const GET_ALL_USERS = Joi.object({
-    offset: Joi.number().min(1),
+    offset: Joi.number().min(0),
     limit: Joi.number().min(1),
 })
 
