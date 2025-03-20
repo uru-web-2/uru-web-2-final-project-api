@@ -239,7 +239,8 @@ $$ LANGUAGE plpgsql;
 // Query to create a function that searches for a user by username
 export const CREATE_SEARCH_USER_BY_USERNAME_FN = `
 CREATE OR REPLACE FUNCTION search_user_by_username(
-    IN in_username VARCHAR
+    IN in_username VARCHAR,
+    IN in_limit BIGINT
 ) RETURNS
 TABLE (
     user_id BIGINT,
@@ -256,7 +257,8 @@ BEGIN
     INNER JOIN people ON users.person_id = people.id
     INNER JOIN user_emails ON users.id = user_emails.user_id
     INNER JOIN user_usernames ON users.id = user_usernames.user_id
-    WHERE user_usernames.username LIKE in_username;
+    WHERE user_usernames.username LIKE '%' || in_username || '%'
+    LIMIT in_limit;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -276,7 +278,7 @@ BEGIN
     RETURN QUERY
     SELECT profiles.id AS profile_id, profiles.name AS profile_name, profiles.description AS profile_description
     FROM profiles
-    WHERE profiles.name LIKE in_name;
+    WHERE profiles.name LIKE '%' || in_name || '%';
 END;
 $$ LANGUAGE plpgsql;
 `

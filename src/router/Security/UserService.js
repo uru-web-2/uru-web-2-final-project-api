@@ -29,7 +29,8 @@ export class UserService {
     async SearchUserByUsername(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             SEARCH_USER_BY_USERNAME_FN,
-            body.username
+            body.username,
+            body.limit
         );
         return queryRes.rows;
     }
@@ -61,7 +62,7 @@ export class UserService {
                 null
             )
             if (queryRes.rows.length > 0) {
-                const isCountryValid = queryRes.rows[0]?.out_is_country_valid
+                const isCountryValid = queryRes.rows[0]?.out_country_name_is_valid
                 userID = queryRes.rows[0]?.out_user_id
 
                 // Check if the country is valid
@@ -118,7 +119,29 @@ export class UserService {
             null,
             null,
         );
-        return queryRes.rows[0]
+
+        // Get the user details
+        const userDetails= queryRes.rows[0]
+
+        // Check if the user exists
+        if (userDetails.out_user_id === null)
+            throw new FieldFailError(400,
+                "id",
+                "user not found"
+            )
+
+        return {
+            user_id:userDetails.out_user_id,
+            user_first_name: userDetails.out_user_first_name,
+            user_last_name: userDetails.out_user_last_name,
+            user_email: userDetails.out_user_email,
+            user_username: userDetails.out_user_username,
+            user_document_country: userDetails.out_user_document_country,
+            user_document_type: userDetails.out_user_document_type,
+            user_document_number: userDetails.out_user_document_number,
+            user_birthdate: userDetails.out_user_birthdate,
+            user_profile_ids: userDetails.out_user_profile_ids,
+        }
     }
 
     // Get all users

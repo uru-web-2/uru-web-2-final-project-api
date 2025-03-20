@@ -255,3 +255,6 @@ export const UPDATE_THESIS_PROC = "CALL update_thesis($1, $2, $3, $4, $5)"
 
 // Query to get the user details by user ID
 export const GET_USER_DETAILS_BY_USER_ID_PROC = "CALL get_user_details_by_user_id($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
+
+// Query to set the method permissions
+export const SET_METHOD_PERMISSIONS_PROC = "CALL set_method_permissions($1, $2, $3)"

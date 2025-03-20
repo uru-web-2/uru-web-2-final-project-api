@@ -133,6 +133,7 @@ import {
     CREATE_REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC,
     CREATE_REVOKE_USER_PROFILE_PROC,
     CREATE_REVOKE_USER_RESET_PASSWORD_TOKEN_BY_USER_ID_PROC,
+    CREATE_SET_METHOD_PERMISSIONS_PROC,
     CREATE_SET_PROFILE_PERMISSIONS_PROC,
     CREATE_UPDATE_ARTICLE_PROC,
     CREATE_UPDATE_BOOK_COPY_PROC,
@@ -169,7 +170,7 @@ import {
     CREATE_OBJECT_PROC,
     GET_METHOD_ID_BY_NAME_PROC,
     GET_MODULE_ID_BY_NAME_PROC,
-    GET_OBJECT_ID_BY_NAME_PROC
+    GET_OBJECT_ID_BY_NAME_PROC, SET_METHOD_PERMISSIONS_PROC
 } from "../database/model/storedProcedures.js";
 import {GET_ALL_PROFILES_FN} from "../database/model/functions.js";
 import {
@@ -282,6 +283,7 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
             }
 
             // Insert the method
+            let methodID
             try {
                 queryRes = await DatabaseManager.rawQuery(
                     CREATE_METHOD_WITH_PROFILES_PROC,
@@ -291,6 +293,9 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
                     allowedProfilesID,
                     null
                 )
+
+                queryRows = queryRes?.rows?.[0]
+                methodID = queryRows?.out_method_id
             } catch (error) {
                 // Log the error
                 Logger.error(`Error inserting method ${methodName}: ${error}`)
@@ -308,11 +313,18 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
                     methodName,
                     null
                 )
-            }
 
-            // Check if the method was inserted
-            queryRows = queryRes?.rows?.[0]
-            const methodID = queryRows?.out_method_id
+                queryRows = queryRes?.rows?.[0]
+                methodID = queryRows?.out_method_id
+
+                // Set the method permissions
+                await DatabaseManager.rawQuery(
+                    SET_METHOD_PERMISSIONS_PROC,
+                    null,
+                    methodID,
+                    allowedProfilesID,
+                )
+            }
 
             // Log the method
             Logger.info(`Method ${methodName} inserted/retrieved with ID ${methodID} and parent object ID ${objectID}`)
@@ -325,7 +337,7 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
         const nestedModule = module.getNestedModule(nestedModuleName)
 
         // Migrate the nested module
-        await migrateModule(profilesID, nestedModule, DatabaseManager, moduleID)
+        await migrateModule(profilesID, nestedModule, moduleID)
     }
 }
 
@@ -501,7 +513,8 @@ export default async function migrate() {
             CREATE_CREATE_MAGAZINE_ISSUE_PROC,
             CREATE_CREATE_THESIS_PROC,
             CREATE_UPDATE_THESIS_PROC,
-            CREATE_GET_USER_DETAILS_BY_USER_ID_PROC
+            CREATE_GET_USER_DETAILS_BY_USER_ID_PROC,
+            CREATE_SET_METHOD_PERMISSIONS_PROC
         ])
             await client.rawQuery(query)
     })

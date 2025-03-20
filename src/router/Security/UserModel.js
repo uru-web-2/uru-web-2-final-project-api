@@ -3,6 +3,7 @@ import Joi from "joi";
 // Search for a user by username model
 export const SEARCH_USER_BY_USERNAME = Joi.object({
     username: Joi.string().required().min(1),
+    limit: Joi.number().required().min(1),
 })
 
 // Create user model
@@ -13,8 +14,8 @@ export const CREATE_USER = Joi.object({
     password: Joi.string().required().min(1),
     email: Joi.string().email().required().email(),
     document_number: Joi.string().required().min(1),
-    document_type: Joi.string().required().valid('identity_document',
-        'passport'
+    document_type: Joi.string().required().valid('Identity Document',
+        'Passport'
     ),
     document_country: Joi.string().required().min(1),
 })
@@ -37,8 +38,8 @@ export const UPDATE_USER_BY_ADMIN = Joi.object({
     last_name: Joi.string().min(1),
     username: Joi.string().min(1),
     document_number: Joi.string().min(1),
-    document_type: Joi.string().valid('identity_document',
-        'passport'
+    document_type: Joi.string().valid('Identity Document',
+        'Passport'
     ),
     document_country: Joi.string().min(1),
 })

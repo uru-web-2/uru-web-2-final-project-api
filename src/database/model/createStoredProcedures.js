@@ -1,4 +1,6 @@
 // Create a stored procedure that gets a country ID by name
+import {PROFILES_NAME} from "../../components/constants.js";
+
 export const CREATE_GET_COUNTRY_ID_BY_NAME_PROC = `
 CREATE OR REPLACE PROCEDURE get_country_id_by_name(
     IN in_country_name VARCHAR,
@@ -38,7 +40,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Insert into people table according to the document type
-    IF in_user_document_type = 'identity_document' THEN
+    IF in_user_document_type = 'Identity Document' THEN
         -- Insert into identity_documents table
         INSERT INTO identity_documents (
             country_id,
@@ -82,7 +84,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Delete the user personal document
-    IF in_user_document_type = 'identity_document' THEN
+    IF in_user_document_type = 'Identity Document' THEN
         UPDATE identity_documents
         SET deleted_at = NOW(),
             deleted_by_user_id = in_deleted_by_user_id
@@ -140,7 +142,7 @@ BEGIN
     call create_user_personal_document(in_created_by_user_id, in_user_document_country_id, in_user_document_type, in_user_document_number, var_document_id);
 
     -- Insert into people table according to the document type
-    IF in_user_document_type = 'identity_document' THEN        
+    IF in_user_document_type = 'Identity Document' THEN        
         -- Insert into people table
         INSERT INTO people (
             first_name,
@@ -557,7 +559,7 @@ BEGIN
 	-- Get the profile ID for the student profile
 	SELECT id INTO var_profile_id
 	FROM profiles
-    WHERE name = 'student';
+    WHERE name = '${PROFILES_NAME.STUDENT}';
 	
 	-- Insert into user_profiles table
 	INSERT INTO user_profiles (
@@ -2630,6 +2632,45 @@ BEGIN
     WHERE users.id = in_user_id
     AND user_emails.revoked_at IS NULL
     AND user_usernames.revoked_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that set the method permissions
+export const CREATE_SET_METHOD_PERMISSIONS_PROC = `
+CREATE OR REPLACE PROCEDURE set_method_permissions(
+    IN in_set_by_user_id BIGINT,
+    IN in_method_id BIGINT,
+    IN in_allowed_profile_ids BIGINT[]
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_profile_id BIGINT;
+BEGIN
+    -- Revoke all permissions
+    UPDATE permissions
+    SET revoked_at = NOW(),
+        revoked_by_user_id = in_set_by_user_id
+    WHERE method_id = in_method_id
+    AND revoked_at IS NULL;
+    
+    -- Assign permissions
+    IF in_allowed_profile_ids IS NOT NULL THEN
+        FOREACH var_profile_id IN ARRAY in_allowed_profile_ids
+        LOOP
+            INSERT INTO permissions (
+                profile_id,
+                method_id,
+                assigned_by_user_id
+            )
+            VALUES (
+                var_profile_id,
+                in_method_id,
+                in_set_by_user_id
+            );
+        END LOOP;
+    END IF;
 END;
 $$;
 `

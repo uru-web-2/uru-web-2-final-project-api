@@ -32,7 +32,7 @@ export const GET_PROFILE_PERMISSIONS_METHODS_FN = "SELECT * FROM get_profile_per
 export const GET_ALL_PERMISSIONS_FN = "SELECT * FROM get_all_permissions()"
 
 // Query to search for a user by username
-export const SEARCH_USER_BY_USERNAME_FN = "SELECT * FROM search_user_by_username($1)"
+export const SEARCH_USER_BY_USERNAME_FN = "SELECT * FROM search_user_by_username($1, $2)"
 
 // Query to search for a profile by name
 export const SEARCH_PROFILE_BY_NAME_FN = "SELECT * FROM search_profile_by_name($1)"
