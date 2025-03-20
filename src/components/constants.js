@@ -3,13 +3,13 @@ import parseDuration from "parse-duration";
 
 // Profiles names
 export const PROFILES_NAME = DeepFreeze({
-    GUEST: 'guest',
-    STUDENT: 'student',
-    TEACHER: 'teacher',
-    LIBRARIAN: 'librarian',
-    ADMIN: 'admin',
-    SUPER_ADMIN: 'super admin',
-    DEVELOPER: 'developer'
+    GUEST: 'Guest',
+    STUDENT: 'Student',
+    TEACHER: 'Teacher',
+    LIBRARIAN: 'Librarian',
+    ADMIN: 'Admin',
+    SUPER_ADMIN: 'Super Admin',
+    DEVELOPER: 'Developer'
 });
 
 // Email verification token duration

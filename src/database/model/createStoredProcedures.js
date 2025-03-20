@@ -512,6 +512,11 @@ DECLARE
 BEGIN
     -- Get the country ID
     call get_country_id_by_name(in_user_document_country, var_user_document_country_id, out_country_name_is_valid);
+    
+    -- Check if the country name is valid
+    IF out_country_name_is_valid = FALSE THEN
+        RETURN;
+    END IF;
 
     -- Create the person
     call create_person(in_created_by_user_id, in_user_first_name, in_user_last_name, var_user_document_country_id, in_user_document_type, in_user_document_number, var_person_id);
@@ -2587,8 +2592,8 @@ BEGIN
             )
         END AS document_country,
         CASE 
-            WHEN people.passport_id IS NOT NULL THEN 'passport'
-            ELSE 'identity_document_id'
+            WHEN people.passport_id IS NOT NULL THEN 'Passport'
+            ELSE 'Identity Document'
         END AS document_type,
         CASE
             WHEN people.passport_id IS NOT NULL THEN (
