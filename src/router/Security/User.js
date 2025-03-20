@@ -38,7 +38,7 @@ export class User {
     // Get all users with pagination
     async GetAllUsers(req, res) {
         // Validate the request
-        const body =HandleValidation(req, res, Validator.GetAllUsers);
+        const body = HandleValidation(req, res, Validator.GetAllUsers);
 
         // Get all the users with pagination
         const users = await Service.GetAllUsers(req, body);

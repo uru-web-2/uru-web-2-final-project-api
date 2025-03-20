@@ -19,6 +19,9 @@ import {
     USER_EMAILS_UNIQUE_EMAIL,
     USER_USERNAMES_UNIQUE_USERNAME
 } from "../../database/model/constraints.js";
+import {v4 as uuidv4} from "uuid";
+import {addDuration} from "../../components/utils.js";
+import {EMAIL_VERIFICATION_TOKEN_DURATION} from "../../components/constants.js";
 
 // Service for the user object
 export class UserService {
@@ -34,12 +37,16 @@ export class UserService {
     // Create a user
     async CreateUser(req, body) {
         try {
+            // Generate a random token
+            const emailVerificationToken = uuidv4()
+
             // Hash the password
             body.password_hash = bcrypt.hashSync(req.body.password, SALT_ROUNDS)
 
             // Create the user
             let userID
             const queryRes = await DatabaseManager.rawQuery(CREATE_USER_PROC,
+                req.session.userID,
                 body.first_name,
                 body.last_name,
                 body.username,
@@ -48,6 +55,8 @@ export class UserService {
                 body.document_country,
                 body.document_type,
                 body.document_number,
+                emailVerificationToken,
+                addDuration(EMAIL_VERIFICATION_TOKEN_DURATION).toISOString(),
                 null,
                 null
             )
@@ -120,7 +129,7 @@ export class UserService {
             body.limit
         );
 
-         const numberOfUsersQueryRes = await DatabaseManager.rawQuery(
+        const numberOfUsersQueryRes = await DatabaseManager.rawQuery(
             GET_NUMBER_OF_USERS_PROC,
             body.id
         );
