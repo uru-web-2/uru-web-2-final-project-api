@@ -50,6 +50,6 @@ export const GET_METHODS_BY_PROFILE_ID_OBJECT_ID = Joi.object({
 // Set profile permissions model
 export const SET_PROFILE_PERMISSIONS = Joi.object({
     profile_id: Joi.number().required().min(1),
-    assign_method_ids: Joi.array().items(Joi.number().required()),
-    revoke_method_ids: Joi.array().items(Joi.number().required()),
+    assign_method_ids: Joi.array().items(Joi.number()),
+    revoke_method_ids: Joi.array().items(Joi.number()),
 })

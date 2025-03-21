@@ -739,6 +739,27 @@ END;
 $$;
 `
 
+// Create a stored procedure that gets a permission ID by profile ID and method ID
+export const CREATE_GET_PERMISSION_ID_BY_PROFILE_ID_METHOD_ID_PROC = `
+CREATE OR REPLACE PROCEDURE get_permission_id_by_profile_id_method_id(
+    IN in_profile_id BIGINT,
+    IN in_method_id BIGINT,
+    OUT out_permission_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Check if the permission already exists
+    SELECT id
+    INTO out_permission_id
+    FROM permissions
+    WHERE profile_id = in_profile_id
+    AND method_id = in_method_id
+    AND revoked_at IS NULL;
+END;
+$$;
+`
+
 // Create a stored procedure that assigns a permission to a profile
 export const CREATE_ASSIGN_PROFILE_PERMISSION_PROC = `
 CREATE OR REPLACE PROCEDURE assign_profile_permission(
@@ -761,6 +782,13 @@ BEGIN
     -- Check if the method ID is valid
     call is_method_id_valid(in_method_id, out_is_method_id_valid);
     IF out_is_method_id_valid = FALSE THEN
+        RETURN;
+    END IF;
+
+    -- Check if the permission already exists
+    call get_permission_id_by_profile_id_method_id(in_profile_id, in_method_id, out_permission_id);
+
+    IF out_permission_id IS NOT NULL THEN
         RETURN;
     END IF;
 
@@ -802,6 +830,13 @@ BEGIN
     -- Check if the method ID is valid
     call is_method_id_valid(in_method_id, out_is_method_id_valid);
     IF out_is_method_id_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the permission does not exist
+    call get_permission_id_by_profile_id_method_id(in_profile_id, in_method_id, out_permission_id);
+
+    IF out_permission_id IS NULL THEN
         RETURN;
     END IF;
     
@@ -1923,21 +1958,15 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     var_method_id BIGINT;
+    var_is_profile_id_valid BOOLEAN;
+    var_is_method_id_valid BOOLEAN;
+    var_permission_id BIGINT;
 BEGIN
     -- Assign methods
     IF in_assign_method_ids IS NOT NULL THEN
         FOREACH var_method_id IN ARRAY in_assign_method_ids
         LOOP
-            INSERT INTO permissions (
-                profile_id,
-                method_id,
-                assigned_by_user_id
-            )
-            VALUES (
-                in_profile_id,
-                var_method_id,
-                in_set_by_user_id
-            );
+            call assign_profile_permission(in_set_by_user_id, in_profile_id, var_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
         END LOOP;
     END IF;
     
@@ -1945,12 +1974,7 @@ BEGIN
     IF in_revoke_method_ids IS NOT NULL THEN
         FOREACH var_method_id IN ARRAY in_revoke_method_ids
         LOOP
-            UPDATE permissions
-            SET revoked_at = NOW(),
-                revoked_by_user_id = in_set_by_user_id
-            WHERE profile_id = in_profile_id
-            AND method_id = var_method_id
-            AND revoked_at IS NULL;
+            call revoke_profile_permission(in_set_by_user_id, in_profile_id, var_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
         END LOOP;
     END IF;
 END;
