@@ -159,12 +159,13 @@ TABLE (
 BEGIN
     -- Query to select the methods by profile ID and object ID
     RETURN QUERY
-    SELECT methods.id, methods.name, permissions.id IS NOT NULL AS is_allowed
+    SELECT DISTINCT ON (methods.id) methods.id, methods.name, permissions.id IS NOT NULL AND permissions.revoked_at IS NULL AS is_allowed
     FROM methods
     LEFT JOIN permissions ON methods.id = permissions.method_id
-    WHERE permissions.profile_id = in_profile_id
-    AND methods.object_id = in_object_id
-    AND methods.deleted_at IS NULL;
+    AND permissions.profile_id = in_profile_id
+    WHERE methods.object_id = in_object_id
+    AND methods.deleted_at IS NULL
+    ORDER BY methods.id, permissions.id DESC;
 END;
 $$ LANGUAGE plpgsql;
 `
