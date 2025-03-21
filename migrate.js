@@ -1,9 +1,5 @@
 import 'dotenv/config';
 import migrate from "./src/components/migrate.js";
-import {loadNode} from "@ralvarezdev/js-mode";
-
-// Load environment variables
-loadNode()
 
 // Migrate the database
 migrate().then(

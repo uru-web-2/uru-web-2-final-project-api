@@ -3,7 +3,7 @@ import DatabaseManager from "./database.js";
 import {
     CREATE_ARTICLE_ANNOTATIONS,
     CREATE_ARTICLE_JURY_MEMBERS,
-    CREATE_ARTICLES,
+    CREATE_ARTICLES, CREATE_AUDIT_ENTRIES,
     CREATE_BOOK_COPIES,
     CREATE_BOOK_COPY_LOANS,
     CREATE_BOOKS,
@@ -69,7 +69,7 @@ import {
     CREATE_ASSIGN_DOCUMENT_TOPIC_PROC,
     CREATE_ASSIGN_PROFILE_PERMISSION_PROC,
     CREATE_ASSIGN_USER_PROFILE_PROC,
-    CREATE_CREATE_ARTICLE_PROC,
+    CREATE_CREATE_ARTICLE_PROC, CREATE_CREATE_AUDIT_ENTRY_PROC,
     CREATE_CREATE_BOOK_COPY_PROC,
     CREATE_CREATE_BOOK_PROC,
     CREATE_CREATE_DOCUMENT_IMAGE_PROC,
@@ -186,6 +186,10 @@ import {
     MODULES_UNIQUE_NAME,
     OBJECTS_UNIQUE_MODULE_ID_NAME
 } from "../database/model/constraints.js";
+import {loadNode} from "@ralvarezdev/js-mode";
+
+// Load environment variables
+loadNode()
 
 // Migrate module recursively
 async function migrateModule(profilesID, module, parentModuleID = null) {
@@ -389,7 +393,8 @@ export default async function migrate() {
             CREATE_MAGAZINES,
             CREATE_MAGAZINE_ISSUES,
             CREATE_DOCUMENT_IMAGES,
-            CREATE_DOCUMENT_LANGUAGES
+            CREATE_DOCUMENT_LANGUAGES,
+            CREATE_AUDIT_ENTRIES
         ])
             await client.rawQuery(query)
     })
@@ -516,7 +521,8 @@ export default async function migrate() {
             CREATE_CREATE_THESIS_PROC,
             CREATE_UPDATE_THESIS_PROC,
             CREATE_GET_USER_DETAILS_BY_USER_ID_PROC,
-            CREATE_SET_METHOD_PERMISSIONS_PROC
+            CREATE_SET_METHOD_PERMISSIONS_PROC,
+            CREATE_CREATE_AUDIT_ENTRY_PROC
         ])
             await client.rawQuery(query)
     })

@@ -2698,3 +2698,31 @@ BEGIN
 END;
 $$;
 `
+
+// Create a stored procedure that creates a new audit entry
+export const CREATE_CREATE_AUDIT_ENTRY_PROC = `
+CREATE OR REPLACE PROCEDURE create_audit_entry(
+    IN in_user_id BIGINT,
+    IN in_profile_id BIGINT,
+    IN in_body JSONB,
+    IN in_ip_address VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into audit_entries table
+    INSERT INTO audit_entries (
+        user_id,
+        profile_id,
+        body,
+        ip_address
+    )
+    VALUES (
+        in_user_id,
+        in_profile_id,
+        in_body,
+        in_ip_address
+    );
+END;
+$$;
+`

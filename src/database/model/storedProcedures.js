@@ -258,3 +258,6 @@ export const GET_USER_DETAILS_BY_USER_ID_PROC = "CALL get_user_details_by_user_i
 
 // Query to set the method permissions
 export const SET_METHOD_PERMISSIONS_PROC = "CALL set_method_permissions($1, $2, $3)"
+
+// Query to create a new audit entry
+export const CREATE_AUDIT_ENTRY_PROC = "CALL create_audit_entry($1, $2, $3, $4)"

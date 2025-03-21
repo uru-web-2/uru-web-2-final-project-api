@@ -51,6 +51,11 @@ import {
     RESET_PASSWORD_TOKEN_DURATION
 } from "./constants.js";
 import {addDuration} from "./utils.js";
+import {IS_PROD, loadNode} from "@ralvarezdev/js-mode";
+import Audit from "./audit.js";
+
+// Load environment variables
+loadNode()
 
 // Validate new password
 function ValidateNewPassword(password) {
@@ -161,7 +166,10 @@ export class Dispatcher {
         this.#app.post("/logout", sessionExists, this.LogOut)
 
         // Set the execute route
-        this.#app.post("/execute", sessionExists, this.Execute)
+        if (IS_PROD)
+            this.#app.post("/execute", sessionExists, this.Execute, Audit)
+        else
+            this.#app.post("/execute", sessionExists, this.Execute)
 
         // Set the send email verification route
         this.#app.post("/send-email-verification",
@@ -395,15 +403,17 @@ export class Dispatcher {
                 parameters
             } = HandleValidation(req, res, req => Validate(req, EXECUTE));
 
-            // Substitute the parameters in the request
-            delete req.modules
-            delete req.object
-            delete req.method
-            delete req.parameters
+            // Create a copy of the request body
+            const reqBody = {...req.body}
+
+            // Substitute the body with the parameters
             req.body = parameters
 
             // Handle the request
             await Security.executeMethod(modules, object, method, req, res)
+
+            // Call the audit
+            await Audit(req, reqBody)
         } catch (error) {
             // Pass the error to the error handler
             next(error)

@@ -655,3 +655,17 @@ CREATE TABLE IF NOT EXISTS theses (
     FOREIGN KEY (work_id) REFERENCES works(id)
 );
 `;
+
+// Query to create the audit entries table
+export const CREATE_AUDIT_ENTRIES = `
+CREATE TABLE IF NOT EXISTS audit_entries (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT,
+    profile_id BIGINT,
+    body JSONB,
+    ip_address VARCHAR(50),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),    
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (profile_id) REFERENCES profiles(id)
+);
+`;
