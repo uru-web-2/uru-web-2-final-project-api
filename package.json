@@ -22,7 +22,7 @@
     "@ralvarezdev/js-mode": "^0.1.4",
     "@ralvarezdev/js-module-permissions": "^0.4.7",
     "@ralvarezdev/js-reflection": "^0.3.11",
-    "@ralvarezdev/js-session": "^0.2.13",
+    "@ralvarezdev/js-session": "^0.2.14",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

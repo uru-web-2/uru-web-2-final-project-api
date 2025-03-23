@@ -35,6 +35,7 @@ import {Validate} from "@ralvarezdev/js-joi-parser";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {SALT_ROUNDS} from "./bcrypt.js";
 import {
+    ErrorJSendBody,
     FailJSendBody,
     FieldFailError,
     HandleValidation,
@@ -386,10 +387,16 @@ export class Dispatcher {
     // Handle the logout request
     LogOut(req, res) {
         // Destroy the session
-        Session.destroy(req)
+        Session.destroy(req, res, (req, res)=>{
+            // Log the user ID
+            Logger.info(`Logged out user ${req.session.userID}`)
 
-        // Send the response
-        res.status(200).json(SuccessJSendBody())
+            // Send the response
+            res.status(500).json(ErrorJSendBody("Failed to destroy session"))
+        }, (res)=>{
+            // Send the response
+            res.status(200).json(SuccessJSendBody())
+        })
     }
 
     // Handle the execute request
