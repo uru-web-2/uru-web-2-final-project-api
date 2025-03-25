@@ -542,11 +542,14 @@ CREATE TABLE IF NOT EXISTS book_copies (
     book_id BIGSERIAL NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP,
+    lost_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
     deleted_by_user_id BIGINT,
+    lost_by_user_id BIGINT,
     FOREIGN KEY (book_id) REFERENCES books(id),
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (deleted_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (lost_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${BOOK_COPIES_UNIQUE_UUID} ON book_copies (uuid);
 `;
@@ -555,16 +558,20 @@ CREATE UNIQUE INDEX IF NOT EXISTS ${BOOK_COPIES_UNIQUE_UUID} ON book_copies (uui
 export const CREATE_BOOK_COPY_LOANS = `
 CREATE TABLE IF NOT EXISTS book_copy_loans (
     id BIGSERIAL PRIMARY KEY,
-    reserved_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    reserved_until TIMESTAMP NOT NULL,
-    loaned_at TIMESTAMP,
-    must_return_before TIMESTAMP,
+    reserved_at TIMESTAMP,
+    reserved_until DATE,
+    borrowed_at TIMESTAMP,
+    borrowed_until DATE,
     returned_at TIMESTAMP,
-    loaned_by_user_id BIGINT NOT NULL,
+    penalty DOUBLE PRECISION,
+    penalty_paid BOOLEAN,
+    damaged BOOLEAN,
+    lost_at TIMESTAMP,
     loaned_to_user_id BIGINT NOT NULL,
+    loaned_by_user_id BIGINT,
     deleted_by_user_id BIGINT,
     deleted_at TIMESTAMP,
-    book_copy_id BIGINT,
+    book_copy_id BIGINT NOT NULL,
     FOREIGN KEY (loaned_by_user_id) REFERENCES users(id),
     FOREIGN KEY (loaned_to_user_id) REFERENCES users(id),
     FOREIGN KEY (book_copy_id) REFERENCES book_copies(id)
@@ -594,15 +601,15 @@ export const CREATE_ARTICLE_JURY_MEMBERS = `
 CREATE TABLE IF NOT EXISTS article_jury_members (
     id BIGSERIAL PRIMARY KEY,
     assigned_at TIMESTAMP,
-    revoked_at TIMESTAMP,
+    removed_at TIMESTAMP,
     jury_member_id BIGSERIAL NOT NULL,
     article_id BIGSERIAL NOT NULL,
     assigned_by_user_id BIGINT NOT NULL,
-    revoked_by_user_id BIGINT,
+    removed_by_user_id BIGINT,
     FOREIGN KEY (jury_member_id) REFERENCES people(id),
     FOREIGN KEY (article_id) REFERENCES articles(id),
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (revoked_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
 `;
 

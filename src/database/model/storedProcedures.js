@@ -261,3 +261,39 @@ export const SET_METHOD_PERMISSIONS_PROC = "CALL set_method_permissions($1, $2, 
 
 // Query to create a new audit entry
 export const CREATE_AUDIT_ENTRY_PROC = "CALL create_audit_entry($1, $2, $3, $4)"
+
+// Query to assign a jury member to an article
+export const ASSIGN_ARTICLE_JURY_MEMBER_PROC = "CALL assign_article_jury_member($1, $2, $3)"
+
+// Query to remove a jury member from an article
+export const REMOVE_ARTICLE_JURY_MEMBER_PROC = "CALL remove_article_jury_member($1, $2, $3)"
+
+// Query to create a new article annotation
+export const CREATE_ARTICLE_ANNOTATION_PROC = "CALL create_article_annotation($1, $2, $3, $4)"
+
+// Query to update an article annotation
+export const UPDATE_ARTICLE_ANNOTATION_PROC = "CALL update_article_annotation($1, $2, $3)"
+
+// Query to mark an article annotation as resolved
+export const RESOLVE_ARTICLE_ANNOTATION_PROC = "CALL resolve_article_annotation($1, $2)"
+
+// Query to set a book copy as lost
+export const SET_BOOK_COPY_AS_LOST_PROC = "CALL set_book_copy_as_lost($1, $2)"
+
+// Query to register a new book copy loan with reservation
+export const REGISTER_BOOK_COPY_LOAN_WITH_RESERVATION_PROC = "CALL register_book_copy_loan_with_reservation($1, $2, $3, $4)"
+
+// Query to register a new book copy loan without reservation
+export const REGISTER_BOOK_COPY_LOAN_WITHOUT_RESERVATION_PROC = "CALL register_book_copy_loan_without_reservation($1, $2, $3, $4, $5)"
+
+// Query to set the book copy loan reservation as borrowed
+export const SET_BOOK_COPY_LOAN_RESERVATION_AS_BORROWED_PROC = "CALL set_book_copy_loan_reservation_as_borrowed($1, $2, $3, $4)"
+
+// Query to set the book copy loan as returned
+export const SET_BOOK_COPY_LOAN_AS_RETURNED_PROC = "CALL set_book_copy_loan_as_returned($1, $2, $3, $4)"
+
+// Query to set the book copy loan as lost
+export const SET_BOOK_COPY_LOAN_AS_LOST_PROC = "CALL set_book_copy_loan_as_lost($1, $2)"
+
+// Query to delete a book copy loan
+export const DELETE_BOOK_COPY_LOAN_PROC = "CALL delete_book_copy_loan($1, $2)"

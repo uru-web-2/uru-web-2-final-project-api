@@ -2726,3 +2726,297 @@ BEGIN
 END;
 $$;
 `
+
+// Create a stored procedure that assigns a jury member to an article
+export const CREATE_ASSIGN_ARTICLE_JURY_MEMBER_PROC = `
+CREATE OR REPLACE PROCEDURE assign_article_jury_member(
+    IN in_assigned_by_user_id BIGINT,
+    IN in_article_id BIGINT,
+    IN in_jury_member_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into article_jury_members table
+    INSERT INTO article_jury_members (
+        assigned_by_user_id,
+        article_id,
+        jury_member_id
+    )
+    VALUES (
+        in_assigned_by_user_id,
+        in_article_id,
+        in_jury_member_id
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that removes a jury member from an article
+export const CREATE_REMOVE_ARTICLE_JURY_MEMBER_PROC = `
+CREATE OR REPLACE PROCEDURE remove_article_jury_member(
+    IN in_removed_by_user_id BIGINT,
+    IN in_article_id BIGINT,
+    IN in_jury_member_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the article_jury_members table
+    UPDATE article_jury_members
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
+    WHERE article_id = in_article_id
+    AND jury_member_id = in_jury_member_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new article annotation
+export const CREATE_CREATE_ARTICLE_ANNOTATION_PROC = `
+CREATE OR REPLACE PROCEDURE create_article_annotation(
+    IN in_created_by_jury_id BIGINT,
+    IN in_article_id BIGINT,
+    IN in_annotation_title VARCHAR,
+    IN in_annotation_content TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into article_annotations table
+    INSERT INTO article_annotations (
+        created_by_jury_id,
+        article_id,
+        title,
+        content
+    )
+    VALUES (
+        in_created_by_jury_id,
+        in_article_id,
+        in_annotation_title,
+        in_annotation_content
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that updates an article annotation
+export const CREATE_UPDATE_ARTICLE_ANNOTATION_PROC = `
+CREATE OR REPLACE PROCEDURE update_article_annotation(
+    IN in_annotation_id BIGINT,
+    IN in_annotation_title VARCHAR,
+    IN in_annotation_content TEXT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_current_annotation_title VARCHAR;
+    var_current_annotation_content TEXT;
+BEGIN
+    -- Get the current annotation title and content
+    SELECT title, content
+    INTO var_current_annotation_title, var_current_annotation_content
+    FROM article_annotations
+    WHERE id = in_annotation_id
+    AND deleted_at IS NULL;
+
+    -- Update the article_annotations table
+    UPDATE article_annotations
+    SET title = COALESCE(in_annotation_title, var_current_annotation_title),
+        content = COALESCE(in_annotation_content, var_current_annotation_content)
+    WHERE id = in_annotation_id;
+END;
+$$;
+`
+
+// Create a stored procedure that marks as resolved an article annotation
+export const CREATE_RESOLVE_ARTICLE_ANNOTATION_PROC = `
+CREATE OR REPLACE PROCEDURE resolve_article_annotation(
+    IN in_resolved_by_user_id BIGINT,
+    IN in_annotation_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the article_annotations table
+    UPDATE article_annotations
+    SET resolved_at = NOW(),
+        resolved_by_user_id = in_resolved_by_user_id
+    WHERE id = in_annotation_id
+    AND resolved_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that sets a book copy as lost
+export const CREATE_SET_BOOK_COPY_AS_LOST_PROC = `
+CREATE OR REPLACE PROCEDURE set_book_copy_as_lost(
+    IN in_lost_by_user_id BIGINT,
+    IN in_book_copy_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the book_copies table
+    UPDATE book_copies
+    SET lost_at = NOW(),
+        lost_by_user_id = in_lost_by_user_id
+    WHERE id = in_book_copy_id
+    AND lost_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that registers a new book copy loan with reservation
+export const CREATE_REGISTER_BOOK_COPY_LOAN_WITH_RESERVATION_PROC = `
+CREATE OR REPLACE PROCEDURE register_book_copy_loan_with_reservation(
+    IN in_loaned_to_user_id BIGINT,
+    IN in_book_copy_id BIGINT,
+    IN in_loan_reserved_at TIMESTAMP,
+    IN in_loan_reserved_until DATE
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into book_copy_loans table
+    INSERT INTO book_copy_loans (
+        loaned_to_user_id,
+        book_copy_id,
+        reserved_at,
+        reserved_until
+    )
+    VALUES (
+        in_loaned_to_user_id,
+        in_book_copy_id,
+        in_loan_reserved_at,
+        in_loan_reserved_until
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that sets the book copy loan reservation as borrowed
+export const CREATE_SET_BOOK_COPY_LOAN_RESERVATION_AS_BORROWED_PROC = `
+CREATE OR REPLACE PROCEDURE set_book_copy_loan_reservation_as_borrowed(
+    IN in_loaned_by_user_id BIGINT,
+    IN in_book_copy_id BIGINT,
+    IN in_loan_borrowed_at TIMESTAMP,
+    IN in_loan_borrowed_until DATE
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the book_copy_loans table
+    UPDATE book_copy_loans
+    SET borrowed_at = in_loan_borrowed_at,
+        borrowed_until = in_loan_borrowed_until,
+        loaned_by_user_id = in_loaned_by_user_id
+    WHERE book_copy_id = in_book_copy_id
+    AND borrowed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that registers a new book copy loan without reservation
+export const CREATE_REGISTER_BOOK_COPY_LOAN_WITHOUT_RESERVATION_PROC = `
+CREATE OR REPLACE PROCEDURE register_book_copy_loan_without_reservation(
+    IN in_loaned_to_user_id BIGINT,
+    IN in_loaned_by_user_id BIGINT,
+    IN in_book_copy_id BIGINT,
+    IN in_loan_borrowed_at TIMESTAMP,
+    IN in_loan_borrowed_until DATE
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert into book_copy_loans table
+    INSERT INTO book_copy_loans (
+        loaned_to_user_id,
+        loaned_by_user_id,
+        book_copy_id,
+        borrowed_at,
+        borrowed_until
+    )
+    VALUES (
+        in_loaned_to_user_id,
+        in_loaned_by_user_id,
+        in_book_copy_id,
+        in_loan_borrowed_at,
+        in_loan_borrowed_until
+    );
+END;
+$$;
+`
+
+// Create a stored procedure that sets the book copy loan as returned
+export const CREATE_SET_BOOK_COPY_LOAN_AS_RETURNED_PROC = `
+CREATE OR REPLACE PROCEDURE set_book_copy_loan_as_returned(
+    IN in_book_copy_loan_id BIGINT,
+    IN in_loan_returned_at TIMESTAMP,
+    IN in_loan_penalty DOUBLE PRECISION,
+    IN in_loan_damaged BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the book_copy_loans table
+    UPDATE book_copy_loans
+    SET returned_at = in_loan_returned_at,
+        penalty = in_loan_penalty,
+        damaged = in_loan_damaged
+    WHERE id = in_book_copy_loan_id
+    AND returned_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that sets the book copy loan as lost
+export const CREATE_SET_BOOK_COPY_LOAN_AS_LOST_PROC = `
+CREATE OR REPLACE PROCEDURE set_book_copy_loan_as_lost(
+    IN in_book_copy_loan_id BIGINT,
+    IN in_loan_lost_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    var_book_copy_id BIGINT;
+    var_loaned_to_user_id BIGINT;
+BEGIN
+    -- Get the book copy ID and loaned to user ID
+    SELECT book_copy_id, loaned_to_user_id
+    INTO var_book_copy_id, var_loaned_to_user_id
+    FROM book_copy_loans
+    WHERE id = in_book_copy_loan_id
+    AND lost_at IS NOT NULL;
+    
+    -- Update the book_copy_loans table
+    UPDATE book_copy_loans
+    SET lost_at = in_loan_lost_at
+    WHERE id = in_book_copy_loan_id
+    AND lost_at IS NULL;
+    
+    -- Update the book_copies table
+    call set_book_copy_as_lost(var_loaned_to_user_id, var_book_copy_id);
+END;
+$$;
+`
+
+// Create a stored procedure that deletes a book copy loan
+export const CREATE_DELETE_BOOK_COPY_LOAN_PROC = `
+CREATE OR REPLACE PROCEDURE delete_book_copy_loan(
+    IN in_deleted_by_user_id BIGINT,
+    IN in_book_copy_loan_id BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Update the book_copy_loans table
+    UPDATE book_copy_loans
+    SET deleted_at = NOW(),
+        deleted_by_user_id = in_deleted_by_user_id
+    WHERE id = in_book_copy_loan_id
+    AND deleted_at IS NULL;
+END;
+$$;
+`
