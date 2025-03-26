@@ -17,10 +17,10 @@ export class Security {
         const permissionID = await Service.AssignProfilePermission(req, body)
 
         // Log the assignment
-        Logger.info(`Assigned permission ${permissionID} to profile ${body.profile_id} to method ${body.method_id}`)
+        Logger.info(`Assigned permission ${permissionID} to profile ${body.profile_id} to method ${body.method_id} by admin ${req.session.userID}`)
 
         // Send the response
-        res.status(201).json(SuccessJSendBody())
+        res.status(200).json(SuccessJSendBody())
     }
 
     // Revoke a permission from a profile
@@ -35,7 +35,7 @@ export class Security {
         const permissionID = await Service.RevokeProfilePermission(req, body)
 
         // Log the revocation
-        Logger.info(`Revoked permission ${permissionID} from profile ${body.profile_id} to method ${body.method_id}`)
+        Logger.info(`Revoked permission ${permissionID} from profile ${body.profile_id} to method ${body.method_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
@@ -53,7 +53,7 @@ export class Security {
         const methods = await Service.GetProfilePermissionsMethods(req, body)
 
         // Log the request
-        Logger.info(`Getting methods from permissions of profile ${body.profile_id}`)
+        Logger.info(`Getting methods from permissions of profile ${body.profile_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody({methods}))
@@ -65,7 +65,7 @@ export class Security {
         const modules = await Service.GetModules(req)
 
         // Log the request
-        Logger.info(`Getting all modules`)
+        Logger.info(`Getting all modules by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody({modules}))
@@ -80,7 +80,7 @@ export class Security {
         const objects = await Service.GetObjectsByModuleID(req, body)
 
         // Log the request
-        Logger.info(`Getting all objects by module ID ${body.module_id}`)
+        Logger.info(`Getting all objects by module ID ${body.module_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody({objects}))
@@ -95,7 +95,7 @@ export class Security {
         const methods = await Service.GetMethodsByObjectID(req, body)
 
         // Log the request
-        Logger.info(`Getting all methods by object ID ${body.object_id}`)
+        Logger.info(`Getting all methods by object ID ${body.object_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody({methods}))
@@ -110,7 +110,7 @@ export class Security {
         const userID = await Service.AssignUserProfile(req, body);
 
         // Log the assignment
-        Logger.info(`Assigning profile ${body.profile_id} to user ${userID}`);
+        Logger.info(`Assigning profile ${body.profile_id} to user ${userID} by admin ${req.session.userID}`);
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
@@ -125,7 +125,7 @@ export class Security {
         const userID = await Service.RevokeUserProfile(req, body);
 
         // Log the revocation
-        Logger.info(`Revoking profile ${body.profile_id} from user ${userID}`);
+        Logger.info(`Revoking profile ${body.profile_id} from user ${userID} by admin ${req.session.userID}`);
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
@@ -143,7 +143,7 @@ export class Security {
         const methods = await Service.GetMethodsByProfileIDObjectID(req, body)
 
         // Log the request
-        Logger.info(`Getting methods from profile ${body.profile_id} and object ${body.object_id}`)
+        Logger.info(`Getting methods from profile ${body.profile_id} and object ${body.object_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody({methods}))
@@ -161,7 +161,7 @@ export class Security {
         await Service.SetProfilePermissions(req, body)
 
         // Log the request
-        Logger.info(`Setting permissions for profile ${body.profile_id}`)
+        Logger.info(`Setting permissions for profile ${body.profile_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())

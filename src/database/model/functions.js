@@ -51,3 +51,6 @@ export const GET_ALL_TOPICS_FN = "SELECT * FROM get_all_topics()"
 
 // Query to get all the languages
 export const GET_ALL_LANGUAGES_FN = "SELECT * FROM get_all_languages()"
+
+// Query to get all the publishers
+export const GET_ALL_PUBLISHERS_FN = "SELECT * FROM get_all_publishers()"

@@ -188,13 +188,13 @@ export const DELETE_MAGAZINE_PROC = "CALL delete_magazine($1, $2)"
 export const SET_PROFILE_PERMISSIONS_PROC = "CALL set_profile_permissions($1, $2, $3, $4)"
 
 // Query to create a new publisher
-export const CREATE_PUBLISHER_PROC = "CALL create_publisher($1, $2, $3)"
+export const CREATE_PUBLISHER_PROC = "CALL create_publisher($1, $2, $3, $4)"
 
 // Query to update a publisher
-export const UPDATE_PUBLISHER_PROC = "CALL update_publisher($1, $2, $3)"
+export const UPDATE_PUBLISHER_PROC = "CALL update_publisher($1, $2, $3, $4)"
 
 // Query to delete a publisher
-export const DELETE_PUBLISHER_PROC = "CALL delete_publisher($1, $2)"
+export const DELETE_PUBLISHER_PROC = "CALL delete_publisher($1, $2, $3)"
 
 // Query to create a new document review
 export const CREATE_DOCUMENT_REVIEW_PROC = "CALL create_document_review($1, $2, $3, $4, $5, $6)"

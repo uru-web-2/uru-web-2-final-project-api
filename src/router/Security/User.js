@@ -14,7 +14,7 @@ export class User {
         const user = await Service.SearchUserByUsername(req, body);
 
         // Log the search
-        Logger.info(`Searching user ${body.username}`);
+        Logger.info(`Searching user ${body.username} by admin ${req.session.userID}`);
 
         // Send the response
         res.status(200).json(SuccessJSendBody(user))
@@ -29,10 +29,10 @@ export class User {
         const userID = await Service.CreateUser(req, body);
 
         // Log the creation
-        Logger.info(`Created user ${userID}`);
+        Logger.info(`Created user ${userID} with username ${body.username} by admin ${req.session.userID}`);
 
         // Send the response
-        res.status(201).json(SuccessJSendBody())
+        res.status(200).json(SuccessJSendBody())
     }
 
     // Get all users with pagination
@@ -44,7 +44,7 @@ export class User {
         const users = await Service.GetAllUsers(req, body);
 
         // Log the creation
-        Logger.info(`Fetching all users`);
+        Logger.info(`Fetching all users by admin ${req.session.userID}`);
 
         // Send the response
         res.status(200).json(SuccessJSendBody(users))
@@ -65,7 +65,7 @@ export class User {
         );
 
         // Log the creation
-        Logger.info(`Fetching all users`);
+        Logger.info(`Fetching user details from user ${body.id} by admin ${req.session.userID}`);
 
         // Send the response
         res.status(200).json(SuccessJSendBody(userDetails))

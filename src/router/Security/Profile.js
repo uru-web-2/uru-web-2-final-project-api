@@ -17,7 +17,7 @@ export class Profile {
         Logger.info(`Created profile ${profileID} with name ${body.name}`)
 
         // Send the response
-        res.status(201).json(SuccessJSendBody())
+        res.status(200).json(SuccessJSendBody())
     }
 
     // Update a profile
@@ -29,7 +29,7 @@ export class Profile {
         await Service.UpdateProfile(req, body)
 
         // Log the update
-        Logger.info(`Updated profile ${body.id} name to ${body.name}`)
+        Logger.info(`Updated profile ${body.id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
@@ -44,7 +44,7 @@ export class Profile {
         await Service.DeleteProfile(req, body)
 
         // Log the deletion
-        Logger.info(`Deleted profile ${body.id}`)
+        Logger.info(`Deleted profile ${body.id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
@@ -59,7 +59,7 @@ export class Profile {
         const profiles = await Service.SearchProfileByName(req, body)
 
         // Log the request
-        Logger.info(`Searching profile by name ${body.name}`)
+        Logger.info(`Searching profile by name ${body.name} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody({profiles}))
@@ -71,7 +71,7 @@ export class Profile {
         const profiles = await Service.GetAllProfiles(req);
 
         // Log the creation
-        Logger.info(`Fetching all profiles`);
+        Logger.info(`Fetching all profiles by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody(profiles))

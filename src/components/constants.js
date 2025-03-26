@@ -12,6 +12,9 @@ export const PROFILES_NAME = DeepFreeze({
     DEVELOPER: 'Developer'
 });
 
+// All profiles names
+export const ALL_PROFILES_NAME = Object.values(PROFILES_NAME);
+
 // Email verification token duration
 export const EMAIL_VERIFICATION_TOKEN_DURATION = parseDuration(process.env.URU_WEB_2_FINAL_PROJECT_EMAIL_VERIFICATION_TOKEN_DURATION)
 

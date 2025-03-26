@@ -385,3 +385,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 `
+
+// Query to create a function that gets all the publishers
+export const CREATE_GET_ALL_PUBLISHERS_FN = `
+CREATE OR REPLACE FUNCTION get_all_publishers(
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR,
+    description VARCHAR
+) AS $$
+BEGIN
+    -- Query to select all publishers
+    RETURN QUERY
+    SELECT publishers.id, publishers.name, publishers.description
+    FROM publishers
+    WHERE publishers.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`

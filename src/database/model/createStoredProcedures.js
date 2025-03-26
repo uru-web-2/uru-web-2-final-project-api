@@ -2181,7 +2181,8 @@ export const CREATE_CREATE_PUBLISHER_PROC = `
 CREATE OR REPLACE PROCEDURE create_publisher(
     IN in_created_by_user_id BIGINT,
     IN in_publisher_name VARCHAR,
-    IN in_publisher_description TEXT
+    IN in_publisher_description TEXT,
+    OUT out_publisher_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -2196,7 +2197,8 @@ BEGIN
         in_created_by_user_id,
         in_publisher_name,
         in_publisher_description
-    );
+    )
+    RETURNING id INTO out_publisher_id;
 END;
 $$;
 `
@@ -2206,7 +2208,8 @@ export const CREATE_UPDATE_PUBLISHER_PROC = `
 CREATE OR REPLACE PROCEDURE update_publisher(
     IN in_publisher_id BIGINT,
     IN in_publisher_name VARCHAR,
-    IN in_publisher_description TEXT
+    IN in_publisher_description TEXT,
+    OUT out_publisher_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -2214,6 +2217,17 @@ DECLARE
     var_current_publisher_name VARCHAR;
     var_current_publisher_description TEXT;
 BEGIN
+    -- Check if the publisher ID is valid
+    SELECT TRUE
+    INTO out_publisher_id_is_valid
+    FROM publishers
+    WHERE id = in_publisher_id
+    AND deleted_at IS NULL;
+    
+    IF out_publisher_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the current publisher name and description
     SELECT name, description
     INTO var_current_publisher_name, var_current_publisher_description
@@ -2234,11 +2248,23 @@ $$;
 export const CREATE_DELETE_PUBLISHER_PROC = `
 CREATE OR REPLACE PROCEDURE delete_publisher(
     IN in_deleted_by_user_id BIGINT,
-    IN in_publisher_id BIGINT
+    IN in_publisher_id BIGINT,
+    OUT out_publisher_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the publisher ID is valid
+    SELECT TRUE
+    INTO out_publisher_id_is_valid
+    FROM publishers
+    WHERE id = in_publisher_id
+    AND deleted_at IS NULL;
+    
+    IF out_publisher_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the publishers table
     UPDATE publishers
     SET deleted_at = NOW(),

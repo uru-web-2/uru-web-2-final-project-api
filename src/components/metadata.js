@@ -1,8 +1,9 @@
 import {AddMetadataProfiles} from "@ralvarezdev/js-module-permissions";
 import {Profile} from "../router/Security/Profile.js";
-import {PROFILES_NAME as PROFILES} from "./constants.js";
+import {ALL_PROFILES_NAME, PROFILES_NAME as PROFILES} from "./constants.js";
 import {User} from "../router/Security/User.js";
 import {Security} from "../router/Security/Security.js";
+import {Publisher} from "../router/Document/Publisher.js";
 
 // Security module
 
@@ -37,3 +38,11 @@ AddMetadataProfiles(User, "CreateUser", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(User, "GetUserDetailsByUserID", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(User, "GetAllUsers", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(User, "UpdateUserByAdmin", PROFILES.SUPER_ADMIN)
+
+// Document module
+
+// - Publisher object
+AddMetadataProfiles(Publisher, "CreatePublisher", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Publisher, "UpdatePublisher", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Publisher, "DeletePublisher", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Publisher, "GetAllPublishers", ...ALL_PROFILES_NAME)
