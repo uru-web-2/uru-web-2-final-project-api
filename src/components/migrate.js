@@ -609,7 +609,7 @@ export default async function migrate() {
 
     // Create the profiles ID map
     const profilesID = queryRes.reduce((acc, profile) => {
-        acc[profile?.profile_name] = profile?.profile_id
+        acc[profile?.name] = profile?.id
         return acc
     }, {})
 

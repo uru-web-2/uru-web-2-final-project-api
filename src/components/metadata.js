@@ -74,6 +74,10 @@ AddMetadataProfiles(LocationSection,
     "GetAllLocationSections",
     ...ALL_PROFILES_NAME
 )
+AddMetadataProfiles(LocationSection,
+    "GetLocationSectionsByLocationID",
+    ...ALL_PROFILES_NAME,
+)
 
 // - Publisher object
 AddMetadataProfiles(Publisher, "CreatePublisher", PROFILES.SUPER_ADMIN)
@@ -119,6 +123,7 @@ AddMetadataProfiles(DocumentTopic,
 AddMetadataProfiles(DocumentLanguage,
     "AssignDocumentLanguage",
     PROFILES.SUPER_ADMIN,
+    PROFILES.STUDENT,
     PROFILES.LIBRARIAN
 )
 AddMetadataProfiles(DocumentLanguage,

@@ -1,4 +1,5 @@
 -- Drop functions
+-- Drop functions
 DROP FUNCTION IF EXISTS get_all_modules;
 DROP FUNCTION IF EXISTS get_modules_by_profile_id;
 DROP FUNCTION IF EXISTS get_all_objects;
@@ -17,3 +18,16 @@ DROP FUNCTION IF EXISTS get_all_users;
 DROP FUNCTION IF EXISTS get_all_topics_name;
 DROP FUNCTION IF EXISTS get_all_topics;
 DROP FUNCTION IF EXISTS get_all_languages;
+DROP FUNCTION IF EXISTS get_all_publishers;
+DROP FUNCTION IF EXISTS search_publisher_by_name;
+DROP FUNCTION IF EXISTS search_topic_by_name;
+DROP FUNCTION IF EXISTS search_language_by_name;
+DROP FUNCTION IF EXISTS get_all_countries;
+DROP FUNCTION IF EXISTS search_country_by_name;
+DROP FUNCTION IF EXISTS get_all_locations;
+DROP FUNCTION IF EXISTS get_location_sections_by_location_id;
+DROP FUNCTION IF EXISTS get_document_authors_by_document_id;
+DROP FUNCTION IF EXISTS get_document_topics_by_document_id;
+DROP FUNCTION IF EXISTS get_document_languages_by_document_id;
+DROP FUNCTION IF EXISTS get_document_location_sections_by_document_id;
+DROP FUNCTION IF EXISTS get_all_location_sections;
