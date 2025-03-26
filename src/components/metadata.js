@@ -56,3 +56,13 @@ AddMetadataProfiles(Publisher, "GetAllTopics", ...ALL_PROFILES_NAME)
 AddMetadataProfiles(Publisher, "SearchTopicByName", ...ALL_PROFILES_NAME)
 AddMetadataProfiles(Publisher, "AssignDocumentTopic", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
 AddMetadataProfiles(Publisher, "RemoveDocumentTopic", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+
+// Other module
+
+// - Country object
+AddMetadataProfiles(Publisher, "GetAllCountries", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(Publisher, "SearchCountryByName", ...ALL_PROFILES_NAME)
+
+// - Language object
+AddMetadataProfiles(Publisher, "GetAllLanguages", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(Publisher, "SearchLanguageByName", ...ALL_PROFILES_NAME)

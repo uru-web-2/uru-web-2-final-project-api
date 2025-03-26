@@ -59,7 +59,7 @@ export class Publisher {
         Logger.info(`Retrieved all publishers by user ${req.session.userID}`)
 
         // Send the response
-        res.status(200).json(SuccessJSendBody(publishers))
+        res.status(200).json(SuccessJSendBody({publishers}))
     }
 
     // Search publisher by name
@@ -74,7 +74,7 @@ export class Publisher {
         Logger.info(`Searched publisher by name ${body.name} by user ${req.session.userID}`)
 
         // Send the response
-        res.status(200).json(SuccessJSendBody(publishers))
+        res.status(200).json(SuccessJSendBody({publishers}))
     }
 }
 

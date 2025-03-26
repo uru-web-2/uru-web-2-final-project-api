@@ -59,7 +59,7 @@ export class Topic {
         Logger.info(`Retrieved all topics by user ${req.session.userID}`)
 
         // Send the response
-        res.status(200).json(SuccessJSendBody(topics))
+        res.status(200).json(SuccessJSendBody({topics}))
     }
 
     // Search topic by name
@@ -74,7 +74,7 @@ export class Topic {
         Logger.info(`Searched topic by name ${body.name} by user ${req.session.userID}`)
 
         // Send the response
-        res.status(200).json(SuccessJSendBody(topics))
+        res.status(200).json(SuccessJSendBody({topics}))
     }
 
     // Assign document topic

@@ -43,6 +43,7 @@ import {
     CREATE_WORKS
 } from "../database/model/createTables.js";
 import {
+    CREATE_GET_ALL_COUNTRIES_FN,
     CREATE_GET_ALL_LANGUAGES_FN,
     CREATE_GET_ALL_METHODS_FN,
     CREATE_GET_ALL_MODULES_FN,
@@ -60,6 +61,8 @@ import {
     CREATE_GET_OBJECTS_BY_MODULE_ID_FN,
     CREATE_GET_OBJECTS_BY_PROFILE_ID_MODULE_ID_FN,
     CREATE_GET_PROFILE_PERMISSIONS_METHODS_FN,
+    CREATE_SEARCH_COUNTRY_BY_NAME_FN,
+    CREATE_SEARCH_LANGUAGE_BY_NAME_FN,
     CREATE_SEARCH_PROFILE_BY_NAME_FN,
     CREATE_SEARCH_PUBLISHER_BY_NAME_FN,
     CREATE_SEARCH_TOPIC_BY_NAME_FN,
@@ -188,7 +191,10 @@ import {
     GET_MODULE_ID_BY_NAME_PROC,
     GET_OBJECT_ID_BY_NAME_PROC, SET_METHOD_PERMISSIONS_PROC
 } from "../database/model/storedProcedures.js";
-import {GET_ALL_PROFILES_FN} from "../database/model/functions.js";
+import {
+    GET_ALL_PROFILES_FN,
+    SEARCH_TOPIC_BY_NAME_FN
+} from "../database/model/functions.js";
 import {
     classNameFn,
     instanceNameFn,
@@ -438,7 +444,10 @@ export default async function migrate() {
             CREATE_GET_ALL_LANGUAGES_FN,
             CREATE_GET_ALL_PUBLISHERS_FN,
             CREATE_SEARCH_PUBLISHER_BY_NAME_FN,
-            CREATE_SEARCH_TOPIC_BY_NAME_FN
+            CREATE_SEARCH_TOPIC_BY_NAME_FN,
+            CREATE_GET_ALL_COUNTRIES_FN,
+            CREATE_SEARCH_COUNTRY_BY_NAME_FN,
+            CREATE_SEARCH_LANGUAGE_BY_NAME_FN
         ])
             await client.rawQuery(query)
     })

@@ -444,3 +444,59 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 `
+
+// Query to create a function that gets all the countries
+export const CREATE_GET_ALL_COUNTRIES_FN = `
+CREATE OR REPLACE FUNCTION get_all_countries(
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR
+) AS $$
+BEGIN
+    -- Query to select all countries
+    RETURN QUERY
+    SELECT countries.id, countries.name
+    FROM countries
+    WHERE countries.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that searches for a country by name
+export const CREATE_SEARCH_COUNTRY_BY_NAME_FN = `
+CREATE OR REPLACE FUNCTION search_country_by_name(
+    IN in_name VARCHAR
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR
+) AS $$
+BEGIN
+    -- Query to select the country ID by name
+    RETURN QUERY
+    SELECT countries.id, countries.name
+    FROM countries
+    WHERE countries.name LIKE '%' || in_name || '%';
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that searches for a language by name
+export const CREATE_SEARCH_LANGUAGE_BY_NAME_FN = `
+CREATE OR REPLACE FUNCTION search_language_by_name(
+    IN in_name VARCHAR
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR
+) AS $$
+BEGIN
+    -- Query to select the language ID by name
+    RETURN QUERY
+    SELECT languages.id, languages.name
+    FROM languages
+    WHERE languages.name LIKE '%' || in_name || '%';
+END;
+$$ LANGUAGE plpgsql;
+`

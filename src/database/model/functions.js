@@ -60,3 +60,12 @@ export const SEARCH_PUBLISHER_BY_NAME_FN = "SELECT * FROM search_publisher_by_na
 
 // Query to search for a topic by name
 export const SEARCH_TOPIC_BY_NAME_FN = "SELECT * FROM search_topic_by_name($1)"
+
+// Query to search for a language by name
+export const SEARCH_LANGUAGE_BY_NAME_FN = "SELECT * FROM search_language_by_name($1)"
+
+// Query to get all the countries
+export const GET_ALL_COUNTRIES_FN = "SELECT * FROM get_all_countries()"
+
+// Query to search for a country by name
+export const SEARCH_COUNTRY_BY_NAME_FN = "SELECT * FROM search_country_by_name($1)"

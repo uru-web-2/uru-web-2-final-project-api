@@ -119,5 +119,5 @@ export class TopicService {
     }
 }
 
-// Singleton instance of the publisher service
+// Singleton instance of the topic service
 export default new TopicService();
