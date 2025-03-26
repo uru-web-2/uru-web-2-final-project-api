@@ -46,3 +46,13 @@ AddMetadataProfiles(Publisher, "CreatePublisher", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Publisher, "UpdatePublisher", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Publisher, "DeletePublisher", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Publisher, "GetAllPublishers", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(Publisher, "SearchPublisherByName", ...ALL_PROFILES_NAME)
+
+// - Topic object
+AddMetadataProfiles(Publisher, "CreateTopic", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(Publisher, "UpdateTopic", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(Publisher, "DeleteTopic", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Publisher, "GetAllTopics", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(Publisher, "SearchTopicByName", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(Publisher, "AssignDocumentTopic", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(Publisher, "RemoveDocumentTopic", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)

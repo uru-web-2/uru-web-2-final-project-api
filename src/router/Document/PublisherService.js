@@ -6,7 +6,10 @@ import {
     UPDATE_PUBLISHER_PROC
 } from "../../database/model/storedProcedures.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
-import {GET_ALL_PUBLISHERS_FN} from "../../database/model/functions.js";
+import {
+    GET_ALL_PUBLISHERS_FN,
+    SEARCH_PUBLISHER_BY_NAME_FN
+} from "../../database/model/functions.js";
 
 // Service for the publisher object
 export class PublisherService {
@@ -78,6 +81,15 @@ export class PublisherService {
     async GetAllPublishers() {
         const queryRes = await DatabaseManager.rawQuery(
             GET_ALL_PUBLISHERS_FN,
+        );
+        return queryRes.rows;
+    }
+
+    // Search publisher by name
+    async SearchPublisherByName(req, body) {
+        const queryRes = await DatabaseManager.rawQuery(
+            SEARCH_PUBLISHER_BY_NAME_FN,
+            body.name,
         );
         return queryRes.rows;
     }

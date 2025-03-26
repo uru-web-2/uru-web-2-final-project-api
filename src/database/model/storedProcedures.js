@@ -161,13 +161,13 @@ export const ASSIGN_DOCUMENT_LOCATION_SECTION_PROC = "CALL assign_document_locat
 export const REMOVE_DOCUMENT_LOCATION_SECTION_PROC = "CALL remove_document_location_section($1, $2, $3)"
 
 // Query to create a new topic
-export const CREATE_TOPIC_PROC = "CALL create_topic($1, $2, $3)"
+export const CREATE_TOPIC_PROC = "CALL create_topic($1, $2, $3, $4)"
 
 // Query to update a topic
-export const UPDATE_TOPIC_PROC = "CALL update_topic($1, $2, $3)"
+export const UPDATE_TOPIC_PROC = "CALL update_topic($1, $2, $3, $4)"
 
 // Query to delete a topic
-export const DELETE_TOPIC_PROC = "CALL delete_topic($1, $2)"
+export const DELETE_TOPIC_PROC = "CALL delete_topic($1, $2, $3)"
 
 // Query to assign a topic to a document
 export const ASSIGN_DOCUMENT_TOPIC_PROC = "CALL assign_document_topic($1, $2, $3)"

@@ -70,6 +70,9 @@ export const DOCUMENT_TOPICS_UNIQUE_DOCUMENT_ID_TOPIC_ID = 'document_topics_uniq
 // Unique publishers name for the publishers table
 export const PUBLISHERS_UNIQUE_NAME = 'publishers_unique_name';
 
+// Unique topic name for the topics table
+export const TOPICS_UNIQUE_NAME = 'topics_unique_name';
+
 // Unique ISBN for the books table
 export const BOOKS_UNIQUE_ISBN = 'books_unique_isbn';
 

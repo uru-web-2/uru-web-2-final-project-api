@@ -61,6 +61,21 @@ export class Publisher {
         // Send the response
         res.status(200).json(SuccessJSendBody(publishers))
     }
+
+    // Search publisher by name
+    async SearchPublisherByName(req, res) {
+        // Validate the request
+        const body = HandleValidation(req, res, Validator.SearchPublisherByName);
+
+        // Search the publisher
+        const publishers = await Service.SearchPublisherByName(req, body)
+
+        // Log the search
+        Logger.info(`Searched publisher by name ${body.name} by user ${req.session.userID}`)
+
+        // Send the response
+        res.status(200).json(SuccessJSendBody(publishers))
+    }
 }
 
 // Singleton instance

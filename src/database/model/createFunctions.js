@@ -244,16 +244,16 @@ CREATE OR REPLACE FUNCTION search_user_by_username(
     IN in_limit BIGINT
 ) RETURNS
 TABLE (
-    user_id BIGINT,
-    user_first_name VARCHAR,
-    user_last_name VARCHAR,
-    user_email VARCHAR,
-    user_username VARCHAR
+    id BIGINT,
+    first_name VARCHAR,
+    last_name VARCHAR,
+    email VARCHAR,
+    username VARCHAR
 ) AS $$
 BEGIN
     -- Query to select the user ID by username
     RETURN QUERY
-    SELECT users.id AS user_id, people.first_name AS user_first_name, people.last_name AS user_last_name, user_emails.email AS user_email, user_usernames.username AS user_username
+    SELECT users.id, people.first_name, people.last_name, user_emails.email, user_usernames.username
     FROM users
     INNER JOIN people ON users.person_id = people.id
     INNER JOIN user_emails ON users.id = user_emails.user_id
@@ -270,14 +270,14 @@ CREATE OR REPLACE FUNCTION search_profile_by_name(
     IN in_name VARCHAR
 ) RETURNS
 TABLE (
-    profile_id BIGINT,
-    profile_name VARCHAR,
-    profile_description VARCHAR
+    id BIGINT,
+    name VARCHAR,
+    description VARCHAR
 ) AS $$
 BEGIN
     -- Query to select the profile ID by name
     RETURN QUERY
-    SELECT profiles.id AS profile_id, profiles.name AS profile_name, profiles.description AS profile_description
+    SELECT profiles.id, profiles.name, profiles.description
     FROM profiles
     WHERE profiles.name LIKE '%' || in_name || '%';
 END;
@@ -289,14 +289,14 @@ export const CREATE_GET_ALL_PROFILES_FN = `
 CREATE OR REPLACE FUNCTION get_all_profiles(
 ) RETURNS
 TABLE (
-    profile_id BIGINT,
-    profile_name VARCHAR,
-    profile_description VARCHAR
+    id BIGINT,
+    name VARCHAR,
+    description VARCHAR
 ) AS $$
 BEGIN
     -- Query to select all profiles
     RETURN QUERY
-    SELECT profiles.id AS profile_id, profiles.name AS profile_name, profiles.description AS profile_description
+    SELECT profiles.id, profiles.name, profiles.description
     FROM profiles
     WHERE profiles.deleted_at IS NULL;
 END;
@@ -310,16 +310,16 @@ CREATE OR REPLACE FUNCTION get_all_users(
     IN in_limit BIGINT
 ) RETURNS
 TABLE (
-    user_id BIGINT,
-    user_first_name VARCHAR,
-    user_last_name VARCHAR,
-    user_email VARCHAR,
-    user_username VARCHAR
+    id BIGINT,
+    first_name VARCHAR,
+    last_name VARCHAR,
+    email VARCHAR,
+    username VARCHAR
 ) AS $$
 BEGIN
     -- Query to select all users with pagination
     RETURN QUERY
-    SELECT users.id AS user_id, people.first_name AS user_first_name, people.last_name AS user_last_name, user_emails.email AS user_email, user_usernames.username AS user_username
+    SELECT users.id, people.first_name, people.last_name, user_emails.email, user_usernames.username
     FROM users
     INNER JOIN people ON users.person_id = people.id
     INNER JOIN user_emails ON users.id = user_emails.user_id
@@ -401,6 +401,46 @@ BEGIN
     SELECT publishers.id, publishers.name, publishers.description
     FROM publishers
     WHERE publishers.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that searches for a publisher by name
+export const CREATE_SEARCH_PUBLISHER_BY_NAME_FN = `
+CREATE OR REPLACE FUNCTION search_publisher_by_name(
+    IN in_name VARCHAR
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR,
+    description VARCHAR
+) AS $$
+BEGIN
+    -- Query to select the publisher ID by name
+    RETURN QUERY
+    SELECT publishers.id, publishers.name, publishers.description
+    FROM publishers
+    WHERE publishers.name LIKE '%' || in_name || '%';
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that searches for a topic by name
+export const CREATE_SEARCH_TOPIC_BY_NAME_FN = `
+CREATE OR REPLACE FUNCTION search_topic_by_name(
+    IN in_name VARCHAR
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR,
+    description VARCHAR
+) AS $$
+BEGIN
+    -- Query to select the topic ID by name
+    RETURN QUERY
+    SELECT topics.id, topics.name, topics.description
+    FROM topics
+    WHERE topics.name LIKE '%' || in_name || '%';
 END;
 $$ LANGUAGE plpgsql;
 `

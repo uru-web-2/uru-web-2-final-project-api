@@ -54,3 +54,9 @@ export const GET_ALL_LANGUAGES_FN = "SELECT * FROM get_all_languages()"
 
 // Query to get all the publishers
 export const GET_ALL_PUBLISHERS_FN = "SELECT * FROM get_all_publishers()"
+
+// Query to search for a publisher by name
+export const SEARCH_PUBLISHER_BY_NAME_FN = "SELECT * FROM search_publisher_by_name($1)"
+
+// Query to search for a topic by name
+export const SEARCH_TOPIC_BY_NAME_FN = "SELECT * FROM search_topic_by_name($1)"

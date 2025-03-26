@@ -1934,7 +1934,8 @@ export const CREATE_CREATE_TOPIC_PROC = `
 CREATE OR REPLACE PROCEDURE create_topic(
     IN in_created_by_user_id BIGINT,
     IN in_topic_name VARCHAR,
-    IN in_topic_description TEXT
+    IN in_topic_description TEXT,
+    OUT out_topic_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -1949,7 +1950,8 @@ BEGIN
         in_created_by_user_id,
         in_topic_name,
         in_topic_description
-    );
+    )
+    RETURNING id INTO out_topic_id;
 END;
 $$;
 `
@@ -1959,7 +1961,8 @@ export const CREATE_UPDATE_TOPIC_PROC = `
 CREATE OR REPLACE PROCEDURE update_topic(
     IN in_topic_id BIGINT,
     IN in_topic_name VARCHAR,
-    IN in_topic_description TEXT
+    IN in_topic_description TEXT,
+    OUT out_topic_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -1967,6 +1970,17 @@ DECLARE
     var_current_topic_name VARCHAR;
     var_current_topic_description TEXT;
 BEGIN
+    -- Check if the topic ID is valid
+    SELECT TRUE
+    INTO out_topic_id_is_valid
+    FROM topics
+    WHERE id = in_topic_id
+    AND deleted_at IS NULL;
+    
+    IF out_topic_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the current topic name and description
     SELECT name, description
     INTO var_current_topic_name, var_current_topic_description
@@ -1987,17 +2001,36 @@ $$;
 export const CREATE_DELETE_TOPIC_PROC = `
 CREATE OR REPLACE PROCEDURE delete_topic(
     IN in_deleted_by_user_id BIGINT,
-    IN in_topic_id BIGINT
+    IN in_topic_id BIGINT,
+    OUT out_topic_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the topic ID is valid
+    SELECT TRUE
+    INTO out_topic_id_is_valid
+    FROM topics
+    WHERE id = in_topic_id
+    AND deleted_at IS NULL;
+    
+    IF out_topic_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the topics table
     UPDATE topics
     SET deleted_at = NOW(),
         deleted_by_user_id = in_deleted_by_user_id
     WHERE id = in_topic_id
     AND deleted_at IS NULL;
+    
+    -- Update the document_topics table
+    UPDATE document_topics
+    SET revoked_at = NOW(),
+        revoked_by_user_id = in_deleted_by_user_id
+    WHERE topic_id = in_topic_id
+    AND revoked_at IS NULL;
 END;
 $$;
 `
