@@ -140,13 +140,13 @@ export const UPDATE_POST_PROC = "CALL update_post($1, $2)"
 export const DELETE_POST_PROC = "CALL delete_post($1, $2)"
 
 // Query to create a new location
-export const CREATE_LOCATION_PROC = "CALL create_location($1, $2, $3)"
+export const CREATE_LOCATION_PROC = "CALL create_location($1, $2, $3, $4)"
 
 // Query to update a location
-export const UPDATE_LOCATION_PROC = "CALL update_location($1, $2, $3)"
+export const UPDATE_LOCATION_PROC = "CALL update_location($1, $2, $3, $4)"
 
 // Query to delete a location
-export const DELETE_LOCATION_PROC = "CALL delete_location($1, $2)"
+export const DELETE_LOCATION_PROC = "CALL delete_location($1, $2, $3)"
 
 // Query to assign an author to a document
 export const ASSIGN_DOCUMENT_AUTHOR_PROC = "CALL assign_document_author($1, $2, $3)"

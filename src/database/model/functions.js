@@ -69,3 +69,6 @@ export const GET_ALL_COUNTRIES_FN = "SELECT * FROM get_all_countries()"
 
 // Query to search for a country by name
 export const SEARCH_COUNTRY_BY_NAME_FN = "SELECT * FROM search_country_by_name($1)"
+
+// Query to get all the locations
+export const GET_ALL_LOCATIONS_FN = "SELECT * FROM get_all_locations($1, $2)"

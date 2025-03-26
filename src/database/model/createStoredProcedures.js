@@ -1699,7 +1699,8 @@ export const CREATE_CREATE_LOCATION_PROC = `
 CREATE OR REPLACE PROCEDURE create_location(
     IN in_created_by_user_id BIGINT,
     IN in_location_floor VARCHAR,
-    IN in_location_area VARCHAR
+    IN in_location_area VARCHAR,
+    OUT out_location_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -1714,7 +1715,8 @@ BEGIN
         in_created_by_user_id,
         in_location_floor,
         in_location_area
-    );
+    )
+    RETURNING id INTO out_location_id;
 END;
 $$;
 `
@@ -1724,7 +1726,8 @@ export const CREATE_UPDATE_LOCATION_PROC = `
 CREATE OR REPLACE PROCEDURE update_location(
     IN in_location_id BIGINT,
     IN in_location_floor VARCHAR,
-    IN in_location_area VARCHAR
+    IN in_location_area VARCHAR,
+    OUT out_location_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -1732,6 +1735,17 @@ DECLARE
     var_current_location_floor VARCHAR;
     var_current_location_area VARCHAR;
 BEGIN
+    -- Check if the location ID is valid
+    SELECT TRUE
+    INTO out_location_id_is_valid
+    FROM locations
+    WHERE id = in_location_id
+    AND deleted_at IS NULL;
+    
+    IF out_location_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the current location floor and area
     SELECT floor, area
     INTO var_current_location_floor, var_current_location_area
@@ -1752,11 +1766,23 @@ $$;
 export const CREATE_DELETE_LOCATION_PROC = `
 CREATE OR REPLACE PROCEDURE delete_location(
     IN in_deleted_by_user_id BIGINT,
-    IN in_location_id BIGINT
+    IN in_location_id BIGINT,
+    OUT out_location_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the location ID is valid
+    SELECT TRUE
+    INTO out_location_id_is_valid
+    FROM locations
+    WHERE id = in_location_id
+    AND deleted_at IS NULL;
+    
+    IF out_location_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the locations table
     UPDATE locations
     SET deleted_at = NOW(),

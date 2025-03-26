@@ -500,3 +500,47 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 `
+
+// Query to create a function that gets all the locations
+export const CREATE_GET_ALL_LOCATIONS_FN = `
+CREATE OR REPLACE FUNCTION get_all_locations(
+    in_limit BIGINT,
+    in_offset BIGINT
+) RETURNS
+TABLE (
+    id BIGINT,
+    floor VARCHAR,
+    area VARCHAR
+) AS $$
+BEGIN
+    -- Query to select all locations
+    RETURN QUERY
+    SELECT locations.id, locations.floor, locations.area
+    FROM locations
+    WHERE locations.deleted_at IS NULL
+    ORDER BY locations.id
+    OFFSET in_offset
+    LIMIT in_limit;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that gets all the location sections by location ID
+export const CREATE_GET_LOCATION_SECTIONS_BY_LOCATION_ID_FN = `
+CREATE OR REPLACE FUNCTION get_location_sections_by_location_id(
+    in_location_id BIGINT
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR
+) AS $$
+BEGIN
+    -- Query to select the location sections by location ID
+    RETURN QUERY
+    SELECT location_sections.id, location_sections.name
+    FROM location_sections
+    WHERE location_sections.location_id = in_location_id
+    AND location_sections.deleted_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`

@@ -4,7 +4,6 @@ import {
 } from "../../database/model/constraints.js";
 import DatabaseManager from "../../components/database.js";
 import {
-    ASSIGN_DOCUMENT_TOPIC_PROC,
     CREATE_TOPIC_PROC,
     DELETE_TOPIC_PROC,
     UPDATE_TOPIC_PROC
@@ -96,26 +95,6 @@ export class TopicService {
             body.name
         );
         return queryRes.rows;
-    }
-
-    // Assign document topic
-    async AssignDocumentTopic(req, body) {
-        await DatabaseManager.rawQuery(
-            ASSIGN_DOCUMENT_TOPIC_PROC,
-            req.session.userID,
-            body.topic_id,
-            body.document_id
-        );
-    }
-
-    // Remove document topic
-    async RemoveDocumentTopic(req, body) {
-        await DatabaseManager.rawQuery(
-            ASSIGN_DOCUMENT_TOPIC_PROC,
-            req.session.userID,
-            body.topic_id,
-            body.document_id
-        );
     }
 }
 

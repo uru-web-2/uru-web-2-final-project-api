@@ -44,7 +44,7 @@ import {
 } from "../database/model/createTables.js";
 import {
     CREATE_GET_ALL_COUNTRIES_FN,
-    CREATE_GET_ALL_LANGUAGES_FN,
+    CREATE_GET_ALL_LANGUAGES_FN, CREATE_GET_ALL_LOCATIONS_FN,
     CREATE_GET_ALL_METHODS_FN,
     CREATE_GET_ALL_MODULES_FN,
     CREATE_GET_ALL_OBJECTS_FN,
@@ -447,7 +447,8 @@ export default async function migrate() {
             CREATE_SEARCH_TOPIC_BY_NAME_FN,
             CREATE_GET_ALL_COUNTRIES_FN,
             CREATE_SEARCH_COUNTRY_BY_NAME_FN,
-            CREATE_SEARCH_LANGUAGE_BY_NAME_FN
+            CREATE_SEARCH_LANGUAGE_BY_NAME_FN,
+            CREATE_GET_ALL_LOCATIONS_FN
         ])
             await client.rawQuery(query)
     })
