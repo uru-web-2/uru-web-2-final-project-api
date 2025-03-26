@@ -1608,9 +1608,9 @@ END;
 $$;
 `
 
-// Create a stored procedure that revokes a document language
-export const CREATE_REVOKE_DOCUMENT_LANGUAGE_PROC = `
-CREATE OR REPLACE PROCEDURE revoke_document_language(
+// Create a stored procedure that removes a document language
+export const CREATE_REMOVE_DOCUMENT_LANGUAGE_PROC = `
+CREATE OR REPLACE PROCEDURE remove_document_language(
     IN in_revoked_by_user_id BIGINT,
     IN in_document_id BIGINT,
     IN in_language_id BIGINT
@@ -1620,8 +1620,8 @@ AS $$
 BEGIN
     -- Update the document_languages table
     UPDATE document_languages
-    SET revoked_at = NOW(),
-        revoked_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_deleted_by_user_id
     WHERE document_id = in_document_id
     AND language_id = in_language_id
     AND deleted_at IS NULL;

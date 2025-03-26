@@ -79,7 +79,6 @@ export class LocationService {
     async GetAllLocations(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_ALL_LOCATIONS_FN,
-            req.session.userID,
             body.limit,
             body.offset,
         );

@@ -1,6 +1,6 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
-    ASSIGN_DOCUMENT_TOPIC,
+    ASSIGN_DOCUMENT_TOPIC, GET_DOCUMENT_TOPICS_BY_DOCUMENT_ID,
     REMOVE_DOCUMENT_TOPIC,
 } from "./TopicModel.js";
 
@@ -14,6 +14,11 @@ export class TopicValidator {
     // Validate remove document topic
     RemoveDocumentTopic(req) {
         return Validate(req, REMOVE_DOCUMENT_TOPIC);
+    }
+
+    // Validate get document topics by document ID
+    GetDocumentTopicsByDocumentID(req) {
+        return Validate(req, GET_DOCUMENT_TOPICS_BY_DOCUMENT_ID);
     }
 }
 

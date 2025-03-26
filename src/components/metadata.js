@@ -7,6 +7,10 @@ import {Publisher} from "../router/Library/Publisher.js";
 import {Location} from "../router/Library/Location.js";
 import {Topic as LibraryTopic} from "../router/Library/Topic.js";
 import {Topic as DocumentTopic} from "../router/Library/Document/Topic.js";
+import {Language as OtherLanguage} from "../router/Other/Language.js";
+import {Language as DocumentLanguage} from "../router/Library/Document/Language.js";
+import {Country} from "../router/Other/Country.js";
+import {Author} from "../router/Library/Document/Author.js";
 
 // Security module
 
@@ -69,13 +73,24 @@ AddMetadataProfiles(LibraryTopic, "SearchTopicByName", ...ALL_PROFILES_NAME)
 // -- Topic object
 AddMetadataProfiles(DocumentTopic, "AssignDocumentTopic", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
 AddMetadataProfiles(DocumentTopic, "RemoveDocumentTopic", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(DocumentTopic, "GetDocumentTopicsByDocumentID", ...ALL_PROFILES_NAME)
+
+// -- Language object
+AddMetadataProfiles(DocumentLanguage, "AssignDocumentLanguage", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(DocumentLanguage, "RemoveDocumentLanguage", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(DocumentLanguage, "GetDocumentLanguagesByDocumentID", ...ALL_PROFILES_NAME)
+
+// -- Author object
+AddMetadataProfiles(Author, "AssignDocumentAuthor", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(Author, "RemoveDocumentAuthor", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(Author, "GetDocumentAuthorsByDocumentID", ...ALL_PROFILES_NAME)
 
 // Other module
 
 // - Country object
-AddMetadataProfiles(Publisher, "GetAllCountries", ...ALL_PROFILES_NAME)
-AddMetadataProfiles(Publisher, "SearchCountryByName", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(Country, "GetAllCountries", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(Country, "SearchCountryByName", ...ALL_PROFILES_NAME)
 
 // - Language object
-AddMetadataProfiles(Publisher, "GetAllLanguages", ...ALL_PROFILES_NAME)
-AddMetadataProfiles(Publisher, "SearchLanguageByName", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(OtherLanguage, "GetAllLanguages", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(OtherLanguage, "SearchLanguageByName", ...ALL_PROFILES_NAME)

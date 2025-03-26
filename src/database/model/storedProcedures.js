@@ -127,8 +127,8 @@ export const DELETE_DOCUMENT_IMAGE_PROC = "CALL delete_document_image($1, $2)"
 // Query to assign a new document language
 export const ASSIGN_DOCUMENT_LANGUAGE_PROC = "CALL assign_document_language($1, $2, $3)"
 
-// Query to revoke a document language
-export const REVOKE_DOCUMENT_LANGUAGE_PROC = "CALL revoke_document_language($1, $2)"
+// Query to remove a document language
+export const REMOVE_DOCUMENT_LANGUAGE_PROC = "CALL remove_document_language($1, $2)"
 
 // Query to create a new post
 export const CREATE_POST_PROC = "CALL create_post($1, $2, $3)"

@@ -72,3 +72,15 @@ export const SEARCH_COUNTRY_BY_NAME_FN = "SELECT * FROM search_country_by_name($
 
 // Query to get all the locations
 export const GET_ALL_LOCATIONS_FN = "SELECT * FROM get_all_locations($1, $2)"
+
+// Query to get all the location sections by location ID
+export const GET_LOCATION_SECTIONS_BY_LOCATION_ID_FN = "SELECT * FROM get_location_sections_by_location_id($1)"
+
+// Query to get all the document authors by document ID
+export const GET_DOCUMENT_AUTHORS_BY_DOCUMENT_ID_FN = "SELECT * FROM get_document_authors_by_document_id($1)"
+
+// Query to get all the document topics by document ID
+export const GET_DOCUMENT_TOPICS_BY_DOCUMENT_ID_FN = "SELECT * FROM get_document_topics_by_document_id($1)"
+
+// Query to get all the document languages by document ID
+export const GET_DOCUMENT_LANGUAGES_BY_DOCUMENT_ID_FN = "SELECT * FROM get_document_languages_by_document_id($1)"

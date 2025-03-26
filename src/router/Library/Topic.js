@@ -3,7 +3,7 @@ import Validator from "./TopicValidator.js";
 import Service from "./TopicService.js";
 import Logger from "../../components/logger.js";
 
-// Topic object for the document module
+// Topic object for the library module
 export class Topic {
     // Create a topic
     async CreateTopic(req, res) {

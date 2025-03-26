@@ -524,13 +524,13 @@ CREATE TABLE IF NOT EXISTS document_languages (
     language_id BIGINT NOT NULL,
     document_id BIGINT,
     assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    revoked_at TIMESTAMP,
+    removed_at TIMESTAMP,
     assigned_by_user_id BIGINT NOT NULL,
-    revoked_by_user_id BIGINT,
+    removed_by_user_id BIGINT,
     FOREIGN KEY (language_id) REFERENCES languages(id),
     FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (revoked_by_user_id) REFERENCES users(id)
+    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID} ON document_languages (document_id, language_id);
 `;

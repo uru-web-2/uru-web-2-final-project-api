@@ -3,6 +3,9 @@ import {
     ASSIGN_DOCUMENT_TOPIC_PROC,
     REMOVE_DOCUMENT_TOPIC_PROC
 } from "../../../database/model/storedProcedures.js";
+import {
+    GET_DOCUMENT_TOPICS_BY_DOCUMENT_ID_FN
+} from "../../../database/model/functions.js";
 
 // Service for the topic object
 export class TopicService {
@@ -24,6 +27,15 @@ export class TopicService {
             body.topic_id,
             body.document_id
         );
+    }
+
+    // Get document topics by document ID
+    async GetDocumentTopicsByDocumentID(req, body) {
+        const queryRes = await DatabaseManager.rawQuery(
+            GET_DOCUMENT_TOPICS_BY_DOCUMENT_ID_FN,
+            body.id
+        );
+        return queryRes.rows;
     }
 }
 
