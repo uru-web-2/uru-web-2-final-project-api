@@ -1798,7 +1798,8 @@ export const CREATE_CREATE_LOCATION_SECTION_PROC = `
 CREATE OR REPLACE PROCEDURE create_location_section(
     IN in_created_by_user_id BIGINT,
     IN in_location_id BIGINT,
-    IN in_location_section_name VARCHAR
+    IN in_location_section_name VARCHAR,
+    OUT out_location_section_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -1813,7 +1814,8 @@ BEGIN
         in_created_by_user_id,
         in_location_id,
         in_location_section_name
-    );
+    )
+    RETURNING id INTO out_location_section_id;
 END;
 $$;
 `
@@ -1822,13 +1824,25 @@ $$;
 export const CREATE_UPDATE_LOCATION_SECTION_PROC = `
 CREATE OR REPLACE PROCEDURE update_location_section(
     IN in_location_section_id BIGINT,
-    IN in_location_section_name VARCHAR
+    IN in_location_section_name VARCHAR,
+    OUT out_location_section_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_current_location_section_name VARCHAR;
 BEGIN
+    -- Check if the location section ID is valid
+    SELECT TRUE
+    INTO out_location_section_id_is_valid
+    FROM location_sections
+    WHERE id = in_location_section_id
+    AND deleted_at IS NULL;
+    
+    IF out_location_section_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the current location section name
     SELECT name
     INTO var_current_location_section_name
@@ -1848,11 +1862,23 @@ $$;
 export const CREATE_DELETE_LOCATION_SECTION_PROC = `
 CREATE OR REPLACE PROCEDURE delete_location_section(
     IN in_deleted_by_user_id BIGINT,
-    IN in_location_section_id BIGINT
+    IN in_location_section_id BIGINT,
+    OUT out_location_section_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the location section ID is valid
+    SELECT TRUE
+    INTO out_location_section_id_is_valid
+    FROM location_sections
+    WHERE id = in_location_section_id
+    AND deleted_at IS NULL;
+    
+    IF out_location_section_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the location_sections table
     UPDATE location_sections
     SET deleted_at = NOW(),

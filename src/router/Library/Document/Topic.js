@@ -38,7 +38,10 @@ export class Topic {
     // Get document topics by document ID
     async GetDocumentTopicsByDocumentID(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.GetDocumentTopicsByDocumentID);
+        const body = HandleValidation(req,
+            res,
+            Validator.GetDocumentTopicsByDocumentID
+        );
 
         // Get the document topics
         const topics = await Service.GetDocumentTopicsByDocumentID(req, body)

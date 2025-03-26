@@ -1,7 +1,5 @@
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
-import {
-    TOPICS_UNIQUE_NAME
-} from "../../database/model/constraints.js";
+import {TOPICS_UNIQUE_NAME} from "../../database/model/constraints.js";
 import DatabaseManager from "../../components/database.js";
 import {
     CREATE_TOPIC_PROC,
@@ -45,7 +43,6 @@ export class TopicService {
         try {
             const queryRes = await DatabaseManager.rawQuery(
                 UPDATE_TOPIC_PROC,
-                req.session.userID,
                 body.id,
                 body.name,
                 body.description,
@@ -69,15 +66,15 @@ export class TopicService {
     // Deletes a topic
     async DeleteTopic(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
-                DELETE_TOPIC_PROC,
-                req.session.userID,
-                body.id,
-                null,
-            );
-            const queryRow = queryRes.rows?.[0];
+            DELETE_TOPIC_PROC,
+            req.session.userID,
+            body.id,
+            null,
+        );
+        const queryRow = queryRes.rows?.[0];
 
-            if (queryRow?.out_topic_id_is_valid === false)
-                throw new FieldFailError(400, 'id', 'Topic ID is invalid');
+        if (queryRow?.out_topic_id_is_valid === false)
+            throw new FieldFailError(400, 'id', 'Topic ID is invalid');
     }
 
     // Get all topics

@@ -121,7 +121,7 @@ export class UserService {
         );
 
         // Get the user details
-        const userDetails= queryRes.rows[0]
+        const userDetails = queryRes.rows[0]
 
         // Check if the user exists
         if (userDetails.out_user_id === null)
@@ -131,7 +131,7 @@ export class UserService {
             )
 
         return {
-            user_id:userDetails.out_user_id,
+            user_id: userDetails.out_user_id,
             user_first_name: userDetails.out_user_first_name,
             user_last_name: userDetails.out_user_last_name,
             user_email: userDetails.out_user_email,

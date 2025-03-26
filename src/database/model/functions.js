@@ -84,3 +84,9 @@ export const GET_DOCUMENT_TOPICS_BY_DOCUMENT_ID_FN = "SELECT * FROM get_document
 
 // Query to get all the document languages by document ID
 export const GET_DOCUMENT_LANGUAGES_BY_DOCUMENT_ID_FN = "SELECT * FROM get_document_languages_by_document_id($1)"
+
+// Query to get all the document location sections by document ID
+export const GET_DOCUMENT_LOCATION_SECTIONS_BY_DOCUMENT_ID_FN = "SELECT * FROM get_document_location_sections_by_document_id($1)"
+
+// Query to get all the location sections
+export const GET_ALL_LOCATION_SECTIONS_FN = "SELECT * FROM get_all_location_sections($1, $2)"

@@ -1,6 +1,7 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
-    ASSIGN_DOCUMENT_AUTHOR, GET_DOCUMENT_AUTHORS_BY_DOCUMENT_ID,
+    ASSIGN_DOCUMENT_AUTHOR,
+    GET_DOCUMENT_AUTHORS_BY_DOCUMENT_ID,
     REMOVE_DOCUMENT_AUTHOR,
 } from "./AuthorModel.js";
 

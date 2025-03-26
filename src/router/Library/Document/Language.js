@@ -8,7 +8,10 @@ export class Language {
     // Assign document language
     async AssignDocumentLanguage(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.AssignDocumentLanguage);
+        const body = HandleValidation(req,
+            res,
+            Validator.AssignDocumentLanguage
+        );
 
         // Assign the document language
         await Service.AssignDocumentLanguage(req, body)
@@ -23,7 +26,10 @@ export class Language {
     // Remove document language
     async RemoveDocumentLanguage(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.RemoveDocumentLanguage);
+        const body = HandleValidation(req,
+            res,
+            Validator.RemoveDocumentLanguage
+        );
 
         // Revoke the document language
         await Service.RemoveDocumentLanguage(req, body)
@@ -38,10 +44,15 @@ export class Language {
     // Get document languages by document ID
     async GetDocumentLanguagesByDocumentID(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.GetDocumentLanguagesByDocumentID);
+        const body = HandleValidation(req,
+            res,
+            Validator.GetDocumentLanguagesByDocumentID
+        );
 
         // Get the document languages
-        const languages = await Service.GetDocumentLanguagesByDocumentID(req, body)
+        const languages = await Service.GetDocumentLanguagesByDocumentID(req,
+            body
+        )
 
         // Log the retrieval
         Logger.info(`Retrieved languages for document ${body.document_id} by user ${req.session.userID}`)

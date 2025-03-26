@@ -9,6 +9,7 @@ import {
     IDENTITY_DOCUMENTS_DELETED_BY_USER_ID_FK,
     IDENTITY_DOCUMENTS_UNIQUE_NUMBER,
     LANGUAGES_UNIQUE_NAME,
+    LOCATION_SECTIONS_UNIQUE_LOCATION_ID_NAME,
     LOCATIONS_UNIQUE_FLOOR_AREA,
     METHODS_UNIQUE_OBJECT_ID_NAME,
     MODULES_UNIQUE_NAME,
@@ -21,7 +22,8 @@ import {
     PEOPLE_UNIQUE_PASSPORT,
     PERMISSIONS_UNIQUE_METHOD_ID_PROFILE_ID,
     PROFILES_UNIQUE_NAME,
-    PUBLISHERS_UNIQUE_NAME, TOPICS_UNIQUE_NAME,
+    PUBLISHERS_UNIQUE_NAME,
+    TOPICS_UNIQUE_NAME,
     USER_EMAIL_VERIFICATIONS_UNIQUE_USER_EMAIL_ID,
     USER_EMAILS_UNIQUE_EMAIL,
     USER_EMAILS_UNIQUE_USER_ID,
@@ -372,7 +374,7 @@ CREATE TABLE IF NOT EXISTS locations (
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
     FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ${LOCATIONS_UNIQUE_FLOOR_AREA} ON locations (floor, area);
+CREATE UNIQUE INDEX IF NOT EXISTS ${LOCATIONS_UNIQUE_FLOOR_AREA} ON locations (floor, area) WHERE deleted_at IS NULL;
 `;
 
 // Query to create the location_sections table
@@ -389,6 +391,7 @@ CREATE TABLE IF NOT EXISTS location_sections (
     FOREIGN KEY (created_by_user_id) REFERENCES users(id),
     FOREIGN KEY (deleted_by_user_id) REFERENCES users(id)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS ${LOCATION_SECTIONS_UNIQUE_LOCATION_ID_NAME} ON location_sections (location_id, name) WHERE deleted_at IS NULL;
 `;
 
 // Query to create the document_authors table
@@ -532,7 +535,7 @@ CREATE TABLE IF NOT EXISTS document_languages (
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID} ON document_languages (document_id, language_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID} ON document_languages (document_id, language_id) WHERE removed_at IS NULL;
 `;
 
 // Query to create the book_copies table

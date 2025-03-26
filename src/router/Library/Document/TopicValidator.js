@@ -1,6 +1,7 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
-    ASSIGN_DOCUMENT_TOPIC, GET_DOCUMENT_TOPICS_BY_DOCUMENT_ID,
+    ASSIGN_DOCUMENT_TOPIC,
+    GET_DOCUMENT_TOPICS_BY_DOCUMENT_ID,
     REMOVE_DOCUMENT_TOPIC,
 } from "./TopicModel.js";
 

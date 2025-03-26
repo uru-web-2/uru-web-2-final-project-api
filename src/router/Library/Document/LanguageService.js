@@ -6,17 +6,35 @@ import {
 import {
     GET_DOCUMENT_LANGUAGES_BY_DOCUMENT_ID_FN
 } from "../../../database/model/functions.js";
+import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
+import {
+    DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID
+} from "../../../database/model/constraints.js";
+import {FieldFailError} from "@ralvarezdev/js-express";
 
 // Service for the language object
 export class LanguageService {
     // Assign document language
     async AssignDocumentLanguage(req, body) {
-        await DatabaseManager.rawQuery(
-            ASSIGN_DOCUMENT_LANGUAGE_PROC,
-            req.session.userID,
-            body.language_id,
-            body.document_id
-        );
+        try {
+            await DatabaseManager.rawQuery(
+                ASSIGN_DOCUMENT_LANGUAGE_PROC,
+                req.session.userID,
+                body.language_id,
+                body.document_id
+            );
+        } catch (error) {
+            // Check if it is a constraint violation error
+            const constraintName = PostgresIsUniqueConstraintError(error)
+
+            // Check if the constraint is the unique document ID and language ID constraint
+            if (constraintName === DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID)
+                throw new FieldFailError(400,
+                    'language_id',
+                    'Language is already assigned to the document'
+                )
+            throw error
+        }
     }
 
     // Remove document language

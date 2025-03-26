@@ -387,13 +387,13 @@ export class Dispatcher {
     // Handle the logout request
     LogOut(req, res) {
         // Destroy the session
-        Session.destroy(req, res, (req, res)=>{
+        Session.destroy(req, res, (req, res) => {
             // Log the user ID
             Logger.info(`Logged out user ${req.session.userID}`)
 
             // Send the response
             res.status(500).json(ErrorJSendBody("Failed to destroy session"))
-        }, (res)=>{
+        }, (res) => {
             // Send the response
             res.status(200).json(SuccessJSendBody())
         })

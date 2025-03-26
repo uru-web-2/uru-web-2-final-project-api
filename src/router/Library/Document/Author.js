@@ -38,7 +38,10 @@ export class Author {
     // Get document authors by document ID
     async GetDocumentAuthorsByDocumentID(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.GetDocumentAuthorsByDocumentID);
+        const body = HandleValidation(req,
+            res,
+            Validator.GetDocumentAuthorsByDocumentID
+        );
 
         // Get the document authors
         const authors = await Service.GetDocumentAuthorsByDocumentID(req, body)

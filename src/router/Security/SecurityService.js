@@ -166,8 +166,8 @@ export class SecurityService {
             SET_PROFILE_PERMISSIONS_PROC,
             req.session.userID,
             body.profile_id,
-            body.assign_method_ids??[],
-            body.revoke_method_ids??[],
+            body.assign_method_ids ?? [],
+            body.revoke_method_ids ?? [],
         )
     }
 }

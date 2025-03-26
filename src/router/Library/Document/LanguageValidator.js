@@ -1,6 +1,7 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
-    ASSIGN_DOCUMENT_LANGUAGE, GET_DOCUMENT_LANGUAGES_BY_DOCUMENT_ID,
+    ASSIGN_DOCUMENT_LANGUAGE,
+    GET_DOCUMENT_LANGUAGES_BY_DOCUMENT_ID,
     REMOVE_DOCUMENT_LANGUAGE,
 } from "./LanguageModel.js";
 

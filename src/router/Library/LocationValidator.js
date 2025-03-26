@@ -1,7 +1,8 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
     CREATE_LOCATION,
-    DELETE_LOCATION, GET_ALL_LOCATIONS,
+    DELETE_LOCATION,
+    GET_ALL_LOCATIONS,
     UPDATE_LOCATION
 } from "./LocationModel.js";
 

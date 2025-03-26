@@ -65,7 +65,10 @@ export class Publisher {
     // Search publisher by name
     async SearchPublisherByName(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.SearchPublisherByName);
+        const body = HandleValidation(req,
+            res,
+            Validator.SearchPublisherByName
+        );
 
         // Search the publisher
         const publishers = await Service.SearchPublisherByName(req, body)

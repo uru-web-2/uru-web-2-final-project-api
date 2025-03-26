@@ -1,7 +1,5 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
-import {
-    SEARCH_COUNTRY_BY_NAME
-} from "./CountryModel.js";
+import {SEARCH_COUNTRY_BY_NAME} from "./CountryModel.js";
 
 // Validator for the country object
 export class CountryValidator {

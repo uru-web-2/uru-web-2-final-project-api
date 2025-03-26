@@ -2,7 +2,8 @@ import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {PUBLISHERS_UNIQUE_NAME} from "../../database/model/constraints.js";
 import DatabaseManager from "../../components/database.js";
 import {
-    CREATE_PUBLISHER_PROC, DELETE_PUBLISHER_PROC,
+    CREATE_PUBLISHER_PROC,
+    DELETE_PUBLISHER_PROC,
     UPDATE_PUBLISHER_PROC
 } from "../../database/model/storedProcedures.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
@@ -42,7 +43,6 @@ export class PublisherService {
         try {
             const queryRes = await DatabaseManager.rawQuery(
                 UPDATE_PUBLISHER_PROC,
-                req.session.userID,
                 body.id,
                 body.name,
                 body.description,

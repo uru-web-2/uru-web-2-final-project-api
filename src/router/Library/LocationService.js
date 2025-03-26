@@ -30,7 +30,10 @@ export class LocationService {
 
             // Check if the constraint is the unique floor area constraint
             if (constraintName === LOCATIONS_UNIQUE_FLOOR_AREA)
-                throw new FieldFailError(400, 'area', 'Area is already taken for this floor')
+                throw new FieldFailError(400,
+                    'area',
+                    'Area is already taken for this floor'
+                )
             throw error
         }
     }
@@ -55,24 +58,27 @@ export class LocationService {
 
             // Check if the constraint is the unique floor area constraint
             if (constraintName === LOCATIONS_UNIQUE_FLOOR_AREA)
-                throw new FieldFailError(400, 'area', 'Area is already taken for this floor')
+                throw new FieldFailError(400,
+                    'area',
+                    'Area is already taken for this floor'
+                )
             throw error
         }
     }
 
     // Deletes a location
     async DeleteLocation(req, body) {
-        const queryRes= await DatabaseManager.rawQuery(
-                DELETE_LOCATION_PROC,
-                req.session.userID,
-                body.id,
-                null,
-            );
+        const queryRes = await DatabaseManager.rawQuery(
+            DELETE_LOCATION_PROC,
+            req.session.userID,
+            body.id,
+            null,
+        );
 
-            const queryRow = queryRes.rows?.[0];
+        const queryRow = queryRes.rows?.[0];
 
-            if (queryRow?.out_location_id_is_valid === false)
-                throw new FieldFailError(400, 'id', 'Location ID is invalid');
+        if (queryRow?.out_location_id_is_valid === false)
+            throw new FieldFailError(400, 'id', 'Location ID is invalid');
     }
 
     // Get all locations
