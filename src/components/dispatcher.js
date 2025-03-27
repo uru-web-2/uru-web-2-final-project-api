@@ -187,6 +187,9 @@ export class Dispatcher {
         // Set the reset password route
         this.#app.post("/reset-password", this.ResetPassword)
 
+        // Serve the public folder
+        this.#app.use(express.static("public"))
+
         // Add the error catcher middleware
         this.#app.use(ErrorHandler.errorCatcher())
     }
