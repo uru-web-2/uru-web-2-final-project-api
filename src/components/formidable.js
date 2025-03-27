@@ -3,7 +3,7 @@ import {
     ARTICLES_PATH,
     BOOKS_PATH,
     FORM_FILE_NAME,
-    FORM_IMAGES_NAME,
+    FORM_IMAGES_NAME, getBookRelativePath, getImageRelativePath,
     IMAGES_PATH,
     MAGAZINE_ISSUES_PATH,
     THESES_PATH,
@@ -16,7 +16,7 @@ import * as fs from "node:fs";
 import {v4 as uuidv4} from "uuid";
 
 // Constants
-const FILE_EXTENSION= '.pdf'
+const FILE_EXTENSION= 'pdf'
 
 // Upload book file from form
 export async function uploadBookFileFromForm(req, res, bookID) {
@@ -43,6 +43,8 @@ export async function uploadBookFileFromForm(req, res, bookID) {
         // Save the file
         await uploadBookFile(bookID, FILE_EXTENSION,buffer)
     })
+
+    return getBookRelativePath(bookID, FILE_EXTENSION)
 }
 
 // Upload article file from form
@@ -70,6 +72,8 @@ export async function uploadArticleFileFromForm(req, res, articleID) {
         // Save the file
         await uploadArticleFile(articleID, FILE_EXTENSION , buffer)
     })
+
+    return getBookRelativePath(articleID, FILE_EXTENSION)
 }
 
 // Upload a thesis file from form
@@ -97,6 +101,8 @@ export async function uploadThesisFileFromForm(req, res, thesisID) {
         // Save the file
         await uploadThesisFile(thesisID, FILE_EXTENSION, buffer)
     })
+
+    return getBookRelativePath(thesisID, FILE_EXTENSION)
 }
 
 // Upload a magazine issue file from form
@@ -124,6 +130,8 @@ export async function uploadMagazineIssueFileFromForm(req, res, magazineIssueID)
         // Save the file
         await uploadMagazineIssueFile(magazineIssueID, FILE_EXTENSION, buffer)
     })
+
+    return getBookRelativePath(magazineIssueID, FILE_EXTENSION)
 }
 
 // Upload some image files from form
@@ -161,9 +169,9 @@ export async function uploadImagesFromForm(req, res, bookID) {
             await uploadImage(imageUUID, extension, buffer)
 
             // Add the image name with extension to the array
-            imagesNamesWithExtensions.push(`${imageUUID}.${extension}`)
+            imagesNamesWithExtensions.push([imageUUID, extension])
         }
     });
 
-    return imagesNamesWithExtensions
+    return imagesNamesWithExtensions.map(([imageUUID, extension]) => getImageRelativePath( imageUUID, extension))
 }

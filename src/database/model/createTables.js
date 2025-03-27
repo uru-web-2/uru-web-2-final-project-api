@@ -322,6 +322,7 @@ CREATE TABLE IF NOT EXISTS documents (
     average_ratings FLOAT DEFAULT 0,
     number_ratings BIGINT DEFAULT 0,
     pages INTEGER,
+    file_relative_url VARCHAR(255),
     registered_by_user_id BIGINT NOT NULL,
     deleted_by_user_id BIGINT,
     FOREIGN KEY (registered_by_user_id) REFERENCES users(id),
@@ -334,7 +335,7 @@ export const CREATE_DOCUMENT_IMAGES = `
 CREATE TABLE IF NOT EXISTS document_images (
     id BIGSERIAL PRIMARY KEY,
     document_id BIGINT NOT NULL,
-    image_url VARCHAR(255) NOT NULL,
+    image_relative_url VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP,
     created_by_user_id BIGINT NOT NULL,
