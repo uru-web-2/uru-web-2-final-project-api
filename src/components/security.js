@@ -41,7 +41,7 @@ export class Security {
         const profiles = await DatabaseManager.rawQuery(GET_ALL_PROFILES_FN)
 
         // Iterate over the profiles
-        for (const {profile_id: id, profile_name: name} of profiles.rows)
+        for (const {id, name} of profiles.rows)
             this.#profiles.set(id, name)
 
         // Get the modules
