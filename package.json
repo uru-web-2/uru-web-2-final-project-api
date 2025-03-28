@@ -20,7 +20,7 @@
     "@ralvarezdev/js-joi-parser": "^0.1.10",
     "@ralvarezdev/js-logger": "^0.1.13",
     "@ralvarezdev/js-mode": "^0.1.4",
-    "@ralvarezdev/js-module-permissions": "^0.4.7",
+    "@ralvarezdev/js-module-permissions": "^0.4.8",
     "@ralvarezdev/js-reflection": "^0.3.11",
     "@ralvarezdev/js-session": "^0.2.14",
     "bcrypt": "^5.1.1",

@@ -1,16 +1,11 @@
 import {PROFILES_NAME as PROFILES} from "../../components/constants.js";
 
 // Query with the profiles inserts
-export const INSERT_PROFILES = `
+export const INSERT_PROFILES = Object.values(PROFILES).map(profile => `
 INSERT INTO profiles (name, description)
 VALUES
-('${PROFILES.STUDENT}', 'Student'),
-('${PROFILES.TEACHER}', 'Teacher'),
-('${PROFILES.LIBRARIAN}', 'Librarian'),
-('${PROFILES.ADMIN}', 'Administrator'),
-('${PROFILES.SUPER_ADMIN}', 'Super Administrator'),
-('${PROFILES.DEVELOPER}', 'Developer');
-`
+('${profile}', '${profile}');
+`).join(",\n")
 
 // Query with the countries inserts
 export const INSERT_COUNTRIES = `

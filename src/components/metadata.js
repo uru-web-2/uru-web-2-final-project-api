@@ -14,6 +14,7 @@ import {
 import {Country} from "../router/Other/Country.js";
 import {LocationSection as DocumentLocationSection} from "../router/Library/Document/LocationSection.js";
 import {LocationSection as LibraryLocationSection} from "../router/Library/LocationSection.js";
+import {Book} from "../router/Library/Document/Book/Book.js";
 
 // Security module
 
@@ -151,6 +152,10 @@ AddMetadataProfiles(DocumentLocationSection,
     "GetDocumentLocationSectionsByDocumentID",
     ...ALL_PROFILES_NAME
 )
+
+// -- Book module
+
+AddMetadataProfiles(Book, "CreateBook", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
 
 // Other module
 

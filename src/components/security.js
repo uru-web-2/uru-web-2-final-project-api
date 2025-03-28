@@ -72,9 +72,17 @@ export class Security {
             // Get the module
             const module = this.getModule(module_id)
 
+            // Get the parent modules
+            const modulesName = [module.name]
+            let t=module
+            while(t.parentModule?.name){
+                modulesName.splice(0,0,t.parentModule.name)
+                t = t.parentModule
+            }
+
             // Create the script name and script path
             const scriptName = scriptNameFn(name)
-            const scriptPath = path.join(__dirname, module.name, scriptName)
+            const scriptPath = path.join(__dirname, ...modulesName, scriptName)
 
             // Create the object
             const object = module.createObject(scriptPath,
@@ -236,7 +244,7 @@ export class Security {
         const profileID = req.session.profileID
         if (!this.hasProfile(profileID)) {
             // Destroy the session
-            Session.destroy(req)
+            Session.destroy(req, res)
 
             throw new FailResponseError(401, {
                 session: "Profile not found. Session destroyed. Log in again"
