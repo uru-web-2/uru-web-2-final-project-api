@@ -323,7 +323,6 @@ CREATE TABLE IF NOT EXISTS documents (
     number_ratings BIGINT DEFAULT 0,
     pages INTEGER,
     author VARCHAR(255),
-    file_relative_url VARCHAR(255),
     registered_by_user_id BIGINT NOT NULL,
     deleted_by_user_id BIGINT,
     FOREIGN KEY (registered_by_user_id) REFERENCES users(id),
@@ -411,7 +410,7 @@ CREATE TABLE IF NOT EXISTS document_location_sections (
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_LOCATION_SECTIONS_UNIQUE_DOCUMENT_ID_LOCATION_SECTION_ID} ON document_topics (document_id, location_section_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_LOCATION_SECTIONS_UNIQUE_DOCUMENT_ID_LOCATION_SECTION_ID} ON document_location_sections (document_id, location_section_id);
 `;
 
 // Query to create the document_reviews table
