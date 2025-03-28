@@ -61,8 +61,8 @@ export const USER_PASSWORD_HASHES_UNIQUE_USER_ID = 'user_password_hashes_unique_
 // Unique floor area for the locations table
 export const LOCATIONS_UNIQUE_FLOOR_AREA = 'locations_unique_floor_area';
 
-// Unique document ID and author ID for the document_authors table
-export const DOCUMENT_AUTHORS_UNIQUE_DOCUMENT_ID_AUTHOR_ID = 'document_authors_unique_document_id_author_id';
+// Unique document ID and location section ID for the document_location_sections table
+export const DOCUMENT_LOCATION_SECTIONS_UNIQUE_DOCUMENT_ID_LOCATION_SECTION_ID = 'document_location_sections_unique_document_id_location_section_id';
 
 // Unique document ID and topic ID for the document_topics table
 export const DOCUMENT_TOPICS_UNIQUE_DOCUMENT_ID_TOPIC_ID = 'document_topics_unique_document_id_topic_id';

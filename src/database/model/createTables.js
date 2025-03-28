@@ -2,8 +2,8 @@ import {
     BOOK_COPIES_UNIQUE_UUID,
     BOOKS_UNIQUE_ISBN,
     COUNTRIES_UNIQUE_NAME,
-    DOCUMENT_AUTHORS_UNIQUE_DOCUMENT_ID_AUTHOR_ID,
     DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID,
+    DOCUMENT_LOCATION_SECTIONS_UNIQUE_DOCUMENT_ID_LOCATION_SECTION_ID,
     DOCUMENT_TOPICS_UNIQUE_DOCUMENT_ID_TOPIC_ID,
     IDENTITY_DOCUMENTS_CREATED_BY_USER_ID_FK,
     IDENTITY_DOCUMENTS_DELETED_BY_USER_ID_FK,
@@ -322,6 +322,7 @@ CREATE TABLE IF NOT EXISTS documents (
     average_ratings FLOAT DEFAULT 0,
     number_ratings BIGINT DEFAULT 0,
     pages INTEGER,
+    author VARCHAR(255),
     file_relative_url VARCHAR(255),
     registered_by_user_id BIGINT NOT NULL,
     deleted_by_user_id BIGINT,
@@ -395,24 +396,6 @@ CREATE TABLE IF NOT EXISTS location_sections (
 CREATE UNIQUE INDEX IF NOT EXISTS ${LOCATION_SECTIONS_UNIQUE_LOCATION_ID_NAME} ON location_sections (location_id, name) WHERE deleted_at IS NULL;
 `;
 
-// Query to create the document_authors table
-export const CREATE_DOCUMENT_AUTHORS = `
-CREATE TABLE IF NOT EXISTS document_authors (
-    id BIGSERIAL PRIMARY KEY,
-    author_id BIGINT NOT NULL,
-    document_id BIGINT NOT NULL,
-    assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    assigned_by_user_id BIGINT NOT NULL,
-    removed_at TIMESTAMP,
-    removed_by_user_id BIGINT,
-    FOREIGN KEY (author_id) REFERENCES people(id),
-    FOREIGN KEY (document_id) REFERENCES documents(id),
-    FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
-    FOREIGN KEY (removed_by_user_id) REFERENCES users(id)      
-);
-CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_AUTHORS_UNIQUE_DOCUMENT_ID_AUTHOR_ID} ON document_authors (author_id, document_id);
-`;
-
 // Query to create the document_location_sections table
 export const CREATE_DOCUMENT_LOCATION_SECTIONS = `
 CREATE TABLE IF NOT EXISTS document_location_sections (
@@ -428,6 +411,7 @@ CREATE TABLE IF NOT EXISTS document_location_sections (
     FOREIGN KEY (assigned_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS ${DOCUMENT_LOCATION_SECTIONS_UNIQUE_DOCUMENT_ID_LOCATION_SECTION_ID} ON document_topics (document_id, location_section_id);
 `;
 
 // Query to create the document_reviews table

@@ -12,8 +12,8 @@ import {
     Language as DocumentLanguage
 } from "../router/Library/Document/Language.js";
 import {Country} from "../router/Other/Country.js";
-import {Author} from "../router/Library/Document/Author.js";
-import {LocationSection} from "../router/Library/LocationSection.js";
+import {LocationSection as DocumentLocationSection} from "../router/Library/Document/LocationSection.js";
+import {LocationSection as LibraryLocationSection} from "../router/Library/LocationSection.js";
 
 // Security module
 
@@ -58,23 +58,23 @@ AddMetadataProfiles(Location, "DeleteLocation", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Location, "GetAllLocations", ...ALL_PROFILES_NAME)
 
 // - Location section object
-AddMetadataProfiles(LocationSection,
+AddMetadataProfiles(LibraryLocationSection,
     "CreateLocationSection",
     PROFILES.SUPER_ADMIN
 )
-AddMetadataProfiles(LocationSection,
+AddMetadataProfiles(LibraryLocationSection,
     "UpdateLocationSection",
     PROFILES.SUPER_ADMIN
 )
-AddMetadataProfiles(LocationSection,
+AddMetadataProfiles(LibraryLocationSection,
     "DeleteLocationSection",
     PROFILES.SUPER_ADMIN
 )
-AddMetadataProfiles(LocationSection,
+AddMetadataProfiles(LibraryLocationSection,
     "GetAllLocationSections",
     ...ALL_PROFILES_NAME
 )
-AddMetadataProfiles(LocationSection,
+AddMetadataProfiles(LibraryLocationSection,
     "GetLocationSectionsByLocationID",
     ...ALL_PROFILES_NAME,
 )
@@ -136,19 +136,19 @@ AddMetadataProfiles(DocumentLanguage,
     ...ALL_PROFILES_NAME
 )
 
-// -- Author object
-AddMetadataProfiles(Author,
-    "AssignDocumentAuthor",
+// -- Location section object
+AddMetadataProfiles(DocumentLocationSection,
+    "AssignDocumentLocationSection",
     PROFILES.SUPER_ADMIN,
     PROFILES.LIBRARIAN
 )
-AddMetadataProfiles(Author,
-    "RemoveDocumentAuthor",
+AddMetadataProfiles(DocumentLocationSection,
+    "RemoveDocumentLocationSection",
     PROFILES.SUPER_ADMIN,
     PROFILES.LIBRARIAN
 )
-AddMetadataProfiles(Author,
-    "GetDocumentAuthorsByDocumentID",
+AddMetadataProfiles(DocumentLocationSection,
+    "GetDocumentLocationSectionsByDocumentID",
     ...ALL_PROFILES_NAME
 )
 

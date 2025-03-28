@@ -1279,10 +1279,10 @@ CREATE OR REPLACE PROCEDURE create_document(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_file_relative_url VARCHAR,
     IN in_document_topic_ids BIGINT[]
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[],
     OUT out_document_id BIGINT
@@ -1303,7 +1303,8 @@ BEGIN
         description,
         release_date,
         pages,
-        file_relative_url
+        file_relative_url,
+        author
     )
     VALUES (
         in_registered_by_user_id,
@@ -1311,7 +1312,8 @@ BEGIN
         in_document_description,
         in_document_release_date,
         in_document_pages,
-        in_document_file_relative_url
+        in_document_file_relative_url,
+        in_document_author
     )
     RETURNING id INTO out_document_id;
     
@@ -1325,12 +1327,6 @@ BEGIN
     FOREACH var_document_location_section_id IN ARRAY in_document_location_section_ids
     LOOP
         call assign_document_location_section(in_registered_by_user_id, out_document_id, var_document_location_section_id);
-    END LOOP;
-    
-    -- Insert into document_authors table
-    FOREACH var_document_author_id IN ARRAY in_document_author_ids
-    LOOP
-        call assign_document_author(in_registered_by_user_id, out_document_id, var_document_author_id);
     END LOOP;
     
     -- Insert into document_languages table
@@ -1356,9 +1352,9 @@ CREATE OR REPLACE PROCEDURE update_document(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_topic_ids BIGINT[],
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[]
 )
@@ -1369,9 +1365,9 @@ DECLARE
     var_current_document_description TEXT;
     var_current_document_release_date DATE;
     var_current_document_pages BIGINT;
+    var current_document_author VARCHAR;
     var_current_document_topic_ids BIGINT[];
     var_current_document_location_section_ids BIGINT[];
-    var_current_document_author_ids BIGINT[];
     var_current_document_language_ids BIGINT[];
     var_current_document_document_image_urls VARCHAR[];
     var_document_topic_id BIGINT;
@@ -1381,8 +1377,8 @@ DECLARE
     var_document_document_image_url VARCHAR;
 BEGIN
     -- Get the current document title, description, release date and pages
-    SELECT title, description, release_date, pages
-    INTO var_current_document_title, var_current_document_description, var_current_document_release_date, var_current_document_pages
+    SELECT title, description, release_date, pages, author
+    INTO var_current_document_title, var_current_document_description, var_current_document_release_date, var_current_document_pages, var_current_document_author
     FROM documents
     WHERE id = in_document_id
     AND deleted_at IS NULL;
@@ -1392,7 +1388,8 @@ BEGIN
     SET title = COALESCE(var_document_title, title),
         description = COALESCE(var_document_description, description),
         release_date = COALESCE(var_document_release_date, release_date),
-        pages = COALESCE(var_document_pages, pages)
+        pages = COALESCE(var_document_pages, pages),
+        author = COALESCE(var_document_author, author)
     WHERE id = in_document_id;
     
     -- Select the current document topic IDs
@@ -1453,22 +1450,6 @@ BEGIN
         AND revoked_at IS NULL
     )
     INTO var_current_document_author_ids;
-    
-    -- Insert into document_authors table
-    FOREACH var_document_author_id IN ARRAY in_document_author_ids
-    LOOP
-        IF var_document_author_id <> ALL(var_current_document_author_ids) THEN
-            call assign_document_author(in_document_id, var_document_author_id);
-        END IF;
-    END LOOP;
-    
-    -- Revoke the document authors
-    FOREACH var_document_author_id IN ARRAY var_current_document_author_ids
-    LOOP
-        IF var_document_author_id <> ALL(in_document_author_ids) THEN
-            call revoke_document_author(in_document_id, var_document_author_id);
-        END IF;
-    END LOOP;
     
     -- Select the current document language IDs
     SELECT ARRAY(
@@ -1888,52 +1869,6 @@ BEGIN
         deleted_by_user_id = in_deleted_by_user_id
     WHERE id = in_location_section_id
     AND deleted_at IS NULL;
-END;
-$$;
-`
-
-// Create a stored procedure that assign an author to a document
-export const CREATE_ASSIGN_DOCUMENT_AUTHOR_PROC = `
-CREATE OR REPLACE PROCEDURE assign_document_author(
-    IN in_assigned_by_user_id BIGINT,
-    IN in_document_id BIGINT,
-    IN in_author_id BIGINT
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    -- Insert into document_authors table
-    INSERT INTO document_authors (
-        assigned_by_user_id,
-        document_id,
-        author_id
-    )
-    VALUES (
-        in_assigned_by_user_id,
-        in_document_id,
-        in_author_id
-    );
-END;
-$$;
-`
-
-// Create a stored procedure that remove an author from a document
-export const CREATE_REMOVE_DOCUMENT_AUTHOR_PROC = `
-CREATE OR REPLACE PROCEDURE remove_document_author(
-    IN in_removed_by_user_id BIGINT,
-    IN in_document_id BIGINT,
-    IN in_author_id BIGINT
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    -- Update the document_authors table
-    UPDATE document_authors
-    SET removed_at = NOW(),
-        removed_by_user_id = in_removed_by_user_id
-    WHERE document_id = in_document_id
-    AND author_id = in_author_id
-    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -2476,10 +2411,10 @@ CREATE OR REPLACE PROCEDURE create_book(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_file_relative_url VARCHAR,
     IN in_document_topic_ids BIGINT[],
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[],
     IN in_book_isbn VARCHAR,
@@ -2491,7 +2426,7 @@ DECLARE
     var_document_id BIGINT;
 BEGIN
     -- Insert into documents table
-    call create_document(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_file_relative_url, var_document_id, in_document_topic_ids, in_document_location_section_ids, in_document_author_ids, in_document_language_ids, in_document_document_image_urls);
+    call create_document(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_file_relative_url, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_urls);
     
     -- Insert into books table
     INSERT INTO books (
@@ -2516,9 +2451,9 @@ CREATE OR REPLACE PROCEDURE update_book(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_topic_ids BIGINT[],
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[],
     IN in_book_isbn VARCHAR,
@@ -2535,7 +2470,7 @@ BEGIN
     call get_document_id_by_book_id(in_book_id, var_document_id);
     
     -- Update the documents table
-    call update_document(var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_topic_ids, in_document_location_section_ids, in_document_author_ids, in_document_language_ids, in_document_document_image_urls);
+    call update_document(var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_urls);
     
     -- Select the current book ISBN and publisher ID
     SELECT books.isbn, books.publisher_id
@@ -2562,10 +2497,10 @@ CREATE OR REPLACE PROCEDURE create_work(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_file_relative_url VARCHAR,
     IN in_document_topic_ids BIGINT[],
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[],
     OUT out_work_id BIGINT
@@ -2576,7 +2511,7 @@ DECLARE
     var_document_id BIGINT;
 BEGIN
     -- Insert into documents table
-    call create_document(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_file_relative_url, var_document_id, in_document_topic_ids, in_document_location_section_ids, in_document_author_ids, in_document_language_ids, in_document_document_image_urls);
+    call create_document(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_file_relative_url, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_urls);
     
     -- Insert into works table
     INSERT INTO works (
@@ -2636,9 +2571,9 @@ CREATE OR REPLACE PROCEDURE update_work(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_topic_ids BIGINT[],
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[]
 )
@@ -2651,7 +2586,7 @@ BEGIN
     call get_document_id_by_work_id(in_work_id, var_document_id);
     
     -- Update the documents table
-    call update_document(var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_topic_ids, in_document_location_section_ids, in_document_author_ids, in_document_language_ids, in_document_document_image_urls);
+    call update_document(var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_urls);
 END;
 $$;
 `
@@ -2664,21 +2599,20 @@ CREATE OR REPLACE PROCEDURE create_article(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_file_relative_url VARCHAR,
     IN in_document_topic_ids BIGINT[],
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[]
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    var_document_id BIGINT;
     var_work_id BIGINT;
 BEGIN
     -- Create the work
-    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_file_relative_url, in_document_topic_ids, in_document_location_section_ids, in_document_author_ids, in_document_language_ids, in_document_document_image_urls, var_work_id);
+    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_file_relative_url, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_urls, var_work_id);
     
     -- Insert into articles table
     INSERT INTO articles (
@@ -2699,9 +2633,9 @@ CREATE OR REPLACE PROCEDURE update_article(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_topic_ids BIGINT[],
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[]
 )
@@ -2714,7 +2648,7 @@ BEGIN
     call get_work_by_document_id(in_article_id, var_work_id);
     
     -- Update the work
-    call update_work(var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_topic_ids, in_document_location_section_ids, in_document_author_ids, in_document_language_ids, in_document_document_image_urls);
+    call update_work(var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_urls);
 END;
 $$;
 `
@@ -2797,10 +2731,10 @@ CREATE OR REPLACE PROCEDURE create_magazine_issue(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_file_relative_url VARCHAR,
     IN in_document_topic_ids BIGINT[],
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[],
     IN in_magazine_id BIGINT,
@@ -2810,7 +2744,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Create the work
-    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_file_relative_url, in_document_topic_ids, in_document_location_section_ids, in_document_author_ids, in_document_language_ids, in_document_document_image_urls, var_work_id);
+    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_file_relative_url, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_urls, var_work_id);
     
     -- Insert into magazine_issues table
     INSERT INTO magazine_issues (
@@ -2835,9 +2769,9 @@ CREATE OR REPLACE PROCEDURE update_magazine_issue(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_topic_ids BIGINT[],
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[],
     IN in_magazine_issue_number BIGINT
@@ -2852,7 +2786,7 @@ BEGIN
     call get_work_by_document_id(in_magazine_issue_id, var_work_id);
     
     -- Update the work
-    call update_work(var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_topic_ids, in_document_location_section_ids, in_document_author_ids, in_document_language_ids, in_document_document_image_urls);
+    call update_work(var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_urls);
     
     -- Select the current magazine issue number
     SELECT issue_number
@@ -2879,10 +2813,10 @@ CREATE OR REPLACE PROCEDURE create_thesis(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_file_relative_url VARCHAR,
     IN in_document_topic_ids BIGINT[],
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[]
 )
@@ -2893,7 +2827,7 @@ DECLARE
     var_work_id BIGINT;
 BEGIN
     -- Create the work
-    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_file_relative_url, in_document_topic_ids, in_document_location_section_ids, in_document_author_ids, in_document_language_ids, in_document_document_image_urls, var_work_id);
+    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_file_relative_url, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_urls, var_work_id);
     
     -- Insert into theses table
     INSERT INTO theses (
@@ -2914,9 +2848,9 @@ CREATE OR REPLACE PROCEDURE update_thesis(
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
     IN in_document_pages BIGINT,
+    IN in_document_author VARCHAR,
     IN in_document_topic_ids BIGINT[],
     IN in_document_location_section_ids BIGINT[],
-    IN in_document_author_ids BIGINT[],
     IN in_document_language_ids BIGINT[],
     IN in_document_document_image_urls VARCHAR[]
 )
@@ -2929,7 +2863,7 @@ BEGIN
     call get_work_by_document_id(in_thesis_id, var_work_id);
     
     -- Update the work
-    call update_work(var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_topic_ids, in_document_location_section_ids, in_document_author_ids, in_document_language_ids, in_document_document_image_urls);
+    call update_work(var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_urls);
 END;
 $$;
 `

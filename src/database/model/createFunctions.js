@@ -594,29 +594,6 @@ END;
 $$ LANGUAGE plpgsql;
 `
 
-// Query to create a function that gets all the document authors by document ID
-export const CREATE_GET_DOCUMENT_AUTHORS_BY_DOCUMENT_ID_FN = `
-CREATE OR REPLACE FUNCTION get_document_authors_by_document_id(
-    in_document_id BIGINT
-) RETURNS
-TABLE (
-    id BIGINT,
-    first_name VARCHAR,
-    last_name VARCHAR
-) AS $$
-BEGIN
-    -- Query to select the document authors by document ID
-    RETURN QUERY
-    SELECT people.id, people.first_name, people.last_name
-    FROM people
-    INNER JOIN document_authors ON people.id = document_authors.author_id
-    WHERE document_authors.document_id = in_document_id
-    AND people.deleted_at IS NULL
-    AND document_authors.removed_at IS NULL;
-END;
-$$ LANGUAGE plpgsql;
-`
-
 // Query to create a function that gets all the document languages by document ID
 export const CREATE_GET_DOCUMENT_LANGUAGES_BY_DOCUMENT_ID_FN = `
 CREATE OR REPLACE FUNCTION get_document_languages_by_document_id(
@@ -635,6 +612,28 @@ BEGIN
     WHERE document_languages.document_id = in_document_id
     AND languages.deleted_at IS NULL
     AND document_languages.removed_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that gets all the document location sections by document ID
+export const CREATE_GET_DOCUMENT_LOCATION_SECTIONS_BY_DOCUMENT_ID_FN = `
+CREATE OR REPLACE FUNCTION get_document_location_sections_by_document_id(
+    in_document_id BIGINT
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR
+) AS $$
+BEGIN
+    -- Query to select the document location sections by document ID
+    RETURN QUERY
+    SELECT location_sections.id, location_sections.name
+    FROM location_sections
+    INNER JOIN document_location_sections ON location_sections.id = document_location_sections.location_section_id
+    WHERE document_location_sections.document_id = in_document_id
+    AND location_sections.deleted_at IS NULL
+    AND document_location_sections.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
