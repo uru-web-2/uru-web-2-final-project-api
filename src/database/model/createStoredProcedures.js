@@ -857,7 +857,7 @@ export const CREATE_CREATE_PROFILE_PROC = `
 CREATE OR REPLACE PROCEDURE create_profile(
     IN in_created_by_user_id BIGINT,
     IN in_profile_name VARCHAR,
-    IN in_profile_description VARCHAR,
+    IN in_profile_description TEXT,
     OUT out_profile_id BIGINT
 )
 LANGUAGE plpgsql
@@ -885,14 +885,14 @@ CREATE OR REPLACE PROCEDURE update_profile(
     IN in_updated_by_user_id BIGINT,
     IN in_profile_id BIGINT,
     IN in_profile_name VARCHAR,
-    IN in_profile_description VARCHAR,
+    IN in_profile_description TEXT,
     OUT out_is_profile_id_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_current_profile_name VARCHAR;
-    var_current_profile_description VARCHAR;
+    var_current_profile_description TEXT;
 BEGIN
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);

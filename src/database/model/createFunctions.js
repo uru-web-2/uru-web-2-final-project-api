@@ -272,7 +272,7 @@ CREATE OR REPLACE FUNCTION search_profile_by_name(
 TABLE (
     id BIGINT,
     name VARCHAR,
-    description VARCHAR
+    description TEXT
 ) AS $$
 BEGIN
     -- Query to select the profile ID by name
@@ -291,7 +291,7 @@ CREATE OR REPLACE FUNCTION get_all_profiles(
 TABLE (
     id BIGINT,
     name VARCHAR,
-    description VARCHAR
+    description TEXT
 ) AS $$
 BEGIN
     -- Query to select all profiles
@@ -356,7 +356,7 @@ CREATE OR REPLACE FUNCTION get_all_topics(
 TABLE (
     id BIGINT,
     name VARCHAR,
-    description VARCHAR
+    description TEXT
 ) AS $$
 BEGIN
     -- Query to select all topics
@@ -393,7 +393,7 @@ CREATE OR REPLACE FUNCTION get_all_publishers(
 TABLE (
     id BIGINT,
     name VARCHAR,
-    description VARCHAR
+    description TEXT
 ) AS $$
 BEGIN
     -- Query to select all publishers
@@ -413,7 +413,7 @@ CREATE OR REPLACE FUNCTION search_publisher_by_name(
 TABLE (
     id BIGINT,
     name VARCHAR,
-    description VARCHAR
+    description TEXT
 ) AS $$
 BEGIN
     -- Query to select the publisher ID by name
@@ -433,7 +433,7 @@ CREATE OR REPLACE FUNCTION search_topic_by_name(
 TABLE (
     id BIGINT,
     name VARCHAR,
-    description VARCHAR
+    description TEXT
 ) AS $$
 BEGIN
     -- Query to select the topic ID by name
