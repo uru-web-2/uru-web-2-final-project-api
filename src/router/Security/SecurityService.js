@@ -169,6 +169,9 @@ export class SecurityService {
             body.assign_method_ids ?? [],
             body.revoke_method_ids ?? [],
         )
+
+        // Update the permissions to the security component
+        Security.updatePermissions(body.profile_id, body.assign_method_ids, body.revoke_method_ids)
     }
 }
 

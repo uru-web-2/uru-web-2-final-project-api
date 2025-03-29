@@ -162,6 +162,21 @@ export class Security {
         this.#permissions.get(methodID).filter(permissionProfileID => permissionProfileID !== profileID)
     }
 
+    // Update permissions
+    updatePermissions(profileID, assignMethodIDs, revokeMethodIDs) {
+        // Check if the profile exists
+        if (!this.hasProfile(profileID))
+            return
+
+        // Assign permissions
+        for (const methodID of assignMethodIDs)
+            this.addPermission(profileID, methodID)
+
+        // Revoke permissions
+        for (const methodID of revokeMethodIDs)
+            this.removePermission(profileID, methodID)
+    }
+
     // Add a profile
     addProfile(profileID, profileName) {
         // Check if the profile exists
