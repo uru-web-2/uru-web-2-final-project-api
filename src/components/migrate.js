@@ -207,7 +207,7 @@ import {
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {
     METHODS_UNIQUE_OBJECT_ID_NAME,
-    MODULES_UNIQUE_NAME,
+    MODULES_UNIQUE_NAME, MODULES_UNIQUE_PARENT_MODULE_ID_NAME,
     OBJECTS_UNIQUE_MODULE_ID_NAME
 } from "../database/model/constraints.js";
 import {loadNode} from "@ralvarezdev/js-mode";
@@ -236,7 +236,7 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
         const constraintName = PostgresIsUniqueConstraintError(error)
 
         // Check if the constraint is the unique name constraint
-        if (constraintName !== MODULES_UNIQUE_NAME)
+        if (constraintName !== MODULES_UNIQUE_NAME && constraintName !== MODULES_UNIQUE_PARENT_MODULE_ID_NAME)
             throw error
 
         // Get the module

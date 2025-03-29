@@ -5,7 +5,7 @@ export const INSERT_PROFILES = Object.values(PROFILES).map(profile => `
 INSERT INTO profiles (name, description)
 VALUES
 ('${profile}', '${profile}');
-`).join(",\n")
+`).join("\n")
 
 // Query with the countries inserts
 export const INSERT_COUNTRIES = `
