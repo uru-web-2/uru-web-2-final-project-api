@@ -1386,7 +1386,7 @@ DECLARE
     var_document_language_id BIGINT;
     var_document_document_image_uuid VARCHAR;
     var_document_document_image_extension VARCHAR;
-    var_current_document_document_image_uuids_length INT;
+    var_document_document_image_uuids_length INT;
 BEGIN
     -- Get the current document title, description, release date and pages
     SELECT title, description, release_date, pages, author
