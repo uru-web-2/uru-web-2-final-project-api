@@ -91,6 +91,9 @@ export const LOCATION_SECTIONS_UNIQUE_LOCATION_ID_NAME = 'location_sections_uniq
 // Unique UUID for the document_images table
 export const DOCUMENT_IMAGES_UNIQUE_UUID = 'document_images_unique_uuid';
 
+// Unique magazine ID and issue number for the magazine_issues table
+export const MAGAZINE_ISSUES_UNIQUE_MAGAZINE_ID_ISSUE_NUMBER = 'magazine_issues_unique_magazine_id_issue_number';
+
 // Created by user ID foreign key constraint for the identity_documents table
 export const IDENTITY_DOCUMENTS_CREATED_BY_USER_ID_FK = 'identity_documents_created_by_user_id_fk';
 

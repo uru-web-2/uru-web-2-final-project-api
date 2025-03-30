@@ -15,7 +15,12 @@ import {Country} from "../router/Other/Country.js";
 import {LocationSection as DocumentLocationSection} from "../router/Library/Document/LocationSection.js";
 import {LocationSection as LibraryLocationSection} from "../router/Library/LocationSection.js";
 import {Book} from "../router/Library/Document/Book/Book.js";
-import {Magazine} from "../router/Library/Document/Magazine.js";
+import {Magazine} from "../router/Library/Document/Magazine/Magazine.js";
+import {
+    MagazineIssue
+} from "../router/Library/Document/Magazine/MagazineIssue.js";
+import {Article} from "../router/Library/Document/Article/Article.js";
+import {Thesis} from "../router/Library/Document/Thesis/Thesis.js";
 
 // Security module
 
@@ -121,13 +126,6 @@ AddMetadataProfiles(DocumentTopic,
     ...ALL_PROFILES_NAME
 )
 
-// -- Magazine object
-AddMetadataProfiles(Magazine, "CreateMagazine", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
-AddMetadataProfiles(Magazine, "UpdateMagazine", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
-AddMetadataProfiles(Magazine, "RemoveMagazine", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
-AddMetadataProfiles(Magazine, "GetAllMagazines", ...ALL_PROFILES_NAME)
-AddMetadataProfiles(Magazine, "SearchMagazineByName", ...ALL_PROFILES_NAME)
-
 // -- Language object
 AddMetadataProfiles(DocumentLanguage,
     "CreateDocumentLanguage",
@@ -161,9 +159,34 @@ AddMetadataProfiles(DocumentLocationSection,
     ...ALL_PROFILES_NAME
 )
 
+// -- Article module
+
+// --- Article object
+
+AddMetadataProfiles(Article, "CreateArticle", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+
 // -- Book module
 
+// --- Book object
+
 AddMetadataProfiles(Book, "CreateBook", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+
+// -- Magazine module
+
+// --- Magazine object
+
+AddMetadataProfiles(Magazine, "CreateMagazine", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(Magazine, "UpdateMagazine", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(Magazine, "RemoveMagazine", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(Magazine, "GetAllMagazines", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(Magazine, "SearchMagazineByName", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(MagazineIssue, "CreateMagazineIssue", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+
+// -- Thesis module
+
+// --- Thesis object
+
+AddMetadataProfiles(Thesis, "CreateThesis", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
 
 // Other module
 

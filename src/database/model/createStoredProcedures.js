@@ -2790,6 +2790,7 @@ CREATE OR REPLACE PROCEDURE create_magazine_issue(
     IN in_document_document_image_extensions VARCHAR[],
     IN in_magazine_id BIGINT,
     IN in_magazine_issue_number BIGINT,
+    OUT out_magazine_id_is_valid BOOLEAN,
     OUT out_magazine_issue_id BIGINT
 )
 LANGUAGE plpgsql
@@ -2797,6 +2798,17 @@ AS $$
 BEGIN
     -- Create the work
     call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids, in_document_document_image_extensions, var_work_id);
+    
+    -- Check if the magazine ID is valid
+    SELECT TRUE
+    INTO out_magazine_id_is_valid
+    FROM magazines
+    WHERE id = in_magazine_id
+    AND removed_at IS NULL;
+    
+    IF out_magazine_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
     
     -- Insert into magazine_issues table
     INSERT INTO magazine_issues (

@@ -1,11 +1,11 @@
-import DatabaseManager from "../../../components/database.js";
+import DatabaseManager from "../../../../components/database.js";
 import {
     CREATE_MAGAZINE_PROC, REMOVE_MAGAZINE_PROC, UPDATE_MAGAZINE_PROC
-} from "../../../database/model/storedProcedures.js";
+} from "../../../../database/model/storedProcedures.js";
 import {
     GET_ALL_MAGAZINES_FN,
     SEARCH_MAGAZINE_BY_NAME_FN
-} from "../../../database/model/functions.js";
+} from "../../../../database/model/functions.js";
 
 // Service for the magazine object
 export class MagazineService {    

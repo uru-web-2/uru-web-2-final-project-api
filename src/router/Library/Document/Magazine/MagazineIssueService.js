@@ -3,20 +3,20 @@ import {FieldFailError} from "@ralvarezdev/js-express";
 import {CREATE_BOOK_PROC} from "../../../../database/model/storedProcedures.js";
 import {
     PDF_FILE_EXTENSION,
-    uploadBookFile, uploadImage
+    uploadImage, uploadMagazineIssueFile
 } from "../../../../components/files.js";
 import {
     getImagesFromForm, getPDFFileBufferFromForm,
 } from "../../../../components/formidable.js";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {
-    BOOKS_UNIQUE_ISBN,
+    MAGAZINE_ISSUES_UNIQUE_MAGAZINE_ID_ISSUE_NUMBER,
 } from "../../../../database/model/constraints.js";
 
-// Service for the book object
-export class BookService {
-    // Creates a book
-    async CreateBook(req, body) {
+// Service for the magazine issue object
+export class MagazineIssueService {
+    // Creates a magazine issue
+    async CreateMagazineIssue(req, body) {
         // Upload images from form
         const {imagesExtensionsByUUID, imagesBuffersByUUID}= await getImagesFromForm(req)
 
@@ -24,7 +24,7 @@ export class BookService {
         const pdfBuffer = getPDFFileBufferFromForm(req)
 
         try {
-            // Create the book
+            // Create the magazine issue
             const queryRes=await DatabaseManager.rawQuery(
                 CREATE_BOOK_PROC,
                 req.session.userID,
@@ -38,34 +38,39 @@ export class BookService {
                 body.document_language_ids,
                 Object.keys(imagesExtensionsByUUID),
                 Object.values(imagesExtensionsByUUID),
-                body.book_isbn,
-                body.book_publisher_id,
+                body.magazine_id,
+                body.magazine_issue_number,
+                null,
                 null
             );
 
-            // Get the book ID
-            const bookID = queryRes.rows?.[0]?.out_book_id
+            // Check if the magazine ID is valid
+            if (!queryRes.rows?.[0]?.out_magazine_id_is_valid)
+                throw new FieldFailError(400, 'magazine_id', 'Magazine ID is invalid')
+
+            // Get the magazine issue ID
+            const magazineIssueID = queryRes.rows?.[0]?.out_magazine_issue_id
 
             // Save the PDF file
-            await uploadBookFile(bookID, PDF_FILE_EXTENSION,pdfBuffer)
+            await uploadMagazineIssueFile(magazineIssueID, PDF_FILE_EXTENSION,pdfBuffer)
 
             // Save the images
             for (const imageUUID in imagesBuffersByUUID)
                 await uploadImage(imageUUID, imagesExtensionsByUUID[imageUUID], imagesBuffersByUUID[imageUUID])
 
-            return bookID
+            return magazineIssueID
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
 
-            // Check if the constraint is the unique ISBN constraint
-            if (constraintName === BOOKS_UNIQUE_ISBN)
-                throw new FieldFailError(400, 'book_isbn', 'ISBN is already taken')
+            // Check if the constraint is the unique magazine ID and issue number constraint
+            if (constraintName === MAGAZINE_ISSUES_UNIQUE_MAGAZINE_ID_ISSUE_NUMBER)
+                throw new FieldFailError(400, 'magazine_issue_number', 'Issue number is already taken')
 
             throw error
         }
     }
 }
 
-// Singleton instance of the book service
-export default new BookService();
+// Singleton instance of the magazine issue service
+export default new MagazineIssueService();

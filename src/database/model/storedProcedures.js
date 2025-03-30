@@ -245,7 +245,7 @@ export const UPDATE_BOOK_COPY_PROC = "CALL update_book_copy($1, $2)"
 export const REMOVE_BOOK_COPY_PROC = "CALL remove_book_copy($1, $2)"
 
 // Query to create a new magazine issue
-export const CREATE_MAGAZINE_ISSUE_PROC = "CALL create_magazine_issue($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
+export const CREATE_MAGAZINE_ISSUE_PROC = "CALL create_magazine_issue($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"
 
 // Query to update a magazine issue
 export const UPDATE_MAGAZINE_ISSUE_PROC = "CALL update_magazine_issue($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"

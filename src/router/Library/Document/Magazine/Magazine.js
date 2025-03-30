@@ -1,7 +1,7 @@
 import {HandleValidation, SuccessJSendBody} from "@ralvarezdev/js-express";
 import Validator from "./MagazineValidator.js";
 import Service from "./MagazineService.js";
-import Logger from "../../../components/logger.js";
+import Logger from "../../../../components/logger.js";
 
 // Magazine object for the document module
 export class Magazine {
