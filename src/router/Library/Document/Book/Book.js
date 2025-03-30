@@ -5,7 +5,7 @@ import Logger from "../../../../components/logger.js";
 
 // Book object for the book module
 export class Book {
-    // Create a book
+    // Creates a book
     async CreateBook(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.CreateBook);

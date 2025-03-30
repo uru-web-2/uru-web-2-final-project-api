@@ -1,7 +1,7 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
     CREATE_LOCATION_SECTION,
-    DELETE_LOCATION_SECTION,
+    REMOVE_LOCATION_SECTION,
     GET_ALL_LOCATION_SECTIONS,
     GET_LOCATION_SECTIONS_BY_LOCATION_ID,
     UPDATE_LOCATION_SECTION
@@ -19,9 +19,9 @@ export class LocationSectionValidator {
         return Validate(req, UPDATE_LOCATION_SECTION);
     }
 
-    // Validate delete location section
-    DeleteLocationSection(req) {
-        return Validate(req, DELETE_LOCATION_SECTION);
+    // Validate remove location section
+    RemoveLocationSection(req) {
+        return Validate(req, REMOVE_LOCATION_SECTION);
     }
 
     // Validate get all location sections

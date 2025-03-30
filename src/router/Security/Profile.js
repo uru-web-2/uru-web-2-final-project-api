@@ -5,7 +5,7 @@ import Service from "./ProfileService.js";
 
 // Profile object for the security module
 export class Profile {
-    // Create a profile
+    // Creates a profile
     async CreateProfile(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.CreateProfile);
@@ -20,7 +20,7 @@ export class Profile {
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Update a profile
+    // Updates a profile
     async UpdateProfile(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.UpdateProfile);
@@ -35,22 +35,22 @@ export class Profile {
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Delete a profile
-    async DeleteProfile(req, res) {
+    // Remove a profile
+    async RemoveProfile(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.DeleteProfile);
+        const body = HandleValidation(req, res, Validator.RemoveProfile);
 
-        // Delete the profile
-        await Service.DeleteProfile(req, body)
+        // Remove the profile
+        await Service.RemoveProfile(req, body)
 
-        // Log the deletion
-        Logger.info(`Deleted profile ${body.id} by admin ${req.session.userID}`)
+        // Log the removal
+        Logger.info(`Removed profile ${body.id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Search a profile by name
+    // Searches a profile by name
     async SearchProfileByName(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.SearchProfileByName);
@@ -58,20 +58,20 @@ export class Profile {
         // Search the profile
         const profiles = await Service.SearchProfileByName(req, body)
 
-        // Log the request
-        Logger.info(`Searching profile by name ${body.name} by admin ${req.session.userID}`)
+        // Log the search
+        Logger.info(`Searched profile by name ${body.name} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody({profiles}))
     }
 
-    // Get all profiles
+    // Gets all profiles
     async GetAllProfiles(req, res) {
         // Get all the profiles
         const profiles = await Service.GetAllProfiles(req);
 
-        // Log the creation
-        Logger.info(`Fetching all profiles by admin ${req.session.userID}`)
+        // Log the retrieval
+        Logger.info(`Retrieved all profiles by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody(profiles))

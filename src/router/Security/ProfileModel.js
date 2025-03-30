@@ -13,8 +13,8 @@ export const UPDATE_PROFILE = Joi.object({
     description: Joi.string().min(1),
 })
 
-// Delete profile model
-export const DELETE_PROFILE = Joi.object({
+// Remove profile model
+export const REMOVE_PROFILE = Joi.object({
     id: Joi.number().required().min(1),
 })
 

@@ -6,13 +6,13 @@ import {
 
 // Service for the country object
 export class CountryService {
-    // Get all countries
+    // Gets all countries
     async GetAllCountries() {
         const queryRes = await DatabaseManager.rawQuery(GET_ALL_COUNTRIES_FN);
         return queryRes.rows;
     }
 
-    // Search country by name
+    // Searches country by name
     async SearchCountryByName(name) {
         const queryRes = await DatabaseManager.rawQuery(
             SEARCH_COUNTRY_BY_NAME_FN,

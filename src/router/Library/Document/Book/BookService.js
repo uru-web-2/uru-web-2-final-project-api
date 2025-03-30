@@ -5,7 +5,7 @@ import {getBookRelativePath} from "../../../../components/files.js";
 
 // Service for the book object
 export class BookService {
-    // Create a book
+    // Creates a book
     async CreateBook(req, body) {
         // Get file relative URL
         getBookRelativePath()

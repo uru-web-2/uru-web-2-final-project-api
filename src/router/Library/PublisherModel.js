@@ -13,8 +13,8 @@ export const UPDATE_PUBLISHER = Joi.object({
     description: Joi.string().required().min(1)
 })
 
-// Delete publisher model
-export const DELETE_PUBLISHER = Joi.object({
+// Remove publisher model
+export const REMOVE_PUBLISHER = Joi.object({
     id: Joi.number().required().min(1)
 })
 

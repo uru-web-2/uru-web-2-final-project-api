@@ -13,8 +13,8 @@ export const UPDATE_TOPIC = Joi.object({
     description: Joi.string().min(1)
 })
 
-// Delete topic model
-export const DELETE_TOPIC = Joi.object({
+// Remove topic model
+export const REMOVE_TOPIC = Joi.object({
     id: Joi.number().required().min(1)
 })
 

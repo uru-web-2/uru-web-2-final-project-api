@@ -5,19 +5,19 @@ import Logger from "../../../components/logger.js";
 
 // Language object for the document module
 export class Language {
-    // Assign document language
-    async AssignDocumentLanguage(req, res) {
+    // Creates a document language
+    async CreateDocumentLanguage(req, res) {
         // Validate the request
         const body = HandleValidation(req,
             res,
-            Validator.AssignDocumentLanguage
+            Validator.CreateDocumentLanguage
         );
 
-        // Assign the document language
-        await Service.AssignDocumentLanguage(req, body)
+        // Create the document language
+        await Service.CreateDocumentLanguage(req, body)
 
-        // Log the assignment
-        Logger.info(`Assigned language ${body.language_id} to document ${body.document_id} by admin ${req.session.userID}`)
+        // Log the creation
+        Logger.info(`Created language ${body.language_id} to document ${body.document_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
@@ -31,17 +31,17 @@ export class Language {
             Validator.RemoveDocumentLanguage
         );
 
-        // Revoke the document language
+        // Remove the document language
         await Service.RemoveDocumentLanguage(req, body)
 
-        // Log the revocation
+        // Log the removal
         Logger.info(`Removed language ${body.language_id} from document ${body.document_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Get document languages by document ID
+    // Gets document languages by document ID
     async GetDocumentLanguagesByDocumentID(req, res) {
         // Validate the request
         const body = HandleValidation(req,

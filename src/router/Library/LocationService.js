@@ -1,6 +1,6 @@
 import {
     CREATE_LOCATION_PROC,
-    DELETE_LOCATION_PROC,
+    REMOVE_LOCATION_PROC,
     UPDATE_LOCATION_PROC
 } from "../../database/model/storedProcedures.js";
 import DatabaseManager from "../../components/database.js";
@@ -66,10 +66,10 @@ export class LocationService {
         }
     }
 
-    // Deletes a location
-    async DeleteLocation(req, body) {
+    // Removes a location
+    async RemoveLocation(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
-            DELETE_LOCATION_PROC,
+            REMOVE_LOCATION_PROC,
             req.session.userID,
             body.id,
             null,
@@ -81,7 +81,7 @@ export class LocationService {
             throw new FieldFailError(400, 'id', 'Location ID is invalid');
     }
 
-    // Get all locations
+    // Gets all locations
     async GetAllLocations(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_ALL_LOCATIONS_FN,

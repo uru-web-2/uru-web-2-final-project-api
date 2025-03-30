@@ -25,7 +25,7 @@ import {EMAIL_VERIFICATION_TOKEN_DURATION} from "../../components/constants.js";
 
 // Service for the user object
 export class UserService {
-    // Search for a user by username
+    // Searches for a user by username
     async SearchUserByUsername(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             SEARCH_USER_BY_USERNAME_FN,
@@ -35,7 +35,7 @@ export class UserService {
         return queryRes.rows;
     }
 
-    // Create a user
+    // Creates a user
     async CreateUser(req, body) {
         try {
             // Generate a random token
@@ -103,7 +103,7 @@ export class UserService {
         }
     }
 
-    // Get user details by user ID
+    // Gets user details by user ID
     async GetUserDetailsByUserID(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_USER_DETAILS_BY_USER_ID_PROC,
@@ -144,7 +144,7 @@ export class UserService {
         }
     }
 
-    // Get all users
+    // Gets all users
     async GetAllUsers(req, body) {
         const usersRes = await DatabaseManager.rawQuery(
             GET_ALL_USERS_FN,
@@ -162,7 +162,7 @@ export class UserService {
         }
     }
 
-    // Update a user by admin
+    // Updates a user by admin
     async UpdateUserByAdmin(req, body) {
         // Update the user
         const queryRes = await DatabaseManager.rawQuery(

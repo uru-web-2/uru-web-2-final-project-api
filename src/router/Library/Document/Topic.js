@@ -5,37 +5,37 @@ import Logger from "../../../components/logger.js";
 
 // Topic object for the document module
 export class Topic {
-    // Assign document topic
-    async AssignDocumentTopic(req, res) {
+    // Creates a document topic
+    async CreateDocumentTopic(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.AssignDocumentTopic);
+        const body = HandleValidation(req, res, Validator.CreateDocumentTopic);
 
-        // Assign the document topic
-        await Service.AssignDocumentTopic(req, body)
+        // Create the document topic
+        await Service.CreateDocumentTopic(req, body)
 
-        // Log the assignment
+        // Log the creation
         Logger.info(`Assigned topic ${body.topic_id} to document ${body.document_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Remove document topic
+    // Removes a document topic
     async RemoveDocumentTopic(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.RemoveDocumentTopic);
 
-        // Revoke the document topic
+        // Remove the document topic
         await Service.RemoveDocumentTopic(req, body)
 
-        // Log the revocation
+        // Log the removal
         Logger.info(`Removed topic ${body.topic_id} from document ${body.document_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Get document topics by document ID
+    // Gets a document topics by document ID
     async GetDocumentTopicsByDocumentID(req, res) {
         // Validate the request
         const body = HandleValidation(req,

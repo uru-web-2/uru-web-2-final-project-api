@@ -21,13 +21,13 @@ import {Book} from "../router/Library/Document/Book/Book.js";
 // - Profile object
 AddMetadataProfiles(Profile, "CreateProfile", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Profile, "UpdateProfile", PROFILES.SUPER_ADMIN)
-AddMetadataProfiles(Profile, "DeleteProfile", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Profile, "RemoveProfile", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Profile, "SearchProfileByName", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Profile, "GetAllProfiles", PROFILES.SUPER_ADMIN)
 
 // - Security object
-AddMetadataProfiles(Security, "AssignProfilePermission", PROFILES.SUPER_ADMIN)
-AddMetadataProfiles(Security, "RevokeProfilePermission", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Security, "CreateProfilePermission", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Security, "RemoveProfilePermission", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security,
     "GetProfilePermissionsMethods",
     PROFILES.SUPER_ADMIN
@@ -35,8 +35,8 @@ AddMetadataProfiles(Security,
 AddMetadataProfiles(Security, "GetModules", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security, "GetObjectsByModuleID", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security, "GetMethodsByObjectID", PROFILES.SUPER_ADMIN)
-AddMetadataProfiles(Security, "AssignUserProfile", PROFILES.SUPER_ADMIN)
-AddMetadataProfiles(Security, "RevokeUserProfile", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Security, "CreateUserProfile", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Security, "RemoveUserProfile", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security, "SetProfilePermissions", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Security,
     "GetMethodsByProfileIDObjectID",
@@ -55,7 +55,7 @@ AddMetadataProfiles(User, "UpdateUserByAdmin", PROFILES.SUPER_ADMIN)
 // - Location object
 AddMetadataProfiles(Location, "CreateLocation", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Location, "UpdateLocation", PROFILES.SUPER_ADMIN)
-AddMetadataProfiles(Location, "DeleteLocation", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Location, "RemoveLocation", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Location, "GetAllLocations", ...ALL_PROFILES_NAME)
 
 // - Location section object
@@ -68,7 +68,7 @@ AddMetadataProfiles(LibraryLocationSection,
     PROFILES.SUPER_ADMIN
 )
 AddMetadataProfiles(LibraryLocationSection,
-    "DeleteLocationSection",
+    "RemoveLocationSection",
     PROFILES.SUPER_ADMIN
 )
 AddMetadataProfiles(LibraryLocationSection,
@@ -83,7 +83,7 @@ AddMetadataProfiles(LibraryLocationSection,
 // - Publisher object
 AddMetadataProfiles(Publisher, "CreatePublisher", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Publisher, "UpdatePublisher", PROFILES.SUPER_ADMIN)
-AddMetadataProfiles(Publisher, "DeletePublisher", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(Publisher, "RemovePublisher", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(Publisher, "GetAllPublishers", ...ALL_PROFILES_NAME)
 AddMetadataProfiles(Publisher, "SearchPublisherByName", ...ALL_PROFILES_NAME)
 
@@ -98,7 +98,7 @@ AddMetadataProfiles(LibraryTopic,
     PROFILES.SUPER_ADMIN,
     PROFILES.LIBRARIAN
 )
-AddMetadataProfiles(LibraryTopic, "DeleteTopic", PROFILES.SUPER_ADMIN)
+AddMetadataProfiles(LibraryTopic, "RemoveTopic", PROFILES.SUPER_ADMIN)
 AddMetadataProfiles(LibraryTopic, "GetAllTopics", ...ALL_PROFILES_NAME)
 AddMetadataProfiles(LibraryTopic, "SearchTopicByName", ...ALL_PROFILES_NAME)
 
@@ -106,7 +106,7 @@ AddMetadataProfiles(LibraryTopic, "SearchTopicByName", ...ALL_PROFILES_NAME)
 
 // -- Topic object
 AddMetadataProfiles(DocumentTopic,
-    "AssignDocumentTopic",
+    "CreateDocumentTopic",
     PROFILES.SUPER_ADMIN,
     PROFILES.LIBRARIAN
 )
@@ -122,7 +122,7 @@ AddMetadataProfiles(DocumentTopic,
 
 // -- Language object
 AddMetadataProfiles(DocumentLanguage,
-    "AssignDocumentLanguage",
+    "CreateDocumentLanguage",
     PROFILES.SUPER_ADMIN,
     PROFILES.STUDENT,
     PROFILES.LIBRARIAN
@@ -139,7 +139,7 @@ AddMetadataProfiles(DocumentLanguage,
 
 // -- Location section object
 AddMetadataProfiles(DocumentLocationSection,
-    "AssignDocumentLocationSection",
+    "CreateDocumentLocationSection",
     PROFILES.SUPER_ADMIN,
     PROFILES.LIBRARIAN
 )

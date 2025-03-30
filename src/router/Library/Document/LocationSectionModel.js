@@ -1,7 +1,7 @@
 import Joi from 'joi';
 
-// Assign document author model
-export const ASSIGN_DOCUMENT_LOCATION_SECTION = Joi.object({
+// Create document author model
+export const CREATE_DOCUMENT_LOCATION_SECTION = Joi.object({
     location_section_id: Joi.number().required().min(1),
     document_id: Joi.number().required().min(1)
 })

@@ -3,7 +3,7 @@ import {TOPICS_UNIQUE_NAME} from "../../database/model/constraints.js";
 import DatabaseManager from "../../components/database.js";
 import {
     CREATE_TOPIC_PROC,
-    DELETE_TOPIC_PROC,
+    REMOVE_TOPIC_PROC,
     UPDATE_TOPIC_PROC
 } from "../../database/model/storedProcedures.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
@@ -63,10 +63,10 @@ export class TopicService {
         }
     }
 
-    // Deletes a topic
-    async DeleteTopic(req, body) {
+    // Removes a topic
+    async RemoveTopic(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
-            DELETE_TOPIC_PROC,
+            REMOVE_TOPIC_PROC,
             req.session.userID,
             body.id,
             null,
@@ -77,7 +77,7 @@ export class TopicService {
             throw new FieldFailError(400, 'id', 'Topic ID is invalid');
     }
 
-    // Get all topics
+    // Gets all topics
     async GetAllTopics(req) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_ALL_TOPICS_FN,
@@ -85,7 +85,7 @@ export class TopicService {
         return queryRes.rows;
     }
 
-    // Search topic by name
+    // Searches topic by name
     async SearchTopicByName(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             SEARCH_TOPIC_BY_NAME_FN,

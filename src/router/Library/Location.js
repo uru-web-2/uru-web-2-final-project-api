@@ -5,7 +5,7 @@ import Logger from "../../components/logger.js";
 
 // Location object for the library module
 export class Location {
-    // Create a location
+    // Creates a location
     async CreateLocation(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.CreateLocation);
@@ -20,7 +20,7 @@ export class Location {
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Update a location
+    // Updates a location
     async UpdateLocation(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.UpdateLocation);
@@ -35,22 +35,22 @@ export class Location {
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Delete a location
-    async DeleteLocation(req, res) {
+    // Removes a location
+    async RemoveLocation(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.DeleteLocation);
+        const body = HandleValidation(req, res, Validator.RemoveLocation);
 
-        // Delete the location
-        await Service.DeleteLocation(req, body)
+        // Removes the location
+        await Service.RemoveLocation(req, body)
 
-        // Log the deletion
-        Logger.info(`Deleted location ${body.id} by admin ${req.session.userID}`)
+        // Log the removal
+        Logger.info(`Removed location ${body.id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Get all locations
+    // Gets all locations
     async GetAllLocations(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.GetAllLocations);

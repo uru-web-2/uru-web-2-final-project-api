@@ -1,13 +1,13 @@
 import Joi from "joi";
 
-// Assign profile permission model
-export const ASSIGN_PROFILE_PERMISSION = Joi.object({
+// Create profile permission model
+export const CREATE_PROFILE_PERMISSION = Joi.object({
     method_id: Joi.number().required().min(1),
     profile_id: Joi.number().required().min(1),
 })
 
-// Revoke profile permission model
-export const REVOKE_PROFILE_PERMISSION = Joi.object({
+// Remove profile permission model
+export const REMOVE_PROFILE_PERMISSION = Joi.object({
     method_id: Joi.number().required().min(1),
     profile_id: Joi.number().required().min(1),
 })
@@ -29,14 +29,14 @@ export const GET_METHODS_BY_OBJECT_ID = Joi.object({
     object_id: Joi.number().required().min(1),
 })
 
-// Assign user profile model
-export const ASSIGN_USER_PROFILE = Joi.object({
+// Create user profile model
+export const CREATE_USER_PROFILE = Joi.object({
     username: Joi.string().required().min(1),
     profile_id: Joi.number().required().min(1),
 })
 
-// Revoke user profile model
-export const REVOKE_USER_PROFILE = Joi.object({
+// Remove user profile model
+export const REMOVE_USER_PROFILE = Joi.object({
     username: Joi.string().required().min(1),
     profile_id: Joi.number().required().min(1),
 })

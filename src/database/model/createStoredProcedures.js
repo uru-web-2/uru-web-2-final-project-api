@@ -73,10 +73,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that deletes a user personal document
-export const CREATE_DELETE_USER_PERSONAL_DOCUMENT_PROC = `
-CREATE OR REPLACE PROCEDURE delete_user_personal_document(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that removes a user personal document
+export const CREATE_REMOVE_USER_PERSONAL_DOCUMENT_PROC = `
+CREATE OR REPLACE PROCEDURE remove_user_personal_document(
+    IN in_removed_by_user_id BIGINT,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR
 )
@@ -86,16 +86,16 @@ BEGIN
     -- Delete the user personal document
     IF in_user_document_type = 'Identity Document' THEN
         UPDATE identity_documents
-        SET deleted_at = NOW(),
-            deleted_by_user_id = in_deleted_by_user_id
+        SET removed_at = NOW(),
+            removed_by_user_id = in_removed_by_user_id
         WHERE identity_document_number = in_user_document_number
-        AND revoked_at IS NULL;
+        AND removed_at IS NULL;
     ELSE
         UPDATE passports
-        SET deleted_at = NOW(),
-            deleted_by_user_id = in_deleted_by_user_id
+        SET removed_at = NOW(),
+            removed_by_user_id = in_removed_by_user_id
         WHERE passport_number = in_user_document_number
-        AND revoked_at IS NULL;
+        AND removed_at IS NULL;
     END IF;
 END;
 $$;
@@ -114,7 +114,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Delete the user personal document
-    call delete_user_personal_document(in_replaced_by_user_id, in_user_document_type, in_user_document_number);
+    call remove_user_personal_document(in_replaced_by_user_id, in_user_document_type, in_user_document_number);
     
     -- Create the user personal document
     call create_user_personal_document(in_replaced_by_user_id, in_user_document_country_id, in_user_document_type, in_user_document_number, out_document_id);
@@ -228,9 +228,9 @@ AS $$
 BEGIN
     -- Update the user email
     UPDATE user_emails
-    SET revoked_at = NOW()
+    SET removed_at = NOW()
     WHERE user_id = in_user_id
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
     
     -- Create the user email
     call create_user_email(in_user_id, in_user_email, in_user_email_verification_token, in_user_email_verification_expires_at, out_user_email_id);
@@ -239,9 +239,9 @@ $$;
 `
 
 
-// Create a stored procedure that revokes a user email verification token by user email ID
-export const CREATE_REVOKE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC = `
-CREATE OR REPLACE PROCEDURE revoke_user_email_verification_token_by_user_email_id(
+// Create a stored procedure that removes a user email verification token by user email ID
+export const CREATE_REMOVE_USER_EMAIL_VERIFICATION_TOKEN_BY_USER_EMAIL_ID_PROC = `
+CREATE OR REPLACE PROCEDURE remove_user_email_verification_token_by_user_email_id(
     IN in_user_email_id BIGINT
 )
 LANGUAGE plpgsql
@@ -249,9 +249,9 @@ AS $$
 BEGIN
     -- Update the user_email_verification_tokens table
     UPDATE user_email_verification_tokens
-    SET revoked_at = NOW()
+    SET removed_at = NOW()
     WHERE user_email_id = in_user_email_id
-    AND revoked_at IS NULL
+    AND removed_at IS NULL
     AND expires_at > NOW()
     AND verified_at IS NULL;
 END;
@@ -275,14 +275,14 @@ BEGIN
     FROM user_email_verification_tokens
     WHERE user_email_id = in_user_email_id
     AND verified_at IS NOT NULL
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
     
     IF out_user_email_is_verified = TRUE THEN
         RETURN;
     END IF;
 
     -- Revoke the user email verification
-    call revoke_user_email_verification_token_by_user_email_id(in_user_email_id);
+    call remove_user_email_verification_token_by_user_email_id(in_user_email_id);
 
     -- Insert into user_email_verification_tokens table
     INSERT INTO user_email_verification_tokens (
@@ -372,9 +372,9 @@ END;
 $$;
 `
 
-// Create a stored procedure that revokes a user reset password token by user ID
-export const CREATE_REVOKE_USER_RESET_PASSWORD_TOKEN_BY_USER_ID_PROC = `
-CREATE OR REPLACE PROCEDURE revoke_user_reset_password_token_by_user_id(
+// Create a stored procedure that removes a user reset password token by user ID
+export const CREATE_REMOVE_USER_RESET_PASSWORD_TOKEN_BY_USER_ID_PROC = `
+CREATE OR REPLACE PROCEDURE remove_user_reset_password_token_by_user_id(
     IN in_user_id BIGINT
 )
 LANGUAGE plpgsql
@@ -382,9 +382,9 @@ AS $$
 BEGIN
     -- Update the user_reset_password_tokens table
     UPDATE user_reset_password_tokens
-    SET revoked_at = NOW()
+    SET removed_at = NOW()
     WHERE user_id = in_user_id
-    AND revoked_at IS NULL
+    AND removed_at IS NULL
     AND expires_at > NOW()
     AND used_at IS NULL;
 END;
@@ -402,7 +402,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Revoke the user reset password token
-    call revoke_user_reset_password_token_by_user_id(in_user_id);
+    call remove_user_reset_password_token_by_user_id(in_user_id);
     
     -- Insert into user_reset_password_tokens table
     INSERT INTO user_reset_password_tokens (
@@ -430,9 +430,9 @@ AS $$
 BEGIN
     -- Revoke the user password hash
     UPDATE user_password_hashes
-    SET revoked_at = NOW()
+    SET removed_at = NOW()
     WHERE user_id = in_user_id
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
     
     -- Insert into user_password_hashes table
     INSERT INTO user_password_hashes (
@@ -593,10 +593,10 @@ BEGIN
     INNER JOIN user_emails ON user_emails.user_id = user_usernames.user_id
     INNER JOIN user_email_verification_tokens ON user_email_verification_tokens.user_email_id = user_emails.id
     WHERE username = in_user_username
-    AND user_usernames.revoked_at IS NULL
-    AND user_password_hashes.revoked_at IS NULL
-    AND user_emails.revoked_at IS NULL
-    AND user_email_verification_tokens.revoked_at IS NULL;
+    AND user_usernames.removed_at IS NULL
+    AND user_password_hashes.removed_at IS NULL
+    AND user_emails.removed_at IS NULL
+    AND user_email_verification_tokens.removed_at IS NULL;
 END;
 $$;
 `
@@ -615,7 +615,7 @@ BEGIN
     INTO out_user_id
     FROM user_usernames
     WHERE username = in_user_username
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -637,7 +637,7 @@ BEGIN
     INTO out_is_profile_id_valid
     FROM profiles
     WHERE id = in_profile_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -659,15 +659,15 @@ BEGIN
     INTO out_is_method_id_valid
     FROM methods
     WHERE id = in_method_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
 
-// Create a stored procedure that assigns a profile to a user
-export const CREATE_ASSIGN_USER_PROFILE_PROC = `
-CREATE OR REPLACE PROCEDURE assign_user_profile(
-    IN in_assigned_by_user_id BIGINT,
+// Create a stored procedure that creates a profile to a user
+export const CREATE_CREATE_USER_PROFILE_PROC = `
+CREATE OR REPLACE PROCEDURE create_user_profile(
+    IN in_created_by_user_id BIGINT,
     IN in_user_username VARCHAR,
     IN in_profile_id BIGINT,
     OUT out_is_profile_id_valid BOOLEAN,
@@ -694,21 +694,21 @@ BEGIN
     INSERT INTO user_profiles (
         user_id,
         profile_id,
-        assigned_by_user_id
+        created_by_user_id
     )
     VALUES (
         out_user_id,
         in_profile_id,
-        in_assigned_by_user_id
+        in_created_by_user_id
     );
 END;
 $$;
 `
 
-// Create a stored procedure that revokes a profile from a user
-export const CREATE_REVOKE_USER_PROFILE_PROC = `
-CREATE OR REPLACE PROCEDURE revoke_user_profile(
-    IN in_revoked_by_user_id BIGINT,
+// Create a stored procedure that removes a profile from a user
+export const CREATE_REMOVE_USER_PROFILE_PROC = `
+CREATE OR REPLACE PROCEDURE remove_user_profile(
+    IN in_removed_by_user_id BIGINT,
     IN in_user_username VARCHAR,
     IN in_profile_id BIGINT,
     OUT out_is_profile_id_valid BOOLEAN,
@@ -730,11 +730,11 @@ BEGIN
     
     -- Update the user_profiles table
     UPDATE user_profiles
-    SET revoked_at = NOW(),
-        revoked_by_user_id = in_revoked_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE user_id = out_user_id
     AND profile_id = in_profile_id
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -755,15 +755,15 @@ BEGIN
     FROM permissions
     WHERE profile_id = in_profile_id
     AND method_id = in_method_id
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
 
-// Create a stored procedure that assigns a permission to a profile
-export const CREATE_ASSIGN_PROFILE_PERMISSION_PROC = `
-CREATE OR REPLACE PROCEDURE assign_profile_permission(
-    IN in_assigned_by_user_id BIGINT,
+// Create a stored procedure that creates a permission to a profile
+export const CREATE_CREATE_PROFILE_PERMISSION_PROC = `
+CREATE OR REPLACE PROCEDURE create_profile_permission(
+    IN in_created_by_user_id BIGINT,
     IN in_profile_id BIGINT,
     IN in_method_id BIGINT,
     OUT out_is_profile_id_valid BOOLEAN,
@@ -796,22 +796,22 @@ BEGIN
     INSERT INTO permissions (
         profile_id,
         method_id,
-        assigned_by_user_id
+        created_by_user_id
     )
     VALUES (
         in_profile_id,
         in_method_id,
-        in_assigned_by_user_id
+        in_created_by_user_id
     )
     RETURNING id INTO out_permission_id;
 END;
 $$;
 `
 
-// Create a stored procedure that revokes a permission from a profile
-export const CREATE_REVOKE_PROFILE_PERMISSION_PROC = `
-CREATE OR REPLACE PROCEDURE revoke_profile_permission(
-    IN in_revoked_by_user_id BIGINT,
+// Create a stored procedure that removes a permission from a profile
+export const CREATE_REMOVE_PROFILE_PERMISSION_PROC = `
+CREATE OR REPLACE PROCEDURE remove_profile_permission(
+    IN in_removed_by_user_id BIGINT,
     IN in_profile_id BIGINT,
     IN in_method_id BIGINT,
     OUT out_is_profile_id_valid BOOLEAN,
@@ -842,11 +842,11 @@ BEGIN
     
     -- Update the permissions table
     UPDATE permissions
-    SET revoked_at = NOW(),
-        revoked_by_user_id = in_revoked_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE profile_id = in_profile_id
     AND method_id = in_method_id
-    AND revoked_at IS NULL
+    AND removed_at IS NULL
     RETURNING id INTO out_permission_id;
 END;
 $$;
@@ -905,7 +905,7 @@ BEGIN
     INTO var_current_profile_name, var_current_profile_description
     FROM profiles
     WHERE id = in_profile_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 
     -- Update the profiles table
     UPDATE profiles
@@ -918,10 +918,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that deletes a profile
-export const CREATE_DELETE_PROFILE_PROC = `
-CREATE OR REPLACE PROCEDURE delete_profile(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that removes a profile
+export const CREATE_REMOVE_PROFILE_PROC = `
+CREATE OR REPLACE PROCEDURE remove_profile(
+    IN in_removed_by_user_id BIGINT,
     IN in_profile_id BIGINT,
     OUT out_is_profile_id_valid BOOLEAN
 )
@@ -936,24 +936,24 @@ BEGIN
 
     -- Update the profiles table
     UPDATE profiles
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_profile_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
     
     -- Update the permissions table
     UPDATE permissions
-    SET revoked_at = NOW(),
-        revoked_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE profile_id = in_profile_id
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
     
     -- Update the user_profiles table
     UPDATE user_profiles
-    SET revoked_at = NOW(),
-        revoked_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE profile_id = in_profile_id
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -1072,7 +1072,7 @@ BEGIN
         INSERT INTO permissions (
             profile_id,
             method_id,
-            assigned_by_user_id
+            created_by_user_id
         )
         VALUES (
             var_profile_id,
@@ -1084,37 +1084,37 @@ END;
 $$;
 `
 
-// Create a stored procedure that deletes all modules
-export const CREATE_DELETE_ALL_MODULES_PROC = `
-CREATE OR REPLACE PROCEDURE delete_all_modules(
-    IN in_deleted_by_user_id BIGINT
+// Create a stored procedure that removes all modules
+export const CREATE_REMOVE_ALL_MODULES_PROC = `
+CREATE OR REPLACE PROCEDURE remove_all_modules(
+    IN in_removed_by_user_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Update the modules table
     UPDATE modules
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
-    WHERE deleted_at IS NULL;
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
+    WHERE removed_at IS NULL;
     
     -- Update the objects table
     UPDATE objects
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
-    WHERE deleted_at IS NULL;
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
+    WHERE removed_at IS NULL;
     
     -- Update the methods table
     UPDATE methods
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
-    WHERE deleted_at IS NULL;
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
+    WHERE removed_at IS NULL;
     
     -- Update the permissions table
     UPDATE permissions
-    SET revoked_at = NOW(),
-        revoked_by_user_id = in_deleted_by_user_id
-    WHERE revoked_at IS NULL;
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
+    WHERE removed_at IS NULL;
 END;
 $$;
 `
@@ -1133,7 +1133,7 @@ BEGIN
     INTO out_module_id
     FROM modules
     WHERE name = in_module_name
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -1152,7 +1152,7 @@ BEGIN
     INTO out_object_id
     FROM objects
     WHERE name = in_object_name
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -1171,7 +1171,7 @@ BEGIN
     INTO out_method_id
     FROM methods
     WHERE name = in_method_name
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -1203,9 +1203,9 @@ AS $$
 BEGIN
     -- Revoke the current username
     UPDATE user_usernames
-    SET revoked_at = NOW()
+    SET removed_at = NOW()
     WHERE user_id = in_user_id
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
     
     -- Insert into user_usernames table
     INSERT INTO user_usernames (
@@ -1318,19 +1318,19 @@ BEGIN
     -- Insert into document_topics table
     FOREACH var_document_topic_id IN ARRAY in_document_topic_ids
     LOOP
-        call assign_document_topic(in_registered_by_user_id, out_document_id, var_document_topic_id);
+        call create_document_topic(in_registered_by_user_id, out_document_id, var_document_topic_id);
     END LOOP;
     
     -- Insert into document_location_sections table
     FOREACH var_document_location_section_id IN ARRAY in_document_location_section_ids
     LOOP
-        call assign_document_location_section(in_registered_by_user_id, out_document_id, var_document_location_section_id);
+        call create_document_location_section(in_registered_by_user_id, out_document_id, var_document_location_section_id);
     END LOOP;
     
     -- Insert into document_languages table
     FOREACH var_document_language_id IN ARRAY in_document_language_ids
     LOOP
-        call assign_document_language(in_registered_by_user_id, out_document_id, var_document_language_id);
+        call create_document_language(in_registered_by_user_id, out_document_id, var_document_language_id);
     END LOOP;
     
     -- Insert into document_images table
@@ -1379,7 +1379,7 @@ BEGIN
     INTO var_current_document_title, var_current_document_description, var_current_document_release_date, var_current_document_pages, var_current_document_author
     FROM documents
     WHERE id = in_document_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 
     -- Update the documents table
     UPDATE documents
@@ -1395,7 +1395,7 @@ BEGIN
         SELECT topic_id
         FROM document_topics
         WHERE document_id = in_document_id
-        AND revoked_at IS NULL
+        AND removed_at IS NULL
     )
     INTO var_current_document_topic_ids;
     
@@ -1403,7 +1403,7 @@ BEGIN
     FOREACH var_document_topic_id IN ARRAY in_document_topic_ids
     LOOP
         IF var_document_topic_id <> ALL(var_current_document_topic_ids) THEN
-            call assign_document_topic(in_document_id, var_document_topic_id);
+            call create_document_topic(in_document_id, var_document_topic_id);
         END IF;
     END LOOP;
     
@@ -1411,7 +1411,7 @@ BEGIN
     FOREACH var_document_topic_id IN ARRAY var_current_document_topic_ids
     LOOP
         IF var_document_topic_id <> ALL(in_document_topic_ids) THEN
-            call revoke_document_topic(in_document_id, var_document_topic_id);
+            call remove_document_topic(in_document_id, var_document_topic_id);
         END IF;
     END LOOP;
     
@@ -1420,7 +1420,7 @@ BEGIN
         SELECT location_section_id
         FROM document_location_sections
         WHERE document_id = in_document_id
-        AND revoked_at IS NULL
+        AND removed_at IS NULL
     )
     INTO var_current_document_location_section_ids;
     
@@ -1428,7 +1428,7 @@ BEGIN
     FOREACH var_document_location_section_id IN ARRAY in_document_location_section_ids
     LOOP
         IF var_document_location_section_id <> ALL(var_current_document_location_section_ids) THEN
-            call assign_document_location_section(in_document_id, var_document_location_section_id);
+            call create_document_location_section(in_document_id, var_document_location_section_id);
         END IF;
     END LOOP;
     
@@ -1436,7 +1436,7 @@ BEGIN
     FOREACH var_document_location_section_id IN ARRAY var_current_document_location_section_ids
     LOOP
         IF var_document_location_section_id <> ALL(in_document_location_section_ids) THEN
-            call revoke_document_location_section(in_document_id, var_document_location_section_id);
+            call remove_document_location_section(in_document_id, var_document_location_section_id);
         END IF;
     END LOOP;
     
@@ -1445,7 +1445,7 @@ BEGIN
         SELECT language_id
         FROM document_languages
         WHERE document_id = in_document_id
-        AND revoked_at IS NULL
+        AND removed_at IS NULL
     )
     INTO var_current_document_language_ids;
     
@@ -1453,7 +1453,7 @@ BEGIN
     FOREACH var_document_language_id IN ARRAY in_document_language_ids
     LOOP
         IF var_document_language_id <> ALL(var_current_document_language_ids) THEN
-            call assign_document_language(in_document_id, var_document_language_id);
+            call create_document_language(in_document_id, var_document_language_id);
         END IF;
     END LOOP;
     
@@ -1461,7 +1461,7 @@ BEGIN
     FOREACH var_document_language_id IN ARRAY var_current_document_language_ids
     LOOP
         IF var_document_language_id <> ALL(in_document_language_ids) THEN
-            call revoke_document_language(in_document_id, var_document_language_id);
+            call remove_document_language(in_document_id, var_document_language_id);
         END IF;
     END LOOP;
     
@@ -1470,7 +1470,7 @@ BEGIN
         SELECT image_relative_url
         FROM document_images
         WHERE document_id = in_document_id
-        AND revoked_at IS NULL
+        AND removed_at IS NULL
     )
     INTO var_current_document_document_image_urls;
     
@@ -1486,17 +1486,17 @@ BEGIN
     FOREACH var_document_document_image_url IN ARRAY var_current_document_document_image_urls
     LOOP
         IF var_document_document_image_url <> ALL(in_document_document_image_urls) THEN
-            call delete_document_image(in_document_id, var_document_document_image_url);
+            call remove_document_image(in_document_id, var_document_document_image_url);
         END IF;
     END LOOP;   
 END;
 $$;
 `
 
-// Create a stored procedure that deletes a document
-export const CREATE_DELETE_DOCUMENT_PROC = `
-CREATE OR REPLACE PROCEDURE delete_document(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that removes a document
+export const CREATE_REMOVE_DOCUMENT_PROC = `
+CREATE OR REPLACE PROCEDURE remove_document(
+    IN in_removed_by_user_id BIGINT,
     IN in_document_id BIGINT
 )
 LANGUAGE plpgsql
@@ -1504,10 +1504,10 @@ AS $$
 BEGIN
     -- Update the documents table
     UPDATE documents
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_document_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -1537,10 +1537,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that deletes a document image
-export const CREATE_DELETE_DOCUMENT_IMAGE_PROC = `
-CREATE OR REPLACE PROCEDURE delete_document_image(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that removes a document image
+export const CREATE_REMOVE_DOCUMENT_IMAGE_PROC = `
+CREATE OR REPLACE PROCEDURE remove_document_image(
+    IN in_removed_by_user_id BIGINT,
     IN in_document_image_id BIGINT
 )
 LANGUAGE plpgsql
@@ -1548,18 +1548,18 @@ AS $$
 BEGIN
     -- Update the document_images table
     UPDATE document_images
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_document_image_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
 
-// Create a stored procedure that assigns a new document language
-export const CREATE_ASSIGN_DOCUMENT_LANGUAGE_PROC = `
-CREATE OR REPLACE PROCEDURE assign_document_language(
-    IN in_assigned_by_user_id BIGINT,
+// Create a stored procedure that creates a new document language
+export const CREATE_CREATE_DOCUMENT_LANGUAGE_PROC = `
+CREATE OR REPLACE PROCEDURE create_document_language(
+    IN in_created_by_user_id BIGINT,
     IN in_document_id BIGINT,
     IN in_language_id BIGINT
 )
@@ -1568,12 +1568,12 @@ AS $$
 BEGIN
     -- Insert into document_languages table
     INSERT INTO document_languages (
-        assigned_by_user_id,
+        created_by_user_id,
         document_id,
         language_id
     )
     VALUES (
-        in_assigned_by_user_id,
+        in_created_by_user_id,
         in_document_id,
         in_language_id
     );
@@ -1584,7 +1584,7 @@ $$;
 // Create a stored procedure that removes a document language
 export const CREATE_REMOVE_DOCUMENT_LANGUAGE_PROC = `
 CREATE OR REPLACE PROCEDURE remove_document_language(
-    IN in_revoked_by_user_id BIGINT,
+    IN in_removed_by_user_id BIGINT,
     IN in_document_id BIGINT,
     IN in_language_id BIGINT
 )
@@ -1594,10 +1594,10 @@ BEGIN
     -- Update the document_languages table
     UPDATE document_languages
     SET removed_at = NOW(),
-        removed_by_user_id = in_deleted_by_user_id
+        removed_by_user_id = in_removed_by_user_id
     WHERE document_id = in_document_id
     AND language_id = in_language_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -1643,15 +1643,15 @@ BEGIN
     INTO var_current_post_available_until
     FROM posts
     WHERE id = in_post_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
 
-// Create a stored procedure that deletes a post
-export const CREATE_DELETE_POST_PROC = `
-CREATE OR REPLACE PROCEDURE delete_post(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that removes a post
+export const CREATE_REMOVE_POST_PROC = `
+CREATE OR REPLACE PROCEDURE remove_post(
+    IN in_removed_by_user_id BIGINT,
     IN in_post_id BIGINT
 )
 LANGUAGE plpgsql
@@ -1659,10 +1659,10 @@ AS $$
 BEGIN
     -- Update the posts table
     UPDATE posts
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_post_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -1713,7 +1713,7 @@ BEGIN
     INTO out_location_id_is_valid
     FROM locations
     WHERE id = in_location_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
     
     IF out_location_id_is_valid = FALSE THEN
         RETURN;
@@ -1724,7 +1724,7 @@ BEGIN
     INTO var_current_location_floor, var_current_location_area
     FROM locations
     WHERE id = in_location_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 
     -- Update the locations table
     UPDATE locations
@@ -1735,10 +1735,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that deletes a location
-export const CREATE_DELETE_LOCATION_PROC = `
-CREATE OR REPLACE PROCEDURE delete_location(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that removes a location
+export const CREATE_REMOVE_LOCATION_PROC = `
+CREATE OR REPLACE PROCEDURE remove_location(
+    IN in_removed_by_user_id BIGINT,
     IN in_location_id BIGINT,
     OUT out_location_id_is_valid BOOLEAN
 )
@@ -1750,7 +1750,7 @@ BEGIN
     INTO out_location_id_is_valid
     FROM locations
     WHERE id = in_location_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
     
     IF out_location_id_is_valid = FALSE THEN
         RETURN;
@@ -1758,10 +1758,10 @@ BEGIN
 
     -- Update the locations table
     UPDATE locations
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_location_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -1810,7 +1810,7 @@ BEGIN
     INTO out_location_section_id_is_valid
     FROM location_sections
     WHERE id = in_location_section_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
     
     IF out_location_section_id_is_valid = FALSE THEN
         RETURN;
@@ -1821,7 +1821,7 @@ BEGIN
     INTO var_current_location_section_name
     FROM location_sections
     WHERE id = in_location_section_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 
     -- Update the location_sections table
     UPDATE location_sections
@@ -1831,10 +1831,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that deletes a location section
-export const CREATE_DELETE_LOCATION_SECTION_PROC = `
-CREATE OR REPLACE PROCEDURE delete_location_section(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that removes a location section
+export const CREATE_REMOVE_LOCATION_SECTION_PROC = `
+CREATE OR REPLACE PROCEDURE remove_location_section(
+    IN in_removed_by_user_id BIGINT,
     IN in_location_section_id BIGINT,
     OUT out_location_section_id_is_valid BOOLEAN
 )
@@ -1846,7 +1846,7 @@ BEGIN
     INTO out_location_section_id_is_valid
     FROM location_sections
     WHERE id = in_location_section_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
     
     IF out_location_section_id_is_valid = FALSE THEN
         RETURN;
@@ -1854,18 +1854,18 @@ BEGIN
 
     -- Update the location_sections table
     UPDATE location_sections
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_location_section_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
 
-// Create a stored procedure that assigns a location section to a document
-export const CREATE_ASSIGN_DOCUMENT_LOCATION_SECTION_PROC = `
-CREATE OR REPLACE PROCEDURE assign_document_location_section(
-    IN in_assigned_by_user_id BIGINT,
+// Create a stored procedure that creates a location section to a document
+export const CREATE_CREATE_DOCUMENT_LOCATION_SECTION_PROC = `
+CREATE OR REPLACE PROCEDURE create_document_location_section(
+    IN in_created_by_user_id BIGINT,
     IN in_document_id BIGINT,
     IN in_location_section_id BIGINT
 )
@@ -1874,12 +1874,12 @@ AS $$
 BEGIN
     -- Insert into document_location_sections table
     INSERT INTO document_location_sections (
-        assigned_by_user_id,
+        created_by_user_id,
         document_id,
         location_section_id
     )
     VALUES (
-        in_assigned_by_user_id,
+        in_created_by_user_id,
         in_document_id,
         in_location_section_id
     );
@@ -1954,7 +1954,7 @@ BEGIN
     INTO out_topic_id_is_valid
     FROM topics
     WHERE id = in_topic_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
     
     IF out_topic_id_is_valid = FALSE THEN
         RETURN;
@@ -1965,7 +1965,7 @@ BEGIN
     INTO var_current_topic_name, var_current_topic_description
     FROM topics
     WHERE id = in_topic_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 
     -- Update the topics table
     UPDATE topics
@@ -1976,10 +1976,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that deletes a topic
-export const CREATE_DELETE_TOPIC_PROC = `
-CREATE OR REPLACE PROCEDURE delete_topic(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that removes a topic
+export const CREATE_REMOVE_TOPIC_PROC = `
+CREATE OR REPLACE PROCEDURE remove_topic(
+    IN in_removed_by_user_id BIGINT,
     IN in_topic_id BIGINT,
     OUT out_topic_id_is_valid BOOLEAN
 )
@@ -1991,7 +1991,7 @@ BEGIN
     INTO out_topic_id_is_valid
     FROM topics
     WHERE id = in_topic_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
     
     IF out_topic_id_is_valid = FALSE THEN
         RETURN;
@@ -1999,25 +1999,25 @@ BEGIN
 
     -- Update the topics table
     UPDATE topics
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_topic_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
     
     -- Update the document_topics table
     UPDATE document_topics
-    SET revoked_at = NOW(),
-        revoked_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE topic_id = in_topic_id
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
 
-// Create a stored procedure that assigns a topic to a document
-export const CREATE_ASSIGN_DOCUMENT_TOPIC_PROC = `
-CREATE OR REPLACE PROCEDURE assign_document_topic(
-    IN in_assigned_by_user_id BIGINT,
+// Create a stored procedure that creates a topic to a document
+export const CREATE_CREATE_DOCUMENT_TOPIC_PROC = `
+CREATE OR REPLACE PROCEDURE create_document_topic(
+    IN in_created_by_user_id BIGINT,
     IN in_document_id BIGINT,
     IN in_topic_id BIGINT
 )
@@ -2040,12 +2040,12 @@ BEGIN
 
     -- Insert into document_topics table
     INSERT INTO document_topics (
-        assigned_by_user_id,
+        created_by_user_id,
         document_id,
         topic_id
     )
     VALUES (
-        in_assigned_by_user_id,
+        in_created_by_user_id,
         in_document_id,
         in_topic_id
     );
@@ -2122,7 +2122,7 @@ BEGIN
     INTO var_current_magazine_name, var_current_magazine_description, var_current_magazine_release_date
     FROM magazines
     WHERE id = in_magazine_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 
     -- Update the magazines table
     UPDATE magazines
@@ -2134,10 +2134,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that deletes a magazine
-export const CREATE_DELETE_MAGAZINE_PROC = `
-CREATE OR REPLACE PROCEDURE delete_magazine(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that removes a magazine
+export const CREATE_REMOVE_MAGAZINE_PROC = `
+CREATE OR REPLACE PROCEDURE remove_magazine(
+    IN in_removed_by_user_id BIGINT,
     IN in_magazine_id BIGINT
 )
 LANGUAGE plpgsql
@@ -2145,10 +2145,10 @@ AS $$
 BEGIN
     -- Update the magazines table
     UPDATE magazines
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_magazine_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -2158,8 +2158,8 @@ export const CREATE_SET_PROFILE_PERMISSIONS_PROC = `
 CREATE OR REPLACE PROCEDURE set_profile_permissions(
     IN in_set_by_user_id BIGINT,
     IN in_profile_id BIGINT,
-    IN in_assign_method_ids BIGINT[],
-    IN in_revoke_method_ids BIGINT[]
+    IN in_create_method_ids BIGINT[],
+    IN in_remove_method_ids BIGINT[]
 )
 LANGUAGE plpgsql
 AS $$
@@ -2170,18 +2170,18 @@ DECLARE
     var_permission_id BIGINT;
 BEGIN
     -- Assign methods
-    IF in_assign_method_ids IS NOT NULL THEN
-        FOREACH var_method_id IN ARRAY in_assign_method_ids
+    IF in_create_method_ids IS NOT NULL THEN
+        FOREACH var_method_id IN ARRAY in_create_method_ids
         LOOP
-            call assign_profile_permission(in_set_by_user_id, in_profile_id, var_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
+            call create_profile_permission(in_set_by_user_id, in_profile_id, var_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
         END LOOP;
     END IF;
     
     -- Revoke permissions
-    IF in_revoke_method_ids IS NOT NULL THEN
-        FOREACH var_method_id IN ARRAY in_revoke_method_ids
+    IF in_remove_method_ids IS NOT NULL THEN
+        FOREACH var_method_id IN ARRAY in_remove_method_ids
         LOOP
-            call revoke_profile_permission(in_set_by_user_id, in_profile_id, var_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
+            call remove_profile_permission(in_set_by_user_id, in_profile_id, var_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
         END LOOP;
     END IF;
 END;
@@ -2234,7 +2234,7 @@ BEGIN
     INTO out_publisher_id_is_valid
     FROM publishers
     WHERE id = in_publisher_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
     
     IF out_publisher_id_is_valid = FALSE THEN
         RETURN;
@@ -2245,7 +2245,7 @@ BEGIN
     INTO var_current_publisher_name, var_current_publisher_description
     FROM publishers
     WHERE id = in_publisher_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 
     -- Update the publishers table
     UPDATE publishers
@@ -2256,10 +2256,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that deletes a publisher
-export const CREATE_DELETE_PUBLISHER_PROC = `
-CREATE OR REPLACE PROCEDURE delete_publisher(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that removes a publisher
+export const CREATE_REMOVE_PUBLISHER_PROC = `
+CREATE OR REPLACE PROCEDURE remove_publisher(
+    IN in_removed_by_user_id BIGINT,
     IN in_publisher_id BIGINT,
     OUT out_publisher_id_is_valid BOOLEAN
 )
@@ -2271,7 +2271,7 @@ BEGIN
     INTO out_publisher_id_is_valid
     FROM publishers
     WHERE id = in_publisher_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
     
     IF out_publisher_id_is_valid = FALSE THEN
         RETURN;
@@ -2279,10 +2279,10 @@ BEGIN
 
     -- Update the publishers table
     UPDATE publishers
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_publisher_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -2341,7 +2341,7 @@ BEGIN
     INTO var_current_review_title, var_current_review_content, var_current_review_rating
     FROM document_reviews
     WHERE id = in_review_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 
     -- Update the document_reviews table
     UPDATE document_reviews
@@ -2354,10 +2354,10 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that deletes a document review
-export const CREATE_DELETE_DOCUMENT_REVIEW_PROC = `
-CREATE OR REPLACE PROCEDURE delete_document_review(
-    IN in_deleted_by_user_id BIGINT,
+// Query to create a stored procedure that removes a document review
+export const CREATE_REMOVE_DOCUMENT_REVIEW_PROC = `
+CREATE OR REPLACE PROCEDURE remove_document_review(
+    IN in_removed_by_user_id BIGINT,
     IN in_review_id BIGINT
 )
 LANGUAGE plpgsql
@@ -2365,10 +2365,10 @@ AS $$
 BEGIN
     -- Update the document_reviews table
     UPDATE document_reviews
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_review_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -2387,7 +2387,7 @@ BEGIN
     INTO out_document_id
     FROM books
     WHERE id = in_book_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -2466,7 +2466,7 @@ BEGIN
     FROM books
     INNER JOIN documents ON books.document_id = documents.id
     WHERE books.id = in_book_id
-    AND documents.deleted_at IS NULL;
+    AND documents.removed_at IS NULL;
     
     -- Update the books table
     UPDATE books
@@ -2526,7 +2526,7 @@ BEGIN
     INTO out_work_id
     FROM works
     WHERE id = in_work_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -2545,7 +2545,7 @@ BEGIN
     INTO out_document_id
     FROM works
     WHERE id = in_work_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -2680,7 +2680,7 @@ BEGIN
     INTO var_current_book_copy_uuid
     FROM book_copies
     WHERE id = in_book_copy_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 
     -- Update the book_copies table
     UPDATE book_copies
@@ -2690,10 +2690,10 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that deletes a book copy
-export const CREATE_DELETE_BOOK_COPY_PROC = `
-CREATE OR REPLACE PROCEDURE delete_book_copy(
-    IN in_deleted_by_user_id BIGINT,
+// Query to create a stored procedure that removes a book copy
+export const CREATE_REMOVE_BOOK_COPY_PROC = `
+CREATE OR REPLACE PROCEDURE remove_book_copy(
+    IN in_removed_by_user_id BIGINT,
     IN in_book_copy_id BIGINT
 )
 LANGUAGE plpgsql
@@ -2701,10 +2701,10 @@ AS $$
 BEGIN
     -- Update the book_copies table
     UPDATE book_copies
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_book_copy_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -2780,7 +2780,7 @@ BEGIN
     INNER JOIN works ON magazine_issues.work_id = works.id
     INNER JOIN documents ON works.document_id = documents.id
     WHERE magazine_issues.id = in_magazine_issue_id
-    AND documents.deleted_at IS NULL;
+    AND documents.removed_at IS NULL;
     
     -- Update the magazine_issues table
     UPDATE magazine_issues
@@ -2875,7 +2875,7 @@ BEGIN
         SELECT profile_id
         FROM user_profiles
         WHERE user_profiles.user_id = in_user_id 
-        AND revoked_at IS NULL
+        AND removed_at IS NULL
     )
     INTO out_user_profile_ids;
     
@@ -2888,7 +2888,7 @@ BEGIN
                 INNER JOIN identity_documents
                 ON countries.id = identity_documents.country_id
                 WHERE identity_documents.id = people.identity_document_id
-                AND identity_documents.deleted_at IS NULL
+                AND identity_documents.removed_at IS NULL
             )
             ELSE (
                 SELECT name
@@ -2896,7 +2896,7 @@ BEGIN
                 INNER JOIN passports
                 ON countries.id = passports.country_id
                 WHERE passports.id = people.passport_id
-                AND passports.deleted_at IS NULL
+                AND passports.removed_at IS NULL
             )
         END AS document_country,
         CASE 
@@ -2909,21 +2909,21 @@ BEGIN
                 FROM passports
                 INNER JOIN people AS p ON p.passport_id = passports.id
                 WHERE passports.id = people.passport_id
-                AND passports.deleted_at IS NULL
+                AND passports.removed_at IS NULL
             )
             ELSE (
                 SELECT identity_document_number
                 FROM identity_documents
                 INNER JOIN people AS p ON p.identity_document_id = identity_documents.id
                 WHERE identity_documents.id = people.identity_document_id
-                AND identity_documents.deleted_at IS NULL
+                AND identity_documents.removed_at IS NULL
             )
         END AS document_number
     INTO out_user_document_country, out_user_document_type, out_user_document_number
     FROM users
     INNER JOIN people ON users.person_id = people.id
     WHERE users.id = in_user_id
-    AND people.deleted_at IS NULL;
+    AND people.removed_at IS NULL;
 
     -- Query to select the user details by user ID
     SELECT users.id, people.first_name, people.last_name, user_emails.email, user_usernames.username, people.birthdate
@@ -2936,8 +2936,8 @@ BEGIN
     INNER JOIN user_usernames
     ON users.id = user_usernames.user_id
     WHERE users.id = in_user_id
-    AND user_emails.revoked_at IS NULL
-    AND user_usernames.revoked_at IS NULL;
+    AND user_emails.removed_at IS NULL
+    AND user_usernames.removed_at IS NULL;
 END;
 $$;
 `
@@ -2956,10 +2956,10 @@ DECLARE
 BEGIN
     -- Revoke all permissions
     UPDATE permissions
-    SET revoked_at = NOW(),
-        revoked_by_user_id = in_set_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_set_by_user_id
     WHERE method_id = in_method_id
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
     
     -- Assign permissions
     IF in_allowed_profile_ids IS NOT NULL THEN
@@ -2968,7 +2968,7 @@ BEGIN
             INSERT INTO permissions (
                 profile_id,
                 method_id,
-                assigned_by_user_id
+                created_by_user_id
             )
             VALUES (
                 var_profile_id,
@@ -3009,10 +3009,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that assigns a jury member to an article
-export const CREATE_ASSIGN_ARTICLE_JURY_MEMBER_PROC = `
-CREATE OR REPLACE PROCEDURE assign_article_jury_member(
-    IN in_assigned_by_user_id BIGINT,
+// Create a stored procedure that creates a jury member to an article
+export const CREATE_CREATE_ARTICLE_JURY_MEMBER_PROC = `
+CREATE OR REPLACE PROCEDURE create_article_jury_member(
+    IN in_created_by_user_id BIGINT,
     IN in_article_id BIGINT,
     IN in_jury_member_id BIGINT
 )
@@ -3021,12 +3021,12 @@ AS $$
 BEGIN
     -- Insert into article_jury_members table
     INSERT INTO article_jury_members (
-        assigned_by_user_id,
+        created_by_user_id,
         article_id,
         jury_member_id
     )
     VALUES (
-        in_assigned_by_user_id,
+        in_created_by_user_id,
         in_article_id,
         in_jury_member_id
     );
@@ -3101,7 +3101,7 @@ BEGIN
     INTO var_current_annotation_title, var_current_annotation_content
     FROM article_annotations
     WHERE id = in_annotation_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 
     -- Update the article_annotations table
     UPDATE article_annotations
@@ -3284,10 +3284,10 @@ END;
 $$;
 `
 
-// Create a stored procedure that deletes a book copy loan
-export const CREATE_DELETE_BOOK_COPY_LOAN_PROC = `
-CREATE OR REPLACE PROCEDURE delete_book_copy_loan(
-    IN in_deleted_by_user_id BIGINT,
+// Create a stored procedure that removes a book copy loan
+export const CREATE_REMOVE_BOOK_COPY_LOAN_PROC = `
+CREATE OR REPLACE PROCEDURE remove_book_copy_loan(
+    IN in_removed_by_user_id BIGINT,
     IN in_book_copy_loan_id BIGINT
 )
 LANGUAGE plpgsql
@@ -3295,10 +3295,10 @@ AS $$
 BEGIN
     -- Update the book_copy_loans table
     UPDATE book_copy_loans
-    SET deleted_at = NOW(),
-        deleted_by_user_id = in_deleted_by_user_id
+    SET removed_at = NOW(),
+        removed_by_user_id = in_removed_by_user_id
     WHERE id = in_book_copy_loan_id
-    AND deleted_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$;
 `

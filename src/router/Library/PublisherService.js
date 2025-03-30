@@ -3,7 +3,7 @@ import {PUBLISHERS_UNIQUE_NAME} from "../../database/model/constraints.js";
 import DatabaseManager from "../../components/database.js";
 import {
     CREATE_PUBLISHER_PROC,
-    DELETE_PUBLISHER_PROC,
+    REMOVE_PUBLISHER_PROC,
     UPDATE_PUBLISHER_PROC
 } from "../../database/model/storedProcedures.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
@@ -63,10 +63,10 @@ export class PublisherService {
         }
     }
 
-    // Deletes a publisher
-    async DeletePublisher(req, body) {
+    // Removes a publisher
+    async RemovePublisher(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
-            DELETE_PUBLISHER_PROC,
+            REMOVE_PUBLISHER_PROC,
             req.session.userID,
             body.id,
             null,

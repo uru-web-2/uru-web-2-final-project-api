@@ -1,7 +1,7 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
     CREATE_LOCATION,
-    DELETE_LOCATION,
+    REMOVE_LOCATION,
     GET_ALL_LOCATIONS,
     UPDATE_LOCATION
 } from "./LocationModel.js";
@@ -18,9 +18,9 @@ export class LocationValidator {
         return Validate(req, UPDATE_LOCATION);
     }
 
-    // Validate delete location
-    DeleteLocation(req) {
-        return Validate(req, DELETE_LOCATION);
+    // Validate remove location
+    RemoveLocation(req) {
+        return Validate(req, REMOVE_LOCATION);
     }
 
     // Validate get all locations

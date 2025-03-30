@@ -1,10 +1,10 @@
 import DatabaseManager from "../../components/database.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
 import {
-    ASSIGN_PROFILE_PERMISSION_PROC,
-    ASSIGN_USER_PROFILE_PROC,
-    REVOKE_PROFILE_PERMISSION_PROC,
-    REVOKE_USER_PROFILE_PROC,
+    CREATE_PROFILE_PERMISSION_PROC,
+    CREATE_USER_PROFILE_PROC,
+    REMOVE_PROFILE_PERMISSION_PROC,
+    REMOVE_USER_PROFILE_PROC,
     SET_PROFILE_PERMISSIONS_PROC,
 } from "../../database/model/storedProcedures.js";
 import {
@@ -18,10 +18,10 @@ import Security from "../../components/security.js";
 
 // Service for the security object
 export class SecurityService {
-    // Assigns a permission to a profile
-    async AssignProfilePermission(req, body) {
+    // Creates a permission to a profile
+    async CreateProfilePermission(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
-            ASSIGN_PROFILE_PERMISSION_PROC,
+            CREATE_PROFILE_PERMISSION_PROC,
             req.session.userID,
             body.profile_id,
             body.method_id,
@@ -42,10 +42,10 @@ export class SecurityService {
         return queryRow?.out_permission_id;
     }
 
-    // Revokes a permission from a profile
-    async RevokeProfilePermission(req, body) {
+    // Removes a permission from a profile
+    async RemoveProfilePermission(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
-            REVOKE_PROFILE_PERMISSION_PROC,
+            REMOVE_PROFILE_PERMISSION_PROC,
             req.session.userID,
             body.profile_id,
             body.method_id,
@@ -80,7 +80,7 @@ export class SecurityService {
         return queryRes.rows;
     }
 
-    // Get all modules
+    // Gets all modules
     async GetModules(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_ALL_MODULES_FN,
@@ -88,7 +88,7 @@ export class SecurityService {
         return queryRes.rows;
     }
 
-    // Get all objects by module ID
+    // Gets all objects by module ID
     async GetObjectsByModuleID(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_OBJECTS_BY_MODULE_ID_FN,
@@ -97,7 +97,7 @@ export class SecurityService {
         return queryRes.rows;
     }
 
-    // Get all methods by object ID
+    // Gets all methods by object ID
     async GetMethodsByObjectID(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_METHODS_BY_OBJECT_ID_FN,
@@ -106,10 +106,10 @@ export class SecurityService {
         return queryRes.rows;
     }
 
-    // Assign a profile to a user
-    async AssignUserProfile(req, body) {
+    // Creates a profile to a user
+    async CreateUserProfile(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
-            ASSIGN_USER_PROFILE_PROC,
+            CREATE_USER_PROFILE_PROC,
             req.session.userID,
             body.username,
             body.profile_id,
@@ -128,10 +128,10 @@ export class SecurityService {
         return queryRow?.out_user_id
     }
 
-    // Revoke a profile from a user
-    async RevokeUserProfile(req, body) {
+    // Removes a profile from a user
+    async RemoveUserProfile(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
-            REVOKE_USER_PROFILE_PROC,
+            REMOVE_USER_PROFILE_PROC,
             req.session.userID,
             body.username,
             body.profile_id,
@@ -150,7 +150,7 @@ export class SecurityService {
         return queryRow?.out_user_id
     }
 
-    // Get methods by profile ID and object ID
+    // Gets methods by profile ID and object ID
     async GetMethodsByProfileIDObjectID(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_METHODS_BY_PROFILE_ID_OBJECT_ID_FN,
@@ -160,7 +160,7 @@ export class SecurityService {
         return queryRes.rows;
     }
 
-    // Set profile permissions
+    // Sets profile permissions
     async SetProfilePermissions(req, body) {
         await DatabaseManager.rawQuery(
             SET_PROFILE_PERMISSIONS_PROC,

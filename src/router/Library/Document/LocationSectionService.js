@@ -1,6 +1,6 @@
 import DatabaseManager from "../../../components/database.js";
 import {
-    ASSIGN_DOCUMENT_LOCATION_SECTION_PROC,
+    CREATE_DOCUMENT_LOCATION_SECTION_PROC,
     REMOVE_DOCUMENT_LOCATION_SECTION_PROC
 } from "../../../database/model/storedProcedures.js";
 import {
@@ -14,11 +14,11 @@ import {FieldFailError} from "@ralvarezdev/js-express";
 
 // Service for the location section object
 export class LocationSectionService {
-    // Assign document location section
-    async AssignDocumentLocationSection(req, body) {
+    // Creates a document location section
+    async CreateDocumentLocationSection(req, body) {
         try {
             await DatabaseManager.rawQuery(
-                ASSIGN_DOCUMENT_LOCATION_SECTION_PROC,
+                CREATE_DOCUMENT_LOCATION_SECTION_PROC,
                 req.session.userID,
                 body.location_section_id,
                 body.document_id
@@ -37,7 +37,7 @@ export class LocationSectionService {
         }
     }
 
-    // Remove document location section
+    // Removes a document location section
     async RemoveDocumentLocationSection(req, body) {
         await DatabaseManager.rawQuery(
             REMOVE_DOCUMENT_LOCATION_SECTION_PROC,
@@ -47,7 +47,7 @@ export class LocationSectionService {
         );
     }
 
-    // Get document location sections by document ID
+    // Gets a document location sections by document ID
     async GetDocumentLocationSectionsByDocumentID(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_DOCUMENT_LOCATION_SECTIONS_BY_DOCUMENT_ID_FN,

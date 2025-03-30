@@ -6,13 +6,13 @@ import {
 
 // Service for the language object
 export class LanguageService {
-    // Get all languages
+    // Gets all languages
     async GetAllLanguages() {
         const queryRes = await DatabaseManager.rawQuery(GET_ALL_LANGUAGES_FN);
         return queryRes.rows;
     }
 
-    // Search language by name
+    // Searches language by name
     async SearchLanguageByName(name) {
         const queryRes = await DatabaseManager.rawQuery(
             SEARCH_LANGUAGE_BY_NAME_FN,

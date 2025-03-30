@@ -5,37 +5,37 @@ import Logger from "../../../components/logger.js";
 
 // LocationSection object for the document module
 export class LocationSection {
-    // Assign document location section
-    async AssignDocumentLocationSection(req, res) {
+    // Creates a document location section
+    async CreateDocumentLocationSection(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.AssignDocumentLocationSection);
+        const body = HandleValidation(req, res, Validator.CreateDocumentLocationSection);
 
-        // Assign the document location section
-        await Service.AssignDocumentLocationSection(req, body)
+        // Create the document location section
+        await Service.CreateDocumentLocationSection(req, body)
 
-        // Log the assignment
-        Logger.info(`Assigned location section ${body.location_section_id} to document ${body.document_id} by admin ${req.session.userID}`)
+        // Log the creation
+        Logger.info(`Created location section ${body.location_section_id} to document ${body.document_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Remove document location section
+    // Removes a document location section
     async RemoveDocumentLocationSection(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.RemoveDocumentLocationSection);
 
-        // Revoke the document location section
+        // Remove the document location section
         await Service.RemoveDocumentLocationSection(req, body)
 
-        // Log the revocation
+        // Log the removal
         Logger.info(`Removed location section ${body.location_section_id} from document ${body.document_id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Get document location sections by document ID
+    // Gets a document location sections by document ID
     async GetDocumentLocationSectionsByDocumentID(req, res) {
         // Validate the request
         const body = HandleValidation(req,

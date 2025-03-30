@@ -1,7 +1,7 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
     CREATE_PUBLISHER,
-    DELETE_PUBLISHER,
+    REMOVE_PUBLISHER,
     SEARCH_PUBLISHER_BY_NAME,
     UPDATE_PUBLISHER
 } from "./PublisherModel.js";
@@ -18,9 +18,9 @@ export class PublisherValidator {
         return Validate(req, UPDATE_PUBLISHER);
     }
 
-    // Validate delete publisher
-    DeletePublisher(req) {
-        return Validate(req, DELETE_PUBLISHER);
+    // Validate remove publisher
+    RemovePublisher(req) {
+        return Validate(req, REMOVE_PUBLISHER);
     }
 
     // Validate search publisher by name

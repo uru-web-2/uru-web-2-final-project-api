@@ -12,7 +12,7 @@ BEGIN
     RETURN QUERY
     SELECT modules.id, modules.name, modules.parent_module_id
     FROM modules
-    WHERE modules.deleted_at IS NULL;
+    WHERE modules.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -36,7 +36,7 @@ BEGIN
     INNER JOIN methods ON objects.id = methods.object_id
     INNER JOIN permissions ON methods.id = permissions.method_id
     WHERE permissions.profile_id = in_profile_id
-    AND modules.deleted_at IS NULL;
+    AND modules.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -55,7 +55,7 @@ BEGIN
     RETURN QUERY
     SELECT objects.id, objects.name, objects.module_id
     FROM objects
-    WHERE objects.deleted_at IS NULL;
+    WHERE objects.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -76,7 +76,7 @@ BEGIN
     SELECT objects.id, objects.name, objects.module_id
     FROM objects
     WHERE objects.module_id = in_module_id
-    AND objects.deleted_at IS NULL;
+    AND objects.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -101,7 +101,7 @@ BEGIN
     INNER JOIN permissions ON methods.id = permissions.method_id
     WHERE permissions.profile_id = in_profile_id
     AND objects.module_id = in_module_id
-    AND objects.deleted_at IS NULL;
+    AND objects.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -120,7 +120,7 @@ BEGIN
     RETURN QUERY
     SELECT methods.id, methods.name, methods.object_id
     FROM methods
-    WHERE methods.deleted_at IS NULL;
+    WHERE methods.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -140,7 +140,7 @@ BEGIN
     SELECT methods.id, methods.name
     FROM methods
     WHERE methods.object_id = in_object_id
-    AND methods.deleted_at IS NULL;
+    AND methods.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -159,12 +159,12 @@ TABLE (
 BEGIN
     -- Query to select the methods by profile ID and object ID
     RETURN QUERY
-    SELECT DISTINCT ON (methods.id) methods.id, methods.name, permissions.id IS NOT NULL AND permissions.revoked_at IS NULL AS is_allowed
+    SELECT DISTINCT ON (methods.id) methods.id, methods.name, permissions.id IS NOT NULL AND permissions.removed_at IS NULL AS is_allowed
     FROM methods
     LEFT JOIN permissions ON methods.id = permissions.method_id
     AND permissions.profile_id = in_profile_id
     WHERE methods.object_id = in_object_id
-    AND methods.deleted_at IS NULL
+    AND methods.removed_at IS NULL
     ORDER BY methods.id, permissions.id DESC;
 END;
 $$ LANGUAGE plpgsql;
@@ -186,7 +186,7 @@ BEGIN
     FROM profiles
     INNER JOIN user_profiles ON profiles.id = user_profiles.profile_id
     WHERE user_profiles.user_id = in_user_id
-    AND user_profiles.revoked_at IS NULL;
+    AND user_profiles.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -214,7 +214,7 @@ BEGIN
     AND profile_id = in_profile_id
     AND object_id = in_object_id
     AND module_id = in_module_id
-    AND revoked_at IS NULL;
+    AND removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -232,7 +232,7 @@ BEGIN
     RETURN QUERY
     SELECT permissions.method_id, permissions.profile_id
     FROM permissions
-    WHERE permissions.revoked_at IS NULL;
+    WHERE permissions.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -298,7 +298,7 @@ BEGIN
     RETURN QUERY
     SELECT profiles.id, profiles.name, profiles.description
     FROM profiles
-    WHERE profiles.deleted_at IS NULL;
+    WHERE profiles.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -344,7 +344,7 @@ BEGIN
     RETURN QUERY
     SELECT topics.id, topics.name
     FROM topics
-    WHERE topics.deleted_at IS NULL;
+    WHERE topics.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -363,7 +363,7 @@ BEGIN
     RETURN QUERY
     SELECT topics.id, topics.name, topics.description
     FROM topics
-    WHERE topics.deleted_at IS NULL;
+    WHERE topics.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -381,7 +381,7 @@ BEGIN
     RETURN QUERY
     SELECT languages.id, languages.name
     FROM languages
-    WHERE languages.deleted_at IS NULL;
+    WHERE languages.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -400,7 +400,7 @@ BEGIN
     RETURN QUERY
     SELECT publishers.id, publishers.name, publishers.description
     FROM publishers
-    WHERE publishers.deleted_at IS NULL;
+    WHERE publishers.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -458,7 +458,7 @@ BEGIN
     RETURN QUERY
     SELECT countries.id, countries.name
     FROM countries
-    WHERE countries.deleted_at IS NULL;
+    WHERE countries.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -517,7 +517,7 @@ BEGIN
     RETURN QUERY
     SELECT locations.id, locations.floor, locations.area
     FROM locations
-    WHERE locations.deleted_at IS NULL
+    WHERE locations.removed_at IS NULL
     ORDER BY locations.id
     OFFSET in_offset
     LIMIT in_limit;
@@ -544,7 +544,7 @@ BEGIN
     SELECT location_sections.id, location_sections.location_id, locations.floor, locations.area, location_sections.name
     FROM location_sections
     INNER JOIN locations ON location_sections.location_id = locations.id
-    WHERE location_sections.deleted_at IS NULL
+    WHERE location_sections.removed_at IS NULL
     ORDER BY location_sections.id
     OFFSET in_offset
     LIMIT in_limit;
@@ -567,7 +567,7 @@ BEGIN
     SELECT location_sections.id, location_sections.name
     FROM location_sections
     WHERE location_sections.location_id = in_location_id
-    AND location_sections.deleted_at IS NULL;
+    AND location_sections.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -588,7 +588,7 @@ BEGIN
     FROM topics
     INNER JOIN document_topics ON topics.id = document_topics.topic_id
     WHERE document_topics.document_id = in_document_id
-    AND topics.deleted_at IS NULL
+    AND topics.removed_at IS NULL
     AND document_topics.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -610,7 +610,7 @@ BEGIN
     FROM languages
     INNER JOIN document_languages ON languages.id = document_languages.language_id
     WHERE document_languages.document_id = in_document_id
-    AND languages.deleted_at IS NULL
+    AND languages.removed_at IS NULL
     AND document_languages.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -632,7 +632,7 @@ BEGIN
     FROM location_sections
     INNER JOIN document_location_sections ON location_sections.id = document_location_sections.location_section_id
     WHERE document_location_sections.document_id = in_document_id
-    AND location_sections.deleted_at IS NULL
+    AND location_sections.removed_at IS NULL
     AND document_location_sections.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;

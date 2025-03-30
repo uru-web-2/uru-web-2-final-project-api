@@ -1,26 +1,26 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
-    ASSIGN_PROFILE_PERMISSION,
-    ASSIGN_USER_PROFILE,
+    CREATE_PROFILE_PERMISSION,
+    CREATE_USER_PROFILE,
     GET_METHODS_BY_OBJECT_ID,
     GET_METHODS_BY_PROFILE_ID_OBJECT_ID,
     GET_OBJECTS_BY_MODULE_ID,
     GET_PROFILE_PERMISSIONS_METHODS,
-    REVOKE_PROFILE_PERMISSION,
-    REVOKE_USER_PROFILE,
+    REMOVE_PROFILE_PERMISSION,
+    REMOVE_USER_PROFILE,
     SET_PROFILE_PERMISSIONS
 } from "./SecurityModel.js";
 
 // Validator for the security object
 export class SecurityValidator {
-    // Validate assign profile permission
-    AssignProfilePermission(req) {
-        return Validate(req, ASSIGN_PROFILE_PERMISSION);
+    // Validate create profile permission
+    CreateProfilePermission(req) {
+        return Validate(req, CREATE_PROFILE_PERMISSION);
     }
 
-    // Validate revoke profile permission
-    RevokeProfilePermission(req) {
-        return Validate(req, REVOKE_PROFILE_PERMISSION);
+    // Validate remove profile permission
+    RemoveProfilePermission(req) {
+        return Validate(req, REMOVE_PROFILE_PERMISSION);
     }
 
     // Validate get profile permissions methods
@@ -38,14 +38,14 @@ export class SecurityValidator {
         return Validate(req, GET_METHODS_BY_OBJECT_ID);
     }
 
-    // Validate assign user profile
-    AssignUserProfile(req) {
-        return Validate(req, ASSIGN_USER_PROFILE);
+    // Validate create user profile
+    CreateUserProfile(req) {
+        return Validate(req, CREATE_USER_PROFILE);
     }
 
-    // Validate revoke user profile
-    RevokeUserProfile(req) {
-        return Validate(req, REVOKE_USER_PROFILE);
+    // Validate remove user profile
+    RemoveUserProfile(req) {
+        return Validate(req, REMOVE_USER_PROFILE);
     }
 
     // Validate set profile permissions

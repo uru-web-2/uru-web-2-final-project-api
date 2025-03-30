@@ -5,7 +5,7 @@ import {HandleValidation, SuccessJSendBody} from "@ralvarezdev/js-express";
 
 // Language object for the other module
 export class Language {
-    // Get all languages
+    // Gets all languages
     async GetAllLanguages(req, res) {
         // Get all languages
         const languages = await Service.GetAllLanguages()
@@ -17,7 +17,7 @@ export class Language {
         res.status(200).json(SuccessJSendBody({languages}))
     }
 
-    // Search language by name
+    // Searches language by name
     async SearchLanguageByName(req, res) {
         // Validate the request
         const body = HandleValidation(req,

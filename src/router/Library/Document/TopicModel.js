@@ -1,7 +1,7 @@
 import Joi from 'joi';
 
-// Assign document topic model
-export const ASSIGN_DOCUMENT_TOPIC = Joi.object({
+// Create document topic model
+export const CREATE_DOCUMENT_TOPIC = Joi.object({
     topic_id: Joi.number().required().min(1),
     document_id: Joi.number().required().min(1)
 })

@@ -5,7 +5,7 @@ import Logger from "../../components/logger.js";
 
 // Location section object for the library module
 export class LocationSection {
-    // Create a location section
+    // Createx a location section
     async CreateLocationSection(req, res) {
         // Validate the request
         const body = HandleValidation(req,
@@ -23,7 +23,7 @@ export class LocationSection {
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Update a location section
+    // Updates a location section
     async UpdateLocationSection(req, res) {
         // Validate the request
         const body = HandleValidation(req,
@@ -41,25 +41,25 @@ export class LocationSection {
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Delete a location section
-    async DeleteLocationSection(req, res) {
+    // Removes a location section
+    async RemoveLocationSection(req, res) {
         // Validate the request
         const body = HandleValidation(req,
             res,
-            Validator.DeleteLocationSection
+            Validator.RemoveLocationSection
         );
 
-        // Delete the location section
-        await Service.DeleteLocationSection(req, body)
+        // Remove the location section
+        await Service.RemoveLocationSection(req, body)
 
-        // Log the deletion
-        Logger.info(`Deleted location section ${body.id} by admin ${req.session.userID}`)
+        // Log the removal
+        Logger.info(`Removed location section ${body.id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Get all location sections
+    // Gets all location sections
     async GetAllLocationSections(req, res) {
         // Validate the request
         const body = HandleValidation(req,
@@ -77,7 +77,7 @@ export class LocationSection {
         res.status(200).json(SuccessJSendBody({location_sections: locationSections}))
     }
 
-    // Get location sections by location ID
+    // Gets location sections by location ID
     async GetLocationSectionsByLocationID(req, res) {
         // Validate the request
         const body = HandleValidation(req,

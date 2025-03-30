@@ -5,7 +5,7 @@ import Service from "./UserService.js";
 
 // User object for the security module
 export class User {
-    // Search a user by username
+    // Searches a user by username
     async SearchUserByUsername(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.SearchUserByUsername);
@@ -14,13 +14,13 @@ export class User {
         const user = await Service.SearchUserByUsername(req, body);
 
         // Log the search
-        Logger.info(`Searching user ${body.username} by admin ${req.session.userID}`);
+        Logger.info(`Searched user ${body.username} by admin ${req.session.userID}`);
 
         // Send the response
         res.status(200).json(SuccessJSendBody(user))
     }
 
-    // Create a user
+    // Creates a user
     async CreateUser(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.CreateUser);
@@ -35,7 +35,7 @@ export class User {
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Get all users with pagination
+    // Gets all users with pagination
     async GetAllUsers(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.GetAllUsers);
@@ -43,14 +43,14 @@ export class User {
         // Get all the users with pagination
         const users = await Service.GetAllUsers(req, body);
 
-        // Log the creation
-        Logger.info(`Fetching all users by admin ${req.session.userID}`);
+        // Log the retrieval
+        Logger.info(`Retrieved all users by admin ${req.session.userID}`);
 
         // Send the response
         res.status(200).json(SuccessJSendBody(users))
     }
 
-    // Get the user details by users ID
+    // Gets the user details by users ID
     async GetUserDetailsByUserID(req, res) {
         // Validate the request
         const body = HandleValidation(req,
@@ -64,14 +64,14 @@ export class User {
             body
         );
 
-        // Log the creation
-        Logger.info(`Fetching user details from user ${body.id} by admin ${req.session.userID}`);
+        // Log the retrieval
+        Logger.info(`Retrieved user details from user ${body.id} by admin ${req.session.userID}`);
 
         // Send the response
         res.status(200).json(SuccessJSendBody(userDetails))
     }
 
-    // Update a user by admin
+    // Updates a user by admin
     async UpdateUserByAdmin(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.UpdateUserByAdmin);

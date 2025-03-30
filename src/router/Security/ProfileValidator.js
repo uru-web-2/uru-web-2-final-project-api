@@ -1,7 +1,7 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
     CREATE_PROFILE,
-    DELETE_PROFILE,
+    REMOVE_PROFILE,
     SEARCH_PROFILE_BY_NAME,
     UPDATE_PROFILE
 } from "./ProfileModel.js";
@@ -18,9 +18,9 @@ export class ProfileValidator {
         return Validate(req, UPDATE_PROFILE);
     }
 
-    // Validate delete profile
-    DeleteProfile(req) {
-        return Validate(req, DELETE_PROFILE);
+    // Validate remove profile
+    RemoveProfile(req) {
+        return Validate(req, REMOVE_PROFILE);
     }
 
     // Validate search profile by name

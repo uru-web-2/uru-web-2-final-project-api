@@ -1,6 +1,6 @@
 import {
     CREATE_LOCATION_SECTION_PROC,
-    DELETE_LOCATION_SECTION_PROC,
+    REMOVE_LOCATION_SECTION_PROC,
     UPDATE_LOCATION_SECTION_PROC,
 } from "../../database/model/storedProcedures.js";
 import DatabaseManager from "../../components/database.js";
@@ -68,10 +68,10 @@ export class LocationSectionService {
         }
     }
 
-    // Deletes a location section
-    async DeleteLocationSection(req, body) {
+    // Removes a location section
+    async RemoveLocationSection(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
-            DELETE_LOCATION_SECTION_PROC,
+            REMOVE_LOCATION_SECTION_PROC,
             req.session.userID,
             body.id,
             null,
@@ -92,7 +92,7 @@ export class LocationSectionService {
         return queryRes.rows;
     }
 
-    // Get location sections by location ID
+    // Gets location sections by location ID
     async GetLocationSectionsByLocationID(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_LOCATION_SECTIONS_BY_LOCATION_ID_FN,

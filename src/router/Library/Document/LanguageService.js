@@ -1,6 +1,6 @@
 import DatabaseManager from "../../../components/database.js";
 import {
-    ASSIGN_DOCUMENT_LANGUAGE_PROC,
+    CREATE_DOCUMENT_LANGUAGE_PROC,
     REMOVE_DOCUMENT_LANGUAGE_PROC
 } from "../../../database/model/storedProcedures.js";
 import {
@@ -14,11 +14,11 @@ import {FieldFailError} from "@ralvarezdev/js-express";
 
 // Service for the language object
 export class LanguageService {
-    // Assign document language
-    async AssignDocumentLanguage(req, body) {
+    // Creates a document language
+    async CreateDocumentLanguage(req, body) {
         try {
             await DatabaseManager.rawQuery(
-                ASSIGN_DOCUMENT_LANGUAGE_PROC,
+                CREATE_DOCUMENT_LANGUAGE_PROC,
                 req.session.userID,
                 body.language_id,
                 body.document_id
@@ -37,7 +37,7 @@ export class LanguageService {
         }
     }
 
-    // Remove document language
+    // Removes a document language
     async RemoveDocumentLanguage(req, body) {
         await DatabaseManager.rawQuery(
             REMOVE_DOCUMENT_LANGUAGE_PROC,
@@ -47,7 +47,7 @@ export class LanguageService {
         );
     }
 
-    // Get document languages by document ID
+    // Gets the document languages by document ID
     async GetDocumentLanguagesByDocumentID(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_DOCUMENT_LANGUAGES_BY_DOCUMENT_ID_FN,

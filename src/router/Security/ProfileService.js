@@ -2,7 +2,7 @@ import DatabaseManager from "../../components/database.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
 import {
     CREATE_PROFILE_PROC,
-    DELETE_PROFILE_PROC,
+    REMOVE_PROFILE_PROC,
     UPDATE_PROFILE_PROC
 } from "../../database/model/storedProcedures.js";
 import {PROFILES_UNIQUE_NAME} from "../../database/model/constraints.js";
@@ -71,10 +71,10 @@ export class ProfileService {
         }
     }
 
-    // Deletes a profile
-    async DeleteProfile(req, body) {
+    // Removes a profile
+    async RemoveProfile(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
-            DELETE_PROFILE_PROC,
+            REMOVE_PROFILE_PROC,
             req.session.userID,
             body.id,
             null
@@ -97,7 +97,7 @@ export class ProfileService {
         return queryRes.rows;
     }
 
-    // Get all profiles
+    // Gets all profiles
     async GetAllProfiles(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             GET_ALL_PROFILES_FN,

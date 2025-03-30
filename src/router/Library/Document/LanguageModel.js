@@ -1,7 +1,7 @@
 import Joi from 'joi';
 
-// Assign document language model
-export const ASSIGN_DOCUMENT_LANGUAGE = Joi.object({
+// Create document language model
+export const CREATE_DOCUMENT_LANGUAGE = Joi.object({
     language_id: Joi.number().required().min(1),
     document_id: Joi.number().required().min(1)
 })

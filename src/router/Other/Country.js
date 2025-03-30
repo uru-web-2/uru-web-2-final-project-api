@@ -5,7 +5,7 @@ import Logger from "../../components/logger.js";
 
 // Country object for the other module
 export class Country {
-    // Get all countries
+    // Gets all countries
     async GetAllCountries(req, res) {
         // Get all countries
         const countries = await Service.GetAllCountries(req)
@@ -17,7 +17,7 @@ export class Country {
         res.status(200).json(SuccessJSendBody({countries}))
     }
 
-    // Search country by name
+    // Searches country by name
     async SearchCountryByName(req, res) {
         // Validate the request
         const body = HandleValidation(req,

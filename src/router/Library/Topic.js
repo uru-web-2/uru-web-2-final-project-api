@@ -5,7 +5,7 @@ import Logger from "../../components/logger.js";
 
 // Topic object for the library module
 export class Topic {
-    // Create a topic
+    // Creates a topic
     async CreateTopic(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.CreateTopic);
@@ -20,7 +20,7 @@ export class Topic {
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Update a topic
+    // Updates a topic
     async UpdateTopic(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.UpdateTopic);
@@ -35,22 +35,22 @@ export class Topic {
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Delete a topic
-    async DeleteTopic(req, res) {
+    // Removes a topic
+    async RemoveTopic(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.DeleteTopic);
+        const body = HandleValidation(req, res, Validator.RemoveTopic);
 
         // Delete the topic
-        await Service.DeleteTopic(req, body)
+        await Service.RemoveTopic(req, body)
 
-        // Log the deletion
-        Logger.info(`Deleted topic ${body.id} by admin ${req.session.userID}`)
+        // Log the removal
+        Logger.info(`Removed topic ${body.id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Get all topics
+    // Gets all topics
     async GetAllTopics(req, res) {
         // Get all topics
         const topics = await Service.GetAllTopics(req)
@@ -62,7 +62,7 @@ export class Topic {
         res.status(200).json(SuccessJSendBody({topics}))
     }
 
-    // Search topic by name
+    // Searches topic by name
     async SearchTopicByName(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.SearchTopicByName);

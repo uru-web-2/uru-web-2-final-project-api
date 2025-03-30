@@ -1,7 +1,7 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
     CREATE_TOPIC,
-    DELETE_TOPIC,
+    REMOVE_TOPIC,
     SEARCH_TOPIC_BY_NAME,
     UPDATE_TOPIC
 } from "./TopicModel.js";
@@ -18,9 +18,9 @@ export class TopicValidator {
         return Validate(req, UPDATE_TOPIC);
     }
 
-    // Validate delete topic
-    DeleteTopic(req) {
-        return Validate(req, DELETE_TOPIC);
+    // Validate remove topic
+    RemoveTopic(req) {
+        return Validate(req, REMOVE_TOPIC);
     }
 
     // Validate search topic by name

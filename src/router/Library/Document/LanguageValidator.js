@@ -1,15 +1,15 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
-    ASSIGN_DOCUMENT_LANGUAGE,
+    CREATE_DOCUMENT_LANGUAGE,
     GET_DOCUMENT_LANGUAGES_BY_DOCUMENT_ID,
     REMOVE_DOCUMENT_LANGUAGE,
 } from "./LanguageModel.js";
 
 // Validator for the language object
 export class LanguageValidator {
-    // Validate assign document language
-    AssignDocumentLanguage(req) {
-        return Validate(req, ASSIGN_DOCUMENT_LANGUAGE);
+    // Validate create document language
+    CreateDocumentLanguage(req) {
+        return Validate(req, CREATE_DOCUMENT_LANGUAGE);
     }
 
     // Validate remove document language

@@ -5,7 +5,7 @@ import Logger from "../../components/logger.js";
 
 // Publisher object for the document module
 export class Publisher {
-    // Create a publisher
+    // Creates a publisher
     async CreatePublisher(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.CreatePublisher);
@@ -20,7 +20,7 @@ export class Publisher {
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Update a publisher
+    // Updates a publisher
     async UpdatePublisher(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.UpdatePublisher);
@@ -35,22 +35,22 @@ export class Publisher {
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Delete a publisher
-    async DeletePublisher(req, res) {
+    // Removes a publisher
+    async RemovePublisher(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.DeletePublisher);
+        const body = HandleValidation(req, res, Validator.RemovePublisher);
 
-        // Delete the publisher
-        await Service.DeletePublisher(req, body)
+        // Remove the publisher
+        await Service.RemovePublisher(req, body)
 
-        // Log the deletion
-        Logger.info(`Deleted publisher ${body.id} by admin ${req.session.userID}`)
+        // Log the removal
+        Logger.info(`Removed publisher ${body.id} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())
     }
 
-    // Get all publishers
+    // Gets all publishers
     async GetAllPublishers(req, res) {
         // Get all publishers
         const publishers = await Service.GetAllPublishers(req)
@@ -62,7 +62,7 @@ export class Publisher {
         res.status(200).json(SuccessJSendBody({publishers}))
     }
 
-    // Search publisher by name
+    // Searches publisher by name
     async SearchPublisherByName(req, res) {
         // Validate the request
         const body = HandleValidation(req,

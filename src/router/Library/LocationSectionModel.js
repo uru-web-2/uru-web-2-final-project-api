@@ -12,8 +12,8 @@ export const UPDATE_LOCATION_SECTION = Joi.object({
     name: Joi.string().required().min(1),
 })
 
-// Delete location model
-export const DELETE_LOCATION_SECTION = Joi.object({
+// Remove location model
+export const REMOVE_LOCATION_SECTION = Joi.object({
     id: Joi.number().required().min(1),
 })
 
