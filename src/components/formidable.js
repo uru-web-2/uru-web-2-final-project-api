@@ -34,14 +34,15 @@ export async function getPDFFileBufferFromForm(req) {
     return buffer
 }
 
-// Upload some image files from form
-export async function uploadImagesFromForm(req) {
+// Get image files from form
+export async function getImagesFromForm(req) {
     const form = new formidable.IncomingForm();
     form.uploadDir = IMAGES_PATH
     form.keepExtensions = true;
 
-    // Images names with extensions
-    const imagesNamesWithExtensions = []
+    // Image extensions by UUID, and the image buffer by UUID
+    const imagesExtensionsByUUID = {}
+    const imagesBuffersByUUID = {}
 
     // Parse the form
     await form.parse(req, async (err, fields, files) => {
@@ -66,12 +67,13 @@ export async function uploadImagesFromForm(req) {
             // Get the extension
             const extension = file.name.split('.').pop()
 
-            await uploadImage(imageUUID, extension, buffer)
+            // Save the image buffer
+            imagesBuffersByUUID[imageUUID] = buffer
 
-            // Add the image name with extension to the array
-            imagesNamesWithExtensions.push([imageUUID, extension])
+            // Save the image extension
+            imagesExtensionsByUUID[imageUUID] = extension
         }
     });
 
-    return imagesNamesWithExtensions.map(([imageUUID, extension]) => getImageRelativePath( imageUUID, extension))
+    return {imagesExtensionsByUUID, imagesBuffersByUUID}
 }

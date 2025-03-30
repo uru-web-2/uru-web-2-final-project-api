@@ -1,18 +1,31 @@
 import DatabaseManager from "../../../../components/database.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
 import {CREATE_BOOK_PROC} from "../../../../database/model/storedProcedures.js";
-import {getBookRelativePath} from "../../../../components/files.js";
+import {
+    PDF_FILE_EXTENSION,
+    uploadBookFile, uploadImage
+} from "../../../../components/files.js";
+import {
+    getImagesFromForm, getPDFFileBufferFromForm,
+} from "../../../../components/formidable.js";
+import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
+import {
+    BOOKS_UNIQUE_ISBN,
+} from "../../../../database/model/constraints.js";
 
 // Service for the book object
 export class BookService {
     // Creates a book
     async CreateBook(req, body) {
-        // Get file relative URL
-        getBookRelativePath()
-        /*
+        // Upload images from form
+        const {imagesExtensionsByUUID, imagesBuffersByUUID}= await getImagesFromForm(req)
+
+        // Get the PDF file buffer
+        const pdfBuffer = getPDFFileBufferFromForm(req)
 
         try {
-            await DatabaseManager.rawQuery(
+            // Create the book
+            const queryRes=await DatabaseManager.rawQuery(
                 CREATE_BOOK_PROC,
                 req.session.userID,
                 body.document_title,
@@ -20,30 +33,35 @@ export class BookService {
                 body.document_release_date,
                 body.document_pages,
                 body.document_author,
-
-                body.document_id
+                body.document_topic_ids,
+                body.document_location_section_ids,
+                body.document_language_ids,
+                Object.keys(imagesExtensionsByUUID),
+                Object.values(imagesExtensionsByUUID),
+                body.book_isbn,
+                body.book_publisher_id,
+                null
             );
+
+            // Get the book ID
+            const bookID = queryRes.rows?.[0]?.out_book_id
+
+            // Save the PDF file
+            await uploadBookFile(bookID, PDF_FILE_EXTENSION,pdfBuffer)
+
+            // Save the images
+            for (const imageUUID in imagesBuffersByUUID)
+                await uploadImage(imageUUID, imagesExtensionsByUUID[imageUUID], imagesBuffersByUUID[imageUUID])
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
 
-            // Check if the constraint is the unique document ID and author ID constraint
-            if (constraintName === DOCUMENT_AUTHORS_UNIQUE_DOCUMENT_ID_AUTHOR_ID)
-                throw new FieldFailError(400,
-                    'author_id',
-                    'Author is already assigned to document'
-                )
+            // Check if the constraint is the unique ISBN constraint
+            if (constraintName === BOOKS_UNIQUE_ISBN)
+                throw new FieldFailError(400, 'book_isbn', 'ISBN is already taken')
+
             throw error
         }
-    }
-
- IN in_document_topic_ids BIGINT[],
-    IN in_document_location_section_ids BIGINT[],
-    IN in_document_language_ids BIGINT[],
-    IN in_document_document_image_urls VARCHAR[],
-    IN in_book_isbn VARCHAR,
-    IN in_book_publisher_id BIGINT
-*/
     }
 }
 
