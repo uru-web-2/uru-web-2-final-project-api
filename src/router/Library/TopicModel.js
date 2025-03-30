@@ -20,5 +20,6 @@ export const REMOVE_TOPIC = Joi.object({
 
 // Search topic by name model
 export const SEARCH_TOPIC_BY_NAME = Joi.object({
-    name: Joi.string().required().min(1)
+    name: Joi.string().required().min(1),
+    limit: Joi.number().required().min(1)
 })

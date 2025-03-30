@@ -13,10 +13,11 @@ export class CountryService {
     }
 
     // Searches country by name
-    async SearchCountryByName(name) {
+    async SearchCountryByName(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             SEARCH_COUNTRY_BY_NAME_FN,
-            name
+            body.name,
+            body.limit
         );
         return queryRes.rows;
     }

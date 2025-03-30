@@ -89,7 +89,8 @@ export class TopicService {
     async SearchTopicByName(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             SEARCH_TOPIC_BY_NAME_FN,
-            body.name
+            body.name,
+            body.limit
         );
         return queryRes.rows;
     }

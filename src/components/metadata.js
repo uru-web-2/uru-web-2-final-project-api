@@ -15,6 +15,7 @@ import {Country} from "../router/Other/Country.js";
 import {LocationSection as DocumentLocationSection} from "../router/Library/Document/LocationSection.js";
 import {LocationSection as LibraryLocationSection} from "../router/Library/LocationSection.js";
 import {Book} from "../router/Library/Document/Book/Book.js";
+import {Magazine} from "../router/Library/Document/Magazine.js";
 
 // Security module
 
@@ -119,6 +120,13 @@ AddMetadataProfiles(DocumentTopic,
     "GetDocumentTopicsByDocumentID",
     ...ALL_PROFILES_NAME
 )
+
+// -- Magazine object
+AddMetadataProfiles(Magazine, "CreateMagazine", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(Magazine, "UpdateMagazine", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(Magazine, "RemoveMagazine", PROFILES.SUPER_ADMIN, PROFILES.LIBRARIAN)
+AddMetadataProfiles(Magazine, "GetAllMagazines", ...ALL_PROFILES_NAME)
+AddMetadataProfiles(Magazine, "SearchMagazineByName", ...ALL_PROFILES_NAME)
 
 // -- Language object
 AddMetadataProfiles(DocumentLanguage,

@@ -13,10 +13,11 @@ export class LanguageService {
     }
 
     // Searches language by name
-    async SearchLanguageByName(name) {
+    async SearchLanguageByName(req, body) {
         const queryRes = await DatabaseManager.rawQuery(
             SEARCH_LANGUAGE_BY_NAME_FN,
-            name
+            body.name,
+            body.limit
         );
         return queryRes.rows;
     }

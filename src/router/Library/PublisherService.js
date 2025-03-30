@@ -90,6 +90,7 @@ export class PublisherService {
         const queryRes = await DatabaseManager.rawQuery(
             SEARCH_PUBLISHER_BY_NAME_FN,
             body.name,
+            body.limit,
         );
         return queryRes.rows;
     }

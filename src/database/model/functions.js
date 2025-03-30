@@ -56,10 +56,10 @@ export const GET_ALL_LANGUAGES_FN = "SELECT * FROM get_all_languages()"
 export const GET_ALL_PUBLISHERS_FN = "SELECT * FROM get_all_publishers()"
 
 // Query to search for a publisher by name
-export const SEARCH_PUBLISHER_BY_NAME_FN = "SELECT * FROM search_publisher_by_name($1)"
+export const SEARCH_PUBLISHER_BY_NAME_FN = "SELECT * FROM search_publisher_by_name($1, $2)"
 
 // Query to search for a topic by name
-export const SEARCH_TOPIC_BY_NAME_FN = "SELECT * FROM search_topic_by_name($1)"
+export const SEARCH_TOPIC_BY_NAME_FN = "SELECT * FROM search_topic_by_name($1, $2)"
 
 // Query to search for a language by name
 export const SEARCH_LANGUAGE_BY_NAME_FN = "SELECT * FROM search_language_by_name($1)"
@@ -68,7 +68,7 @@ export const SEARCH_LANGUAGE_BY_NAME_FN = "SELECT * FROM search_language_by_name
 export const GET_ALL_COUNTRIES_FN = "SELECT * FROM get_all_countries()"
 
 // Query to search for a country by name
-export const SEARCH_COUNTRY_BY_NAME_FN = "SELECT * FROM search_country_by_name($1)"
+export const SEARCH_COUNTRY_BY_NAME_FN = "SELECT * FROM search_country_by_name($1, $2)"
 
 // Query to get all the locations
 export const GET_ALL_LOCATIONS_FN = "SELECT * FROM get_all_locations($1, $2)"
@@ -87,3 +87,9 @@ export const GET_DOCUMENT_LOCATION_SECTIONS_BY_DOCUMENT_ID_FN = "SELECT * FROM g
 
 // Query to get all the location sections
 export const GET_ALL_LOCATION_SECTIONS_FN = "SELECT * FROM get_all_location_sections($1, $2)"
+
+// Query to get all the magazines
+export const GET_ALL_MAGAZINES_FN = "SELECT * FROM get_all_magazines($1, $2)"
+
+// Query to search for a magazine by name
+export const SEARCH_MAGAZINE_BY_NAME_FN = "SELECT * FROM search_magazine_by_name($1, $2)"

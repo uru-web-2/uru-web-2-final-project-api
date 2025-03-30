@@ -408,7 +408,8 @@ $$ LANGUAGE plpgsql;
 // Query to create a function that searches for a publisher by name
 export const CREATE_SEARCH_PUBLISHER_BY_NAME_FN = `
 CREATE OR REPLACE FUNCTION search_publisher_by_name(
-    IN in_name VARCHAR
+    IN in_name VARCHAR,
+    IN in_limit BIGINT
 ) RETURNS
 TABLE (
     id BIGINT,
@@ -428,7 +429,8 @@ $$ LANGUAGE plpgsql;
 // Query to create a function that searches for a topic by name
 export const CREATE_SEARCH_TOPIC_BY_NAME_FN = `
 CREATE OR REPLACE FUNCTION search_topic_by_name(
-    IN in_name VARCHAR
+    IN in_name VARCHAR,
+    IN in_limit BIGINT
 ) RETURNS
 TABLE (
     id BIGINT,
@@ -466,7 +468,8 @@ $$ LANGUAGE plpgsql;
 // Query to create a function that searches for a country by name
 export const CREATE_SEARCH_COUNTRY_BY_NAME_FN = `
 CREATE OR REPLACE FUNCTION search_country_by_name(
-    IN in_name VARCHAR
+    IN in_name VARCHAR,
+    IN in_limit BIGINT
 ) RETURNS
 TABLE (
     id BIGINT,
@@ -634,6 +637,53 @@ BEGIN
     WHERE document_location_sections.document_id = in_document_id
     AND location_sections.removed_at IS NULL
     AND document_location_sections.removed_at IS NULL;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that gets all the magazines
+export const CREATE_GET_ALL_MAGAZINES_FN = `
+CREATE OR REPLACE FUNCTION get_all_magazines(
+    IN in_limit BIGINT,
+    IN in_offset BIGINT
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR,
+    description TEXT,
+    release_date DATE
+) AS $$
+BEGIN
+    -- Query to select all magazines
+    RETURN QUERY
+    SELECT magazines.id, magazines.name, magazines.description, magazines.release_date
+    FROM magazines
+    WHERE magazines.removed_at IS NULL
+    ORDER BY magazines.id
+    OFFSET in_offset
+    LIMIT in_limit;
+END;
+$$ LANGUAGE plpgsql;
+`
+
+// Query to create a function that searches for a magazine by name
+export const CREATE_SEARCH_MAGAZINE_BY_NAME_FN = `
+CREATE OR REPLACE FUNCTION search_magazine_by_name(
+    IN in_name VARCHAR,
+    IN in_limit BIGINT
+) RETURNS
+TABLE (
+    id BIGINT,
+    name VARCHAR,
+    description TEXT,
+    release_date DATE
+) AS $$
+BEGIN
+    -- Query to select the magazine ID by name
+    RETURN QUERY
+    SELECT magazines.id, magazines.name, magazines.description, magazines.release_date
+    FROM magazines
+    WHERE magazines.name LIKE '%' || in_name || '%';
 END;
 $$ LANGUAGE plpgsql;
 `
