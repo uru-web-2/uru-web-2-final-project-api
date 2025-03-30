@@ -28,6 +28,9 @@ export const FORM_FILE_NAME = 'file';
 // Form images name
 export const FORM_IMAGES_NAME = 'images';
 
+// Constants
+export const PDF_FILE_EXTENSION= 'pdf'
+
 // Upload an article file
 export async function uploadArticleFile(articleID, extension, file) {
     const filePath = join(ARTICLES_PATH, `${articleID}.${extension}`);

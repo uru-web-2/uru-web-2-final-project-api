@@ -88,14 +88,17 @@ export const BOOK_COPIES_UNIQUE_UUID = 'book_copies_unique_uuid';
 // Unique location ID and name for the location_sections table
 export const LOCATION_SECTIONS_UNIQUE_LOCATION_ID_NAME = 'location_sections_unique_location_id_name';
 
+// Unique UUID for the document_images table
+export const DOCUMENT_IMAGES_UNIQUE_UUID = 'document_images_unique_uuid';
+
 // Created by user ID foreign key constraint for the identity_documents table
 export const IDENTITY_DOCUMENTS_CREATED_BY_USER_ID_FK = 'identity_documents_created_by_user_id_fk';
 
-// Deleted by user ID foreign key constraint for the identity_documents table
-export const IDENTITY_DOCUMENTS_DELETED_BY_USER_ID_FK = 'identity_documents_deleted_by_user_id_fk';
+// Removed by user ID foreign key constraint for the identity_documents table
+export const IDENTITY_DOCUMENTS_REMOVED_BY_USER_ID_FK = 'identity_documents_removed_by_user_id_fk';
 
 // Created by user ID foreign key constraint for the passports table
 export const PASSPORTS_CREATED_BY_USER_ID_FK = 'passports_created_by_user_id_fk';
 
-// Deleted by user ID foreign key constraint for the passports table
-export const PASSPORTS_DELETED_BY_USER_ID_FK = 'passports_deleted_by_user_id_fk';
+// Removed by user ID foreign key constraint for the passports table
+export const PASSPORTS_REMOVED_BY_USER_ID_FK = 'passports_removed_by_user_id_fk';
