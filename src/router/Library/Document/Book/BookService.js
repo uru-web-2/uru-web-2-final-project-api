@@ -18,10 +18,10 @@ export class BookService {
     // Creates a book
     async CreateBook(req, body) {
         // Upload images from form
-        const {imagesExtensionsByUUID, imagesBuffersByUUID}= await getImagesFromForm(req)
+        const {imagesExtensionsByUUID, imagesBuffersByUUID}= await getImagesFromForm(req, false)
 
         // Get the PDF file buffer
-        const pdfBuffer = getPDFFileBufferFromForm(req)
+        const pdfBuffer = getPDFFileBufferFromForm(req, false)
 
         try {
             // Create the book

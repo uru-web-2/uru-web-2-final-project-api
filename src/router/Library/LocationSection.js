@@ -5,7 +5,7 @@ import Logger from "../../components/logger.js";
 
 // Location section object for the library module
 export class LocationSection {
-    // Createx a location section
+    // Creates a location section
     async CreateLocationSection(req, res) {
         // Validate the request
         const body = HandleValidation(req,

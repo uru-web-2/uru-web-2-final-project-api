@@ -1123,17 +1123,28 @@ $$;
 export const CREATE_GET_MODULE_ID_BY_NAME_PROC = `
 CREATE OR REPLACE PROCEDURE get_module_id_by_name(
     IN in_module_name VARCHAR,
+    IN in_parent_module_id BIGINT,
     OUT out_module_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Select the module id
-    SELECT id
-    INTO out_module_id
-    FROM modules
-    WHERE name = in_module_name
-    AND removed_at IS NULL;
+    IF in_parent_module_id IS NULL THEN
+        SELECT id
+        INTO out_module_id
+        FROM modules
+        WHERE name = in_module_name
+        AND parent_module_id IS NULL
+        AND removed_at IS NULL;
+    ELSE
+        SELECT id
+        INTO out_module_id
+        FROM modules
+        WHERE name = in_module_name
+        AND parent_module_id = in_parent_module_id
+        AND removed_at IS NULL;
+    END IF; 
 END;
 $$;
 `
@@ -1142,6 +1153,7 @@ $$;
 export const CREATE_GET_OBJECT_ID_BY_NAME_PROC = `
 CREATE OR REPLACE PROCEDURE get_object_id_by_name(
     IN in_object_name VARCHAR,
+    IN in_module_id BIGINT,
     OUT out_object_id BIGINT
 )
 LANGUAGE plpgsql
@@ -1152,6 +1164,7 @@ BEGIN
     INTO out_object_id
     FROM objects
     WHERE name = in_object_name
+    AND module_id = in_module_id
     AND removed_at IS NULL;
 END;
 $$;
@@ -1161,6 +1174,7 @@ $$;
 export const CREATE_GET_METHOD_ID_BY_NAME_PROC = `
 CREATE OR REPLACE PROCEDURE get_method_id_by_name(
     IN in_method_name VARCHAR,
+    IN in_object_id BIGINT,
     OUT out_method_id BIGINT
 )
 LANGUAGE plpgsql
@@ -1171,6 +1185,7 @@ BEGIN
     INTO out_method_id
     FROM methods
     WHERE name = in_method_name
+    AND object_id = in_object_id
     AND removed_at IS NULL;
 END;
 $$;
@@ -1305,7 +1320,6 @@ BEGIN
         description,
         release_date,
         pages,
-        file_relative_url,
         author
     )
     VALUES (
@@ -1591,6 +1605,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_language_id BIGINT;
+    var_language_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the document language already exists
     SELECT id
@@ -1601,6 +1616,17 @@ BEGIN
     AND removed_at IS NULL;
     
     IF var_document_language_id IS NOT NULL THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the language ID is valid
+    SELECT TRUE
+    INTO var_language_id_is_valid
+    FROM languages
+    WHERE id = in_language_id
+    AND removed_at IS NULL;
+    
+    IF var_language_id_is_valid = FALSE THEN
         RETURN;
     END IF;
 
@@ -1911,6 +1937,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_location_section_id BIGINT;
+    var_location_section_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the document location section already exists
     SELECT id
@@ -1921,6 +1948,17 @@ BEGIN
     AND removed_at IS NULL;
     
     IF var_document_location_section_id IS NOT NULL THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the location section ID is valid
+    SELECT TRUE
+    INTO var_location_section_id_is_valid
+    FROM location_sections
+    WHERE id = in_location_section_id
+    AND removed_at IS NULL;
+    
+    IF var_location_section_id_is_valid = FALSE THEN
         RETURN;
     END IF;
 
@@ -2077,6 +2115,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE 
     var_document_topic_id BIGINT;
+    var_topic_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the document topic already exists
     SELECT id
@@ -2089,6 +2128,17 @@ BEGIN
     IF var_document_topic_id IS NOT NULL THEN
         RETURN;
     END IF;   
+    
+    -- Check if the topic ID is valid
+    SELECT TRUE
+    INTO var_topic_id_is_valid
+    FROM topics
+    WHERE id = in_topic_id
+    AND removed_at IS NULL;
+    
+    IF var_topic_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
 
     -- Insert into document_topics table
     INSERT INTO document_topics (
@@ -3029,39 +3079,56 @@ END;
 $$;
 `
 
-// Create a stored procedure that set the method permissions
+// Create a stored procedure that gets the permissions by method ID
+export const CREATE_GET_PERMISSIONS_BY_METHOD_ID_PROC = `
+CREATE OR REPLACE PROCEDURE get_permissions_by_method_id(
+    IN in_method_id BIGINT,
+    OUT out_allowed_profile_ids BIGINT[]
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Query to select the allowed profile IDs by method ID
+    SELECT ARRAY(
+        SELECT profile_id
+        FROM permissions
+        WHERE permissions.method_id = in_method_id
+        AND removed_at IS NULL
+    )
+    INTO out_allowed_profile_ids;
+END;
+$$;
+`
+
+// Create a stored procedure that sets the method permissions
 export const CREATE_SET_METHOD_PERMISSIONS_PROC = `
 CREATE OR REPLACE PROCEDURE set_method_permissions(
     IN in_set_by_user_id BIGINT,
     IN in_method_id BIGINT,
-    IN in_allowed_profile_ids BIGINT[]
+    IN in_create_profile_ids BIGINT[],
+    IN in_remove_profile_ids BIGINT[]
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
+    var_is_profile_id_valid BOOLEAN;
+    var_is_method_id_valid BOOLEAN;
+    var_permission_id BIGINT;
     var_profile_id BIGINT;
 BEGIN
-    -- Remove all permissions
-    UPDATE permissions
-    SET removed_at = NOW(),
-        removed_by_user_id = in_set_by_user_id
-    WHERE method_id = in_method_id
-    AND removed_at IS NULL;
-    
-    -- Assign permissions
-    IF in_allowed_profile_ids IS NOT NULL THEN
-        FOREACH var_profile_id IN ARRAY in_allowed_profile_ids
+    -- Create permissions
+    IF in_create_profile_ids IS NOT NULL THEN
+        FOREACH var_profile_id IN ARRAY in_create_profile_ids
         LOOP
-            INSERT INTO permissions (
-                profile_id,
-                method_id,
-                created_by_user_id
-            )
-            VALUES (
-                var_profile_id,
-                in_method_id,
-                in_set_by_user_id
-            );
+            call create_profile_permission(in_set_by_user_id, var_profile_id, in_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
+        END LOOP;
+    END IF;
+    
+    -- Remove permissions
+    IF in_remove_profile_ids IS NOT NULL THEN
+        FOREACH var_profile_id IN ARRAY in_remove_profile_ids
+        LOOP
+            call remove_profile_permission(in_set_by_user_id, var_profile_id, in_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
         END LOOP;
     END IF;
 END;

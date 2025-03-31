@@ -2,17 +2,15 @@ import formidable from "formidable";
 import {
     FORM_FILE_NAME,
     FORM_IMAGES_NAME,
-    getImageRelativePath,
     IMAGES_PATH,
-    uploadImage,
 } from "./files.js";
 import * as fs from "node:fs";
 import {v4 as uuidv4} from "uuid";
 
 // Get a PDF file buffer from form
-export async function getPDFFileBufferFromForm(req) {
-    const form = new formidable.IncomingForm();
-    form.keepExtensions = true;
+export async function getPDFFileBufferFromForm(req, isRequired = true) {
+    // Create a form
+    const form = formidable({});
 
     // Parse the form
     let buffer = null
@@ -21,8 +19,12 @@ export async function getPDFFileBufferFromForm(req) {
             throw err
 
         const file = files?.[FORM_FILE_NAME];
-        if (!file)
-            throw new Error('No file uploaded')
+        if (!file){
+            if (isRequired)
+                throw new Error('No file uploaded')
+
+            return
+        }
 
         if (file.type !== 'application/pdf')
             throw new Error('File is not a PDF')
@@ -35,10 +37,9 @@ export async function getPDFFileBufferFromForm(req) {
 }
 
 // Get image files from form
-export async function getImagesFromForm(req) {
-    const form = new formidable.IncomingForm();
-    form.uploadDir = IMAGES_PATH
-    form.keepExtensions = true;
+export async function getImagesFromForm(req, isRequired = true) {
+    // Create a form
+    const form = formidable({});
 
     // Image extensions by UUID, and the image buffer by UUID
     const imagesExtensionsByUUID = {}
@@ -50,8 +51,12 @@ export async function getImagesFromForm(req) {
             throw err;
 
         const uploadedFiles = files[FORM_IMAGES_NAME];
-        if (!uploadedFiles)
-            throw new Error('No file uploaded');
+        if (!uploadedFiles) {
+            if (isRequired)
+                throw new Error('No file uploaded');
+
+            return
+        }
 
         // Ensure uploadedFiles is an array
         const filesArray = Array.isArray(uploadedFiles) ? uploadedFiles : [uploadedFiles];

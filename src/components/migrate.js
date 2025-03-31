@@ -178,7 +178,8 @@ import {
     CREATE_UPDATE_USER_PASSWORD_HASH_PROC,
     CREATE_UPDATE_USER_USERNAME_PROC,
     CREATE_UPDATE_WORK_PROC,
-    CREATE_VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC
+    CREATE_VERIFY_USER_EMAIL_VERIFICATION_TOKEN_PROC,
+    CREATE_GET_PERMISSIONS_BY_METHOD_ID_PROC
 } from "../database/model/createStoredProcedures.js";
 import Logger from "./logger.js";
 import {MigratePermissions} from "@ralvarezdev/js-module-permissions";
@@ -192,7 +193,7 @@ import {
     CREATE_METHOD_WITH_PROFILES_PROC,
     CREATE_MODULE_PROC,
     CREATE_OBJECT_PROC,
-    GET_METHOD_ID_BY_NAME_PROC,
+    GET_METHOD_ID_BY_NAME_PROC, GET_PERMISSIONS_BY_METHOD_ID_PROC,
     GET_MODULE_ID_BY_NAME_PROC,
     GET_OBJECT_ID_BY_NAME_PROC,
     SET_METHOD_PERMISSIONS_PROC
@@ -243,13 +244,13 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
         queryRes = await DatabaseManager.rawQuery(
             GET_MODULE_ID_BY_NAME_PROC,
             module.name,
+            parentModuleID,
             null
         )
     }
 
     // Get the module ID
-    queryRows = queryRes?.rows?.[0]
-    const moduleID = queryRows?.out_module_id
+    const moduleID = queryRes.rows?.[0]?.out_module_id
 
     // Log the module
     Logger.info(`Module ${module.name} inserted/retrieved with ID ${moduleID}`)
@@ -283,6 +284,7 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
             queryRes = await DatabaseManager.rawQuery(
                 GET_OBJECT_ID_BY_NAME_PROC,
                 objectName,
+                moduleID,
                 null
             )
         }
@@ -340,18 +342,35 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
                 queryRes = await DatabaseManager.rawQuery(
                     GET_METHOD_ID_BY_NAME_PROC,
                     methodName,
+                    objectID,
                     null
                 )
 
                 queryRows = queryRes?.rows?.[0]
                 methodID = queryRows?.out_method_id
 
+                // Get the current allowed profiles
+                queryRes = await DatabaseManager.rawQuery(
+                    GET_PERMISSIONS_BY_METHOD_ID_PROC,
+                    methodID,
+                    null
+                )
+
+                const currentAllowedProfilesID = queryRes.rows?.[0].out_allowed_profile_ids
+
+                // Get the profiles ID to add
+                const profilesIDToAdd = allowedProfilesID.filter((profileID) => !currentAllowedProfilesID.includes(profileID))
+
+                // Get the profiles ID to remove
+                const profilesIDToRemove = currentAllowedProfilesID.filter((profileID) => !allowedProfilesID.includes(profileID))
+
                 // Set the method permissions
                 await DatabaseManager.rawQuery(
                     SET_METHOD_PERMISSIONS_PROC,
                     null,
                     methodID,
-                    allowedProfilesID,
+                    profilesIDToAdd,
+                    profilesIDToRemove
                 )
             }
 
@@ -569,7 +588,8 @@ export default async function migrate() {
             CREATE_REGISTER_BOOK_COPY_LOAN_WITHOUT_RESERVATION_PROC,
             CREATE_SET_BOOK_COPY_LOAN_AS_RETURNED_PROC,
             CREATE_REMOVE_BOOK_COPY_LOAN_PROC,
-            CREATE_SET_BOOK_COPY_LOAN_AS_LOST_PROC
+            CREATE_SET_BOOK_COPY_LOAN_AS_LOST_PROC,
+            CREATE_GET_PERMISSIONS_BY_METHOD_ID_PROC
         ])
             await client.rawQuery(query)
     })

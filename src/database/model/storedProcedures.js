@@ -92,13 +92,13 @@ export const REMOVE_ALL_MODULES_PROC = "CALL remove_all_modules($1)"
 export const CREATE_METHOD_WITH_PROFILES_PROC = "CALL create_method_with_profiles($1, $2, $3, $4, $5)"
 
 // Query to get the module ID by name
-export const GET_MODULE_ID_BY_NAME_PROC = "CALL get_module_id_by_name($1, $2)"
+export const GET_MODULE_ID_BY_NAME_PROC = "CALL get_module_id_by_name($1, $2, $3)"
 
 // Query to get the object ID by name
-export const GET_OBJECT_ID_BY_NAME_PROC = "CALL get_object_id_by_name($1, $2)"
+export const GET_OBJECT_ID_BY_NAME_PROC = "CALL get_object_id_by_name($1, $2, $3)"
 
 // Query to get the method ID by name
-export const GET_METHOD_ID_BY_NAME_PROC = "CALL get_method_id_by_name($1, $2)"
+export const GET_METHOD_ID_BY_NAME_PROC = "CALL get_method_id_by_name($1, $2, $3)"
 
 // Query to get the number of users
 export const GET_NUMBER_OF_USERS_PROC = "CALL get_number_of_users($1)"
@@ -260,7 +260,7 @@ export const UPDATE_THESIS_PROC = "CALL update_thesis($1, $2, $3, $4, $5, $6, $7
 export const GET_USER_DETAILS_BY_USER_ID_PROC = "CALL get_user_details_by_user_id($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
 
 // Query to set the method permissions
-export const SET_METHOD_PERMISSIONS_PROC = "CALL set_method_permissions($1, $2, $3)"
+export const SET_METHOD_PERMISSIONS_PROC = "CALL set_method_permissions($1, $2, $3, $4)"
 
 // Query to create a new audit entry
 export const CREATE_AUDIT_ENTRY_PROC = "CALL create_audit_entry($1, $2, $3, $4)"
@@ -300,3 +300,6 @@ export const SET_BOOK_COPY_LOAN_AS_LOST_PROC = "CALL set_book_copy_loan_as_lost(
 
 // Query to remove a book copy loan
 export const REMOVE_BOOK_COPY_LOAN_PROC = "CALL remove_book_copy_loan($1, $2)"
+
+// Query to get the permissions by method ID
+export const GET_PERMISSIONS_BY_METHOD_ID_PROC = "CALL get_permissions_by_method_id($1, $2)"
