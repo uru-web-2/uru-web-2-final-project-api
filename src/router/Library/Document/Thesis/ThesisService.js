@@ -16,7 +16,7 @@ export class ThesisService {
         const {imagesExtensionsByUUID, imagesBuffersByUUID}= await getImagesFromForm(req)
 
         // Get the PDF file buffer
-        const pdfBuffer = getPDFFileBufferFromForm(req)
+        const pdfBuffer = await getPDFFileBufferFromForm(req)
 
         // Create the thesis
         const queryRes=await DatabaseManager.rawQuery(
@@ -39,7 +39,8 @@ export class ThesisService {
         const thesisID = queryRes.rows?.[0]?.out_thesis_id
 
         // Save the PDF file
-        await uploadThesisFile(thesisID, PDF_FILE_EXTENSION,pdfBuffer)
+        if (pdfBuffer)
+            await uploadThesisFile(thesisID, PDF_FILE_EXTENSION,pdfBuffer)
 
         // Save the images
         for (const imageUUID in imagesBuffersByUUID)

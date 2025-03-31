@@ -16,7 +16,7 @@ export class ArticleService {
         const {imagesExtensionsByUUID, imagesBuffersByUUID}= await getImagesFromForm(req)
 
         // Get the PDF file buffer
-        const pdfBuffer = getPDFFileBufferFromForm(req)
+        const pdfBuffer = await getPDFFileBufferFromForm(req)
 
         // Create the article
         const queryRes=await DatabaseManager.rawQuery(
@@ -39,7 +39,8 @@ export class ArticleService {
         const articleID = queryRes.rows?.[0]?.out_article_id
 
         // Save the PDF file
-        await uploadArticleFile(articleID, PDF_FILE_EXTENSION,pdfBuffer)
+        if (pdfBuffer)
+            await uploadArticleFile(articleID, PDF_FILE_EXTENSION,pdfBuffer)
 
         // Save the images
         for (const imageUUID in imagesBuffersByUUID)

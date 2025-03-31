@@ -1333,34 +1333,43 @@ BEGIN
     RETURNING id INTO out_document_id;
     
     -- Insert into document_topics table
-    FOREACH var_document_topic_id IN ARRAY in_document_topic_ids
-    LOOP
-        call create_document_topic(in_registered_by_user_id, out_document_id, var_document_topic_id);
-    END LOOP;
+    IF in_document_topic_ids IS NOT NULL THEN
+        FOREACH var_document_topic_id IN ARRAY in_document_topic_ids
+        LOOP
+            call create_document_topic(in_registered_by_user_id, out_document_id, var_document_topic_id);
+        END LOOP;
+    END IF;
     
     -- Insert into document_location_sections table
-    FOREACH var_document_location_section_id IN ARRAY in_document_location_section_ids
-    LOOP
-        call create_document_location_section(in_registered_by_user_id, out_document_id, var_document_location_section_id);
-    END LOOP;
+    IF in_document_location_section_ids IS NOT NULL THEN
+        FOREACH var_document_location_section_id IN ARRAY in_document_location_section_ids
+        LOOP
+            call create_document_location_section(in_registered_by_user_id, out_document_id, var_document_location_section_id);
+        END LOOP;
+    END IF;
     
     -- Insert into document_languages table
-    FOREACH var_document_language_id IN ARRAY in_document_language_ids
-    LOOP
-        call create_document_language(in_registered_by_user_id, out_document_id, var_document_language_id);
-    END LOOP;
-    
-    -- Get the length of the document document image UUIDs
-    SELECT array_length(in_document_document_image_uuids, 1)
-    INTO var_document_document_image_uuids_length;
-    
-    -- Compare the length of the document document image UUIDs and the document document image extensions
-    IF var_document_document_image_uuids_length = array_length(in_document_document_image_extensions, 1) THEN
-        FOR i IN 1..var_document_document_image_uuids_length LOOP
-            var_document_document_image_uuid := in_document_document_image_uuids[i];
-            var_document_document_image_extension := in_document_document_image_extensions[i];
-            call create_document_image(in_registered_by_user_id, out_document_id, var_document_document_image_uuid, var_document_document_image_extension);
+    IF in_document_language_ids IS NOT NULL THEN
+        FOREACH var_document_language_id IN ARRAY in_document_language_ids
+        LOOP
+            call create_document_language(in_registered_by_user_id, out_document_id, var_document_language_id);
         END LOOP;
+    END IF;
+    
+    -- Check if the document document image UUIDs and the document document image extensions are not null
+    IF in_document_document_image_uuids IS NOT NULL AND in_document_document_image_extensions IS NOT NULL THEN
+        -- Get the length of the document document image UUIDs
+        SELECT array_length(in_document_document_image_uuids, 1)
+        INTO var_document_document_image_uuids_length;
+        
+        -- Compare the length of the document document image UUIDs and the document document image extensions
+        IF var_document_document_image_uuids_length = array_length(in_document_document_image_extensions, 1) THEN
+            FOR i IN 1..var_document_document_image_uuids_length LOOP
+                var_document_document_image_uuid := in_document_document_image_uuids[i];
+                var_document_document_image_extension := in_document_document_image_extensions[i];
+                call create_document_image(in_registered_by_user_id, out_document_id, var_document_document_image_uuid, var_document_document_image_extension);
+            END LOOP;
+        END IF;
     END IF;
 END;
 $$;
@@ -1623,8 +1632,7 @@ BEGIN
     SELECT TRUE
     INTO var_language_id_is_valid
     FROM languages
-    WHERE id = in_language_id
-    AND removed_at IS NULL;
+    WHERE id = in_language_id;
     
     IF var_language_id_is_valid = FALSE THEN
         RETURN;

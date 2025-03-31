@@ -492,8 +492,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS ${PUBLISHERS_UNIQUE_NAME} ON publishers (name)
 export const CREATE_BOOKS = `
 CREATE TABLE IF NOT EXISTS books (
     id BIGSERIAL PRIMARY KEY,
+    document_id BIGINT NOT NULL,
     isbn VARCHAR(150) NOT NULL,
     publisher_id BIGSERIAL NOT NULL,
+    FOREIGN KEY (document_id) REFERENCES documents(id),
     FOREIGN KEY (publisher_id) REFERENCES publishers(id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ${BOOKS_UNIQUE_ISBN} ON books (isbn);

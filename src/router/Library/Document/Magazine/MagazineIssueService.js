@@ -21,7 +21,7 @@ export class MagazineIssueService {
         const {imagesExtensionsByUUID, imagesBuffersByUUID}= await getImagesFromForm(req)
 
         // Get the PDF file buffer
-        const pdfBuffer = getPDFFileBufferFromForm(req)
+        const pdfBuffer = await getPDFFileBufferFromForm(req)
 
         try {
             // Create the magazine issue
@@ -52,7 +52,8 @@ export class MagazineIssueService {
             const magazineIssueID = queryRes.rows?.[0]?.out_magazine_issue_id
 
             // Save the PDF file
-            await uploadMagazineIssueFile(magazineIssueID, PDF_FILE_EXTENSION,pdfBuffer)
+            if (pdfBuffer)
+                await uploadMagazineIssueFile(magazineIssueID, PDF_FILE_EXTENSION,pdfBuffer)
 
             // Save the images
             for (const imageUUID in imagesBuffersByUUID)

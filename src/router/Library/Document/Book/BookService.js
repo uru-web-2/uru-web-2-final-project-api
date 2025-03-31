@@ -21,7 +21,7 @@ export class BookService {
         const {imagesExtensionsByUUID, imagesBuffersByUUID}= await getImagesFromForm(req, false)
 
         // Get the PDF file buffer
-        const pdfBuffer = getPDFFileBufferFromForm(req, false)
+        const pdfBuffer = await getPDFFileBufferFromForm(req, false)
 
         try {
             // Create the book
@@ -47,11 +47,15 @@ export class BookService {
             const bookID = queryRes.rows?.[0]?.out_book_id
 
             // Save the PDF file
-            await uploadBookFile(bookID, PDF_FILE_EXTENSION,pdfBuffer)
+            if (pdfBuffer)
+                await uploadBookFile(bookID, PDF_FILE_EXTENSION, pdfBuffer)
 
             // Save the images
             for (const imageUUID in imagesBuffersByUUID)
-                await uploadImage(imageUUID, imagesExtensionsByUUID[imageUUID], imagesBuffersByUUID[imageUUID])
+                await uploadImage(imageUUID,
+                    imagesExtensionsByUUID[imageUUID],
+                    imagesBuffersByUUID[imageUUID]
+                )
 
             return bookID
         } catch (error) {
