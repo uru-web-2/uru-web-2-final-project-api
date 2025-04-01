@@ -380,8 +380,7 @@ BEGIN
     -- Query to select all languages
     RETURN QUERY
     SELECT languages.id, languages.name
-    FROM languages
-    WHERE languages.removed_at IS NULL;
+    FROM languages;
 END;
 $$ LANGUAGE plpgsql;
 `
@@ -613,7 +612,6 @@ BEGIN
     FROM languages
     INNER JOIN document_languages ON languages.id = document_languages.language_id
     WHERE document_languages.document_id = in_document_id
-    AND languages.removed_at IS NULL
     AND document_languages.removed_at IS NULL;
 END;
 $$ LANGUAGE plpgsql;

@@ -32,7 +32,7 @@ export class MagazineIssueService {
                 body.document_description,
                 body.document_release_date,
                 body.document_pages,
-                body.document_author,
+                body.document_authors.join(','),
                 body.document_topic_ids,
                 body.document_location_section_ids,
                 body.document_language_ids,

@@ -1600,7 +1600,7 @@ BEGIN
     UPDATE document_images
     SET removed_at = NOW(),
         removed_by_user_id = in_removed_by_user_id
-    WHERE document_id = in_document_id
+    WHERE document_id = in_document_id;
     
     -- Remove the posts
     UPDATE posts
