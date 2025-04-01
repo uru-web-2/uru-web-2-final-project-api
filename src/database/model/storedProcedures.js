@@ -113,7 +113,7 @@ export const UPDATE_USER_BY_ADMIN_PROC = "CALL update_user_by_admin($1, $2, $3, 
 export const CREATE_DOCUMENT_PROC = "CALL create_document($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
 
 // Query to update a document
-export const UPDATE_DOCUMENT_PROC = "CALL update_document($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
+export const UPDATE_DOCUMENT_PROC = "CALL update_document($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)"
 
 // Query to remove a document
 export const REMOVE_DOCUMENT_PROC = "CALL remove_document($1, $2)"
@@ -215,7 +215,10 @@ export const GET_DOCUMENT_ID_BY_BOOK_ID_PROC = "CALL get_document_id_by_book_id(
 export const CREATE_BOOK_PROC = "CALL create_book($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
 
 // Query to update a book
-export const UPDATE_BOOK_PROC = "CALL update_book($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
+export const UPDATE_BOOK_PROC = "CALL update_book($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)"
+
+// Query to remove a book by ID
+export const REMOVE_BOOK_PROC = "CALL remove_book($1, $2)"
 
 // Query to create a new work
 export const CREATE_WORK_PROC = "CALL create_work($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
@@ -227,13 +230,19 @@ export const GET_DOCUMENT_ID_BY_WORK_ID_PROC = "CALL get_document_id_by_work_id(
 export const GET_WORK_ID_BY_DOCUMENT_ID_PROC = "CALL get_work_id_by_document_id($1, $2)"
 
 // Query to update a work
-export const UPDATE_WORK_PROC = "CALL update_work($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
+export const UPDATE_WORK_PROC = "CALL update_work($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)"
+
+// Query to get the document ID by article ID
+export const GET_DOCUMENT_ID_BY_ARTICLE_ID_PROC = "CALL get_document_id_by_article_id($1, $2)"
 
 // Query to create a new article
 export const CREATE_ARTICLE_PROC = "CALL create_article($1, $2, $3, $4, $5, $6,$7, $8, $9, $10, $11, $12)"
 
 // Query to update an article
-export const UPDATE_ARTICLE_PROC = "CALL update_article($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
+export const UPDATE_ARTICLE_PROC = "CALL update_article($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)"
+
+// Query to remove an article by ID
+export const REMOVE_ARTICLE_PROC = "CALL remove_article($1, $2)"
 
 // Query to create a new book copy
 export const CREATE_BOOK_COPY_PROC = "CALL create_book_copy($1, $2, $3)"
@@ -244,17 +253,29 @@ export const UPDATE_BOOK_COPY_PROC = "CALL update_book_copy($1, $2)"
 // Query to remove a book copy
 export const REMOVE_BOOK_COPY_PROC = "CALL remove_book_copy($1, $2)"
 
+// Query to get the document ID by magazine issue ID
+export const GET_DOCUMENT_ID_BY_MAGAZINE_ISSUE_ID_PROC = "CALL get_document_id_by_magazine_issue_id($1, $2)"
+
 // Query to create a new magazine issue
 export const CREATE_MAGAZINE_ISSUE_PROC = "CALL create_magazine_issue($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"
 
 // Query to update a magazine issue
-export const UPDATE_MAGAZINE_ISSUE_PROC = "CALL update_magazine_issue($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"
+export const UPDATE_MAGAZINE_ISSUE_PROC = "CALL update_magazine_issue($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)"
+
+// Query to remove a magazine issue by ID
+export const REMOVE_MAGAZINE_ISSUE_PROC = "CALL remove_magazine_issue($1, $2)"
+
+// Query to get the document ID by thesis ID
+export const GET_DOCUMENT_ID_BY_THESIS_ID_PROC = "CALL get_document_id_by_thesis_id($1, $2)"
 
 // Query to create a new thesis
 export const CREATE_THESIS_PROC = "CALL create_thesis($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
 
 // Query to update a thesis
-export const UPDATE_THESIS_PROC = "CALL update_thesis($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
+export const UPDATE_THESIS_PROC = "CALL update_thesis($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)"
+
+// Query to remove a thesis by ID
+export const REMOVE_THESIS_PROC = "CALL remove_thesis($1, $2)"
 
 // Query to get the user details by user ID
 export const GET_USER_DETAILS_BY_USER_ID_PROC = "CALL get_user_details_by_user_id($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"

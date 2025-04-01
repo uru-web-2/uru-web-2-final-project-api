@@ -5,7 +5,7 @@ import Logger from "../../../../components/logger.js";
 
 // Article object for the article module
 export class Article {
-    // Creates a article
+    // Creates an article
     async CreateArticle(req, res) {
         // Validate the request
         const body = HandleValidation(req, res, Validator.CreateArticle);
