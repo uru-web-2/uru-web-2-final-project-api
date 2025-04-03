@@ -64,7 +64,6 @@ AS $$
 BEGIN
     -- Check if the document ID is valid
     call is_country_id_valid(in_user_document_country_id, out_document_id_is_valid);
-    
     IF out_document_id_is_valid = FALSE THEN
         RETURN;
     END IF;
@@ -244,7 +243,6 @@ AS $$
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
-    
     IF out_user_id_is_valid = FALSE THEN
         RETURN;
     END IF;
@@ -357,6 +355,9 @@ AS $$
 BEGIN
     -- Check if the user email ID is valid
     call is_user_email_id_valid(in_user_email_id, out_user_email_id_is_valid);
+    IF out_user_email_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
 
     -- Check if the user email is verified
     SELECT verified_at IS NOT NULL
@@ -403,6 +404,9 @@ AS $$
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
+    IF out_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
 
     -- Select the user email information
     SELECT user_emails.id, user_emails.email, people.first_name, people.last_name
@@ -553,6 +557,9 @@ AS $$
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
+    IF out_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
 
     -- Remove the user reset password token
     call remove_user_reset_password_token_by_user_id(in_user_id);
@@ -584,6 +591,9 @@ AS $$
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
+    IF out_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
 
     -- Remove the user password hash
     UPDATE user_password_hashes
@@ -616,6 +626,7 @@ AS $$
 DECLARE
     var_user_reset_password_token_id BIGINT;
     var_user_id BIGINT;
+    var_user_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the user reset password token is valid
     SELECT id, user_id
@@ -638,7 +649,7 @@ BEGIN
     WHERE id = var_user_reset_password_token_id;    
     
     -- Update the user password hash
-    call update_user_password_hash(var_user_id, in_user_password_hash);
+    call update_user_password_hash(var_user_id, in_user_password_hash, var_user_id_is_valid);
 END;
 $$;
 `
@@ -668,7 +679,7 @@ DECLARE
     var_profile_id BIGINT;
     var_user_email_id BIGINT;
     var_user_document_country_id BIGINT;
-    var_user_document_country_id_is_valid BIGINT;
+    var_user_document_country_id_is_valid BOOLEAN;
 DECLARE
     var_user_id_is_valid BOOLEAN;
 BEGIN
@@ -909,6 +920,9 @@ BEGIN
     
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
+    IF out_profile_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
     
     -- Update the user_profiles table
     UPDATE user_profiles
@@ -1471,6 +1485,9 @@ DECLARE
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
+    IF out_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
 
     -- Get the country ID
     call get_country_id_by_name(in_user_document_country_name, out_user_document_country_name_is_valid, var_user_document_country_id);
@@ -4174,7 +4191,7 @@ CREATE OR REPLACE PROCEDURE update_article_annotation(
     OUT out_article_annotation_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
-AS $$
+AS $$a
 DECLARE
     var_current_annotation_title VARCHAR;
     var_current_annotation_content TEXT;
