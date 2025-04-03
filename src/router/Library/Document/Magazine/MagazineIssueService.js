@@ -3,10 +3,12 @@ import {FieldFailError} from "@ralvarezdev/js-express";
 import {CREATE_BOOK_PROC} from "../../../../database/model/storedProcedures.js";
 import {
     PDF_FILE_EXTENSION,
-    uploadImage, uploadMagazineIssueFile
+    uploadImage,
+    uploadMagazineIssueFile
 } from "../../../../components/files.js";
 import {
-    getImagesFromForm, getPDFFileBufferFromForm,
+    getImagesFromForm,
+    getPDFFileBufferFromForm,
 } from "../../../../components/formidable.js";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {
@@ -18,14 +20,17 @@ export class MagazineIssueService {
     // Creates a magazine issue
     async CreateMagazineIssue(req, body) {
         // Upload images from form
-        const {imagesExtensionsByUUID, imagesBuffersByUUID}= await getImagesFromForm(req)
+        const {
+            imagesExtensionsByUUID,
+            imagesBuffersByUUID
+        } = await getImagesFromForm(req)
 
         // Get the PDF file buffer
         const pdfBuffer = await getPDFFileBufferFromForm(req)
 
         try {
             // Create the magazine issue
-            const queryRes=await DatabaseManager.rawQuery(
+            const queryRes = await DatabaseManager.rawQuery(
                 CREATE_BOOK_PROC,
                 req.session.userID,
                 body.document_title,
@@ -46,18 +51,27 @@ export class MagazineIssueService {
 
             // Check if the magazine ID is valid
             if (!queryRes.rows?.[0]?.out_magazine_id_is_valid)
-                throw new FieldFailError(400, 'magazine_id', 'Magazine ID is invalid')
+                throw new FieldFailError(400,
+                    'magazine_id',
+                    'Magazine ID is invalid'
+                )
 
             // Get the magazine issue ID
             const magazineIssueID = queryRes.rows?.[0]?.out_magazine_issue_id
 
             // Save the PDF file
             if (pdfBuffer)
-                await uploadMagazineIssueFile(magazineIssueID, PDF_FILE_EXTENSION,pdfBuffer)
+                await uploadMagazineIssueFile(magazineIssueID,
+                    PDF_FILE_EXTENSION,
+                    pdfBuffer
+                )
 
             // Save the images
             for (const imageUUID in imagesBuffersByUUID)
-                await uploadImage(imageUUID, imagesExtensionsByUUID[imageUUID], imagesBuffersByUUID[imageUUID])
+                await uploadImage(imageUUID,
+                    imagesExtensionsByUUID[imageUUID],
+                    imagesBuffersByUUID[imageUUID]
+                )
 
             return magazineIssueID
         } catch (error) {
@@ -66,7 +80,10 @@ export class MagazineIssueService {
 
             // Check if the constraint is the unique magazine ID and issue number constraint
             if (constraintName === MAGAZINE_ISSUES_UNIQUE_MAGAZINE_ID_ISSUE_NUMBER)
-                throw new FieldFailError(400, 'magazine_issue_number', 'Issue number is already taken')
+                throw new FieldFailError(400,
+                    'magazine_issue_number',
+                    'Issue number is already taken'
+                )
 
             throw error
         }

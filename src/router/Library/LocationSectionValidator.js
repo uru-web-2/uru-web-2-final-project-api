@@ -1,9 +1,9 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
 import {
     CREATE_LOCATION_SECTION,
-    REMOVE_LOCATION_SECTION,
     GET_ALL_LOCATION_SECTIONS,
     GET_LOCATION_SECTIONS_BY_LOCATION_ID,
+    REMOVE_LOCATION_SECTION,
     UPDATE_LOCATION_SECTION
 } from "./LocationSectionModel.js";
 

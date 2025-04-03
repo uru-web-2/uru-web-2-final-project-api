@@ -1,7 +1,5 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
-import {
-    CREATE_ARTICLE
-} from "./ArticleModel.js";
+import {CREATE_ARTICLE} from "./ArticleModel.js";
 
 // Validator for the article object
 export class ArticleValidator {

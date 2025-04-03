@@ -8,7 +8,10 @@ export class LocationSection {
     // Creates a document location section
     async CreateDocumentLocationSection(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.CreateDocumentLocationSection);
+        const body = HandleValidation(req,
+            res,
+            Validator.CreateDocumentLocationSection
+        );
 
         // Create the document location section
         await Service.CreateDocumentLocationSection(req, body)
@@ -23,7 +26,10 @@ export class LocationSection {
     // Removes a document location section
     async RemoveDocumentLocationSection(req, res) {
         // Validate the request
-        const body = HandleValidation(req, res, Validator.RemoveDocumentLocationSection);
+        const body = HandleValidation(req,
+            res,
+            Validator.RemoveDocumentLocationSection
+        );
 
         // Remove the document location section
         await Service.RemoveDocumentLocationSection(req, body)
@@ -44,7 +50,10 @@ export class LocationSection {
         );
 
         // Get the document location sections
-        const locationSections = await Service.GetDocumentLocationSectionsByDocumentID(req, body)
+        const locationSections = await Service.GetDocumentLocationSectionsByDocumentID(
+            req,
+            body
+        )
 
         // Log the retrieval
         Logger.info(`Retrieved location sections for document ${body.document_id} by user ${req.session.userID}`)

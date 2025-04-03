@@ -1,9 +1,5 @@
 import formidable from "formidable";
-import {
-    FORM_FILE_NAME,
-    FORM_IMAGES_NAME,
-    IMAGES_PATH,
-} from "./files.js";
+import {FORM_FILE_NAME, FORM_IMAGES_NAME,} from "./files.js";
 import * as fs from "node:fs";
 import {v4 as uuidv4} from "uuid";
 
@@ -19,7 +15,7 @@ export async function getPDFFileBufferFromForm(req, isRequired = true) {
             throw err
 
         const file = files?.[FORM_FILE_NAME];
-        if (!file){
+        if (!file) {
             if (isRequired)
                 throw new Error('No file uploaded')
 

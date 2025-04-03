@@ -3,29 +3,32 @@ import {FieldFailError} from "@ralvarezdev/js-express";
 import {CREATE_BOOK_PROC} from "../../../../database/model/storedProcedures.js";
 import {
     PDF_FILE_EXTENSION,
-    uploadBookFile, uploadImage
+    uploadBookFile,
+    uploadImage
 } from "../../../../components/files.js";
 import {
-    getImagesFromForm, getPDFFileBufferFromForm,
+    getImagesFromForm,
+    getPDFFileBufferFromForm,
 } from "../../../../components/formidable.js";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
-import {
-    BOOKS_UNIQUE_ISBN,
-} from "../../../../database/model/constraints.js";
+import {BOOKS_UNIQUE_ISBN,} from "../../../../database/model/constraints.js";
 
 // Service for the book object
 export class BookService {
     // Creates a book
     async CreateBook(req, body) {
         // Upload images from form
-        const {imagesExtensionsByUUID, imagesBuffersByUUID}= await getImagesFromForm(req, false)
+        const {
+            imagesExtensionsByUUID,
+            imagesBuffersByUUID
+        } = await getImagesFromForm(req, false)
 
         // Get the PDF file buffer
         const pdfBuffer = await getPDFFileBufferFromForm(req, false)
 
         try {
             // Create the book
-            const queryRes=await DatabaseManager.rawQuery(
+            const queryRes = await DatabaseManager.rawQuery(
                 CREATE_BOOK_PROC,
                 req.session.userID,
                 body.document_title,
@@ -64,7 +67,10 @@ export class BookService {
 
             // Check if the constraint is the unique ISBN constraint
             if (constraintName === BOOKS_UNIQUE_ISBN)
-                throw new FieldFailError(400, 'book_isbn', 'ISBN is already taken')
+                throw new FieldFailError(400,
+                    'book_isbn',
+                    'ISBN is already taken'
+                )
 
             throw error
         }

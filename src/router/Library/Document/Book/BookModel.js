@@ -1,5 +1,4 @@
 import Joi from 'joi';
-import {REMOVE_ARTICLE} from "../Article/ArticleModel.js";
 
 // Create book model
 export const CREATE_BOOK = Joi.object({
@@ -25,11 +24,14 @@ export const UPDATE_BOOK = Joi.object({
     document_authors: Joi.array().items(Joi.string().min(1).max(255)),
     document_create_document_topic_ids: Joi.array().items(Joi.number().min(1)),
     document_remove_document_topic_ids: Joi.array().items(Joi.number().min(1)),
-    document_create_document_location_section_ids: Joi.array().items(Joi.number().min(1)),
-    document_remove_document_location_section_ids: Joi.array().items(Joi.number().min(1)),
+    document_create_document_location_section_ids: Joi.array().items(Joi.number().min(
+        1)),
+    document_remove_document_location_section_ids: Joi.array().items(Joi.number().min(
+        1)),
     document_create_document_language_ids: Joi.array().items(Joi.number().min(1)),
     document_remove_document_language_ids: Joi.array().items(Joi.number().min(1)),
-    document_remove_document_document_image_uuids: Joi.array().items(Joi.string().min(1)),
+    document_remove_document_document_image_uuids: Joi.array().items(Joi.string().min(
+        1)),
 })
 
 // Remove book model

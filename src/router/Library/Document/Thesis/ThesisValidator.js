@@ -1,7 +1,5 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
-import {
-    CREATE_THESIS
-} from "./ThesisModel.js";
+import {CREATE_THESIS} from "./ThesisModel.js";
 
 // Validator for the thesis object
 export class ThesisValidator {

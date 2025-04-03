@@ -169,7 +169,10 @@ export class SecurityService {
         )
 
         // Update the permissions to the security component
-        Security.updatePermissions(body.profile_id, body.create_method_ids, body.remove_method_ids)
+        Security.updatePermissions(body.profile_id,
+            body.create_method_ids,
+            body.remove_method_ids
+        )
     }
 }
 

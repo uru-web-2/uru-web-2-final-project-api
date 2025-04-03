@@ -28,7 +28,10 @@ export class LocationSectionService {
             );
             const queryRow = queryRes.rows?.[0];
             if (queryRow?.out_location_id_is_valid === false)
-                throw new FieldFailError(400, 'location_id', 'Location ID is invalid');
+                throw new FieldFailError(400,
+                    'location_id',
+                    'Location ID is invalid'
+                );
 
             return queryRow?.out_location_id;
         } catch (error) {

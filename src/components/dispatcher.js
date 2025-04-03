@@ -254,13 +254,13 @@ export class Dispatcher {
                 null
             )
             const queryRow = queryRes.rows?.[0]
-            if(queryRow?.out_user_document_country_name_is_valid === false)
-                    throw new FieldFailError(400,
-                        "document_country_name",
-                        "country not found"
-                    )
+            if (queryRow?.out_user_document_country_name_is_valid === false)
+                throw new FieldFailError(400,
+                    "document_country_name",
+                    "country not found"
+                )
 
-             userID = queryRow?.out_user_id
+            userID = queryRow?.out_user_id
 
             // Log the user ID
             Logger.info(`Signed up user ${userID}`)
@@ -578,7 +578,8 @@ export class Dispatcher {
             const userID = queryRow?.out_user_id
 
             // Create the new reset password token
-            queryRes = await DatabaseManager.rawQuery(CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
+            queryRes = await DatabaseManager.rawQuery(
+                CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
                 userID,
                 resetPasswordToken,
                 addDuration(RESET_PASSWORD_TOKEN_DURATION).toISOString(),

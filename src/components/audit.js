@@ -8,7 +8,7 @@ export default async function (req, body) {
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
     // Create a new audit entry
-    const queryRes=await DatabaseManager.rawQuery(CREATE_AUDIT_ENTRY_PROC,
+    const queryRes = await DatabaseManager.rawQuery(CREATE_AUDIT_ENTRY_PROC,
         req?.session?.userID,
         req?.session?.profileID,
         body,

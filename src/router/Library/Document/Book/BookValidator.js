@@ -1,7 +1,5 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
-import {
-    CREATE_BOOK
-} from "./BookModel.js";
+import {CREATE_BOOK} from "./BookModel.js";
 
 // Validator for the book object
 export class BookValidator {

@@ -11,7 +11,7 @@ export class Magazine {
         const body = HandleValidation(req, res, Validator.CreateMagazine);
 
         // Create the magazine
-        const magazineID=await Service.CreateMagazine(req, body)
+        const magazineID = await Service.CreateMagazine(req, body)
 
         // Log the creation
         Logger.info(`Created magazine ${magazineID} with name ${body.name} by admin ${req.session.userID}`)

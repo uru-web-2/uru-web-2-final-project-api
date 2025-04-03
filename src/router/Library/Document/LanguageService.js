@@ -11,14 +11,13 @@ import {
     DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID
 } from "../../../database/model/constraints.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
-import {uploadArticleFile} from "../../../components/files.js";
 
 // Service for the language object
 export class LanguageService {
     // Creates a document language
     async CreateDocumentLanguage(req, body) {
         try {
-            const queryRes=await DatabaseManager.rawQuery(
+            const queryRes = await DatabaseManager.rawQuery(
                 CREATE_DOCUMENT_LANGUAGE_PROC,
                 req.session.userID,
                 body.language_id,

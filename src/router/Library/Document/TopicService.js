@@ -12,7 +12,7 @@ import {FieldFailError} from "@ralvarezdev/js-express";
 export class TopicService {
     // Creates a document topic
     async CreateDocumentTopic(req, body) {
-        const queryRes=await DatabaseManager.rawQuery(
+        const queryRes = await DatabaseManager.rawQuery(
             CREATE_DOCUMENT_TOPIC_PROC,
             req.session.userID,
             body.topic_id,
@@ -20,16 +20,19 @@ export class TopicService {
             null,
             null,
         );
-        const queryRow=queryRes.rows?.[0];
+        const queryRow = queryRes.rows?.[0];
         if (queryRow?.out_topic_id_is_valid === false)
             throw new FieldFailError(400, 'topic_id', 'Topic ID is invalid');
         if (queryRow?.out_document_id_is_valid === false)
-            throw new FieldFailError(400, 'document_id', 'Document ID is invalid');
+            throw new FieldFailError(400,
+                'document_id',
+                'Document ID is invalid'
+            );
     }
 
     // Removes a document topic
     async RemoveDocumentTopic(req, body) {
-        const queryRes=await DatabaseManager.rawQuery(
+        const queryRes = await DatabaseManager.rawQuery(
             REMOVE_DOCUMENT_TOPIC_PROC,
             req.session.userID,
             body.topic_id,
@@ -37,11 +40,14 @@ export class TopicService {
             null,
             null,
         );
-        const queryRow=queryRes.rows?.[0];
+        const queryRow = queryRes.rows?.[0];
         if (queryRow?.out_topic_id_is_valid === false)
             throw new FieldFailError(400, 'topic_id', 'Topic ID is invalid');
         if (queryRow?.out_document_id_is_valid === false)
-            throw new FieldFailError(400, 'document_id', 'Document ID is invalid');
+            throw new FieldFailError(400,
+                'document_id',
+                'Document ID is invalid'
+            );
     }
 
     // Gets a document topics by document ID

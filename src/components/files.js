@@ -1,5 +1,5 @@
 import {fileURLToPath} from "url";
-import {dirname, resolve, join} from "path";
+import {dirname, join, resolve} from "path";
 import * as fs from "node:fs";
 
 // Get the file name and directory
@@ -12,11 +12,15 @@ export const RELATIVE_DOCUMENTS_PATH = '/documents';
 export const BOOKS_PATH = join(DOCUMENTS_PATH, '/books');
 export const BOOKS_RELATIVE_PATH = join(RELATIVE_DOCUMENTS_PATH, '/books');
 export const ARTICLES_PATH = join(DOCUMENTS_PATH, '/articles');
-export const ARTICLES_RELATIVE_PATH = join(RELATIVE_DOCUMENTS_PATH, '/articles');
+export const ARTICLES_RELATIVE_PATH = join(RELATIVE_DOCUMENTS_PATH,
+    '/articles'
+);
 export const THESES_PATH = join(DOCUMENTS_PATH, '/theses');
 export const THESES_RELATIVE_PATH = join(RELATIVE_DOCUMENTS_PATH, '/theses');
 export const MAGAZINE_ISSUES_PATH = join(DOCUMENTS_PATH, '/magazine_issues');
-export const MAGAZINE_ISSUES_RELATIVE_PATH = join(RELATIVE_DOCUMENTS_PATH, '/magazine_issues');
+export const MAGAZINE_ISSUES_RELATIVE_PATH = join(RELATIVE_DOCUMENTS_PATH,
+    '/magazine_issues'
+);
 
 // Image-related paths
 export const IMAGES_PATH = resolve(__dirname, '/../../public/images');
@@ -29,7 +33,7 @@ export const FORM_FILE_NAME = 'file';
 export const FORM_IMAGES_NAME = 'images';
 
 // Constants
-export const PDF_FILE_EXTENSION= 'pdf'
+export const PDF_FILE_EXTENSION = 'pdf'
 
 // Upload an article file
 export async function uploadArticleFile(articleID, extension, file) {
@@ -99,7 +103,9 @@ export function getThesisRelativePath(thesisID, extension) {
 
 // Upload a magazine issue file
 export async function uploadMagazineIssueFile(magazineIssueID, extension, file) {
-    const filePath = join(MAGAZINE_ISSUES_PATH, `${magazineIssueID}.${extension}`);
+    const filePath = join(MAGAZINE_ISSUES_PATH,
+        `${magazineIssueID}.${extension}`
+    );
 
     // Create the directory
     await fs.promises.mkdir(MAGAZINE_ISSUES_PATH, {recursive: true});
@@ -110,13 +116,17 @@ export async function uploadMagazineIssueFile(magazineIssueID, extension, file) 
 
 // Delete a magazine issue file
 export async function deleteMagazineIssueFile(magazineIssueID, extension) {
-    const magazineIssuePath = join(MAGAZINE_ISSUES_PATH, `${magazineIssueID}.${extension}`);
+    const magazineIssuePath = join(MAGAZINE_ISSUES_PATH,
+        `${magazineIssueID}.${extension}`
+    );
     await fs.promises.rm(magazineIssuePath, {recursive: true});
 }
 
 // Get a magazine issue path
 export function getMagazineIssueRelativePath(magazineIssueID, extension) {
-    return join(MAGAZINE_ISSUES_RELATIVE_PATH, `${magazineIssueID}.${extension}`);
+    return join(MAGAZINE_ISSUES_RELATIVE_PATH,
+        `${magazineIssueID}.${extension}`
+    );
 }
 
 // Upload an image

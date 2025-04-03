@@ -74,9 +74,9 @@ export class Security {
 
             // Get the parent modules
             const modulesName = [module.name]
-            let t=module
-            while(t.parentModule?.name){
-                modulesName.splice(0,0,t.parentModule.name)
+            let t = module
+            while (t.parentModule?.name) {
+                modulesName.splice(0, 0, t.parentModule.name)
                 t = t.parentModule
             }
 

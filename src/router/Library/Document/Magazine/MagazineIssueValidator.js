@@ -1,7 +1,5 @@
 import {Validate} from "@ralvarezdev/js-joi-parser";
-import {
-    CREATE_MAGAZINE_ISSUE
-} from "./MagazineIssueModel.js";
+import {CREATE_MAGAZINE_ISSUE} from "./MagazineIssueModel.js";
 
 // Validator for the magazine issue object
 export class MagazineIssueValidator {

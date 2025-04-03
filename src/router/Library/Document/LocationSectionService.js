@@ -17,7 +17,7 @@ export class LocationSectionService {
     // Creates a document location section
     async CreateDocumentLocationSection(req, body) {
         try {
-            const queryRes=await DatabaseManager.rawQuery(
+            const queryRes = await DatabaseManager.rawQuery(
                 CREATE_DOCUMENT_LOCATION_SECTION_PROC,
                 req.session.userID,
                 body.location_section_id,
@@ -52,7 +52,7 @@ export class LocationSectionService {
 
     // Removes a document location section
     async RemoveDocumentLocationSection(req, body) {
-        const queryRes=await DatabaseManager.rawQuery(
+        const queryRes = await DatabaseManager.rawQuery(
             REMOVE_DOCUMENT_LOCATION_SECTION_PROC,
             req.session.userID,
             body.location_section_id,

@@ -1,7 +1,9 @@
 import {
-    CREATE_MAGAZINE, GET_ALL_MAGAZINES,
+    CREATE_MAGAZINE,
+    GET_ALL_MAGAZINES,
     REMOVE_MAGAZINE,
-    SEARCH_MAGAZINE_BY_NAME, UPDATE_MAGAZINE
+    SEARCH_MAGAZINE_BY_NAME,
+    UPDATE_MAGAZINE
 } from "./MagazineModel.js";
 import {Validate} from "@ralvarezdev/js-joi-parser";
 

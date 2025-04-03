@@ -2,10 +2,12 @@ import DatabaseManager from "../../../../components/database.js";
 import {CREATE_BOOK_PROC} from "../../../../database/model/storedProcedures.js";
 import {
     PDF_FILE_EXTENSION,
-    uploadImage, uploadThesisFile
+    uploadImage,
+    uploadThesisFile
 } from "../../../../components/files.js";
 import {
-    getImagesFromForm, getPDFFileBufferFromForm,
+    getImagesFromForm,
+    getPDFFileBufferFromForm,
 } from "../../../../components/formidable.js";
 
 // Service for the thesis object
@@ -13,13 +15,16 @@ export class ThesisService {
     // Creates a thesis
     async CreateThesis(req, body) {
         // Upload images from form
-        const {imagesExtensionsByUUID, imagesBuffersByUUID}= await getImagesFromForm(req)
+        const {
+            imagesExtensionsByUUID,
+            imagesBuffersByUUID
+        } = await getImagesFromForm(req)
 
         // Get the PDF file buffer
         const pdfBuffer = await getPDFFileBufferFromForm(req)
 
         // Create the thesis
-        const queryRes=await DatabaseManager.rawQuery(
+        const queryRes = await DatabaseManager.rawQuery(
             CREATE_BOOK_PROC,
             req.session.userID,
             body.document_title,
@@ -40,11 +45,14 @@ export class ThesisService {
 
         // Save the PDF file
         if (pdfBuffer)
-            await uploadThesisFile(thesisID, PDF_FILE_EXTENSION,pdfBuffer)
+            await uploadThesisFile(thesisID, PDF_FILE_EXTENSION, pdfBuffer)
 
         // Save the images
         for (const imageUUID in imagesBuffersByUUID)
-            await uploadImage(imageUUID, imagesExtensionsByUUID[imageUUID], imagesBuffersByUUID[imageUUID])
+            await uploadImage(imageUUID,
+                imagesExtensionsByUUID[imageUUID],
+                imagesBuffersByUUID[imageUUID]
+            )
 
         return thesisID
     }
