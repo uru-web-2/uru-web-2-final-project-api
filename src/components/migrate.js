@@ -395,7 +395,7 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
                 if (queryRow?.out_method_id_is_valid === false)
                     Logger.error(`Method ID ${methodID} is not valid`)
 
-                methodID = queryRows?.out_method_id
+                methodID = queryRow?.out_method_id
 
                 // Get the current allowed profiles
                 queryRes = await DatabaseManager.rawQuery(
