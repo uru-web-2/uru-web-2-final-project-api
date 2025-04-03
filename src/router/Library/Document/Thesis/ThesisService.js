@@ -1,5 +1,7 @@
 import DatabaseManager from "../../../../components/database.js";
-import {CREATE_BOOK_PROC} from "../../../../database/model/storedProcedures.js";
+import {
+    CREATE_THESIS_PROC
+} from "../../../../database/model/storedProcedures.js";
 import {
     PDF_FILE_EXTENSION,
     uploadImage,
@@ -25,7 +27,7 @@ export class ThesisService {
 
         // Create the thesis
         const queryRes = await DatabaseManager.rawQuery(
-            CREATE_BOOK_PROC,
+            CREATE_THESIS_PROC,
             req.session.userID,
             body.document_title,
             body.document_description,

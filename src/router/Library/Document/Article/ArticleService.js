@@ -1,5 +1,8 @@
 import DatabaseManager from "../../../../components/database.js";
-import {CREATE_BOOK_PROC} from "../../../../database/model/storedProcedures.js";
+import {
+    CREATE_ARTICLE_PROC,
+    CREATE_BOOK_PROC
+} from "../../../../database/model/storedProcedures.js";
 import {
     PDF_FILE_EXTENSION,
     uploadArticleFile,
@@ -25,7 +28,7 @@ export class ArticleService {
 
         // Create the article
         const queryRes = await DatabaseManager.rawQuery(
-            CREATE_BOOK_PROC,
+            CREATE_ARTICLE_PROC,
             req.session.userID,
             body.document_title,
             body.document_description,

@@ -1936,6 +1936,27 @@ END;
 $$;
 `
 
+// Create a stored procedure that checks if a language ID is valid
+export const CREATE_IS_LANGUAGE_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_language_id_valid(
+    IN in_language_id BIGINT,
+    OUT out_language_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_language_id_is_valid := FALSE;
+    
+    -- Check if the language ID is valid
+    SELECT TRUE
+    INTO out_language_id_is_valid
+    FROM languages
+    WHERE id = in_language_id;
+END;
+$$;
+`
+
 // Create a stored procedure that creates a new document language
 export const CREATE_CREATE_DOCUMENT_LANGUAGE_PROC = `
 CREATE OR REPLACE PROCEDURE create_document_language(
@@ -3072,6 +3093,7 @@ CREATE OR REPLACE PROCEDURE create_book(
     IN in_document_document_image_extensions VARCHAR[],
     IN in_book_isbn VARCHAR,
     IN in_book_publisher_id BIGINT,
+    OUT out_book_publisher_id_is_valid BOOLEAN,
     OUT out_book_id BIGINT
 )
 LANGUAGE plpgsql
@@ -3079,6 +3101,12 @@ AS $$
 DECLARE
     var_document_id BIGINT;
 BEGIN
+    -- Check if the publisher ID is valid
+    call is_publisher_id_valid(in_book_publisher_id, out_book_publisher_id_is_valid);
+    IF out_book_publisher_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into documents table
     call create_document(in_created_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids,in_document_document_image_extensions, var_document_id);
     

@@ -43,11 +43,18 @@ export class BookService {
                 Object.values(imagesExtensionsByUUID),
                 body.book_isbn,
                 body.book_publisher_id,
+                null,
                 null
             );
+            const queryRow = queryRes.rows?.[0];
+            if (queryRow?.out_book_publisher_id_is_valid === false)
+                throw new FieldFailError(400,
+                    'book_publisher_id',
+                    'Publisher ID is invalid'
+                )
 
             // Get the book ID
-            const bookID = queryRes.rows?.[0]?.out_book_id
+            const bookID = queryRow?.out_book_id
 
             // Save the PDF file
             if (pdfBuffer)

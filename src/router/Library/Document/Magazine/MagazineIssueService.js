@@ -1,6 +1,8 @@
 import DatabaseManager from "../../../../components/database.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
-import {CREATE_BOOK_PROC} from "../../../../database/model/storedProcedures.js";
+import {
+    CREATE_MAGAZINE_ISSUE_PROC
+} from "../../../../database/model/storedProcedures.js";
 import {
     PDF_FILE_EXTENSION,
     uploadImage,
@@ -31,7 +33,7 @@ export class MagazineIssueService {
         try {
             // Create the magazine issue
             const queryRes = await DatabaseManager.rawQuery(
-                CREATE_BOOK_PROC,
+                CREATE_MAGAZINE_ISSUE_PROC,
                 req.session.userID,
                 body.document_title,
                 body.document_description,
