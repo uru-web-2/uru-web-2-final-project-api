@@ -25,6 +25,7 @@ export class LocationSectionService {
                 body.location_id,
                 body.name,
                 null,
+                null
             );
             const queryRow = queryRes.rows?.[0];
             if (queryRow?.out_location_id_is_valid === false)
@@ -33,7 +34,7 @@ export class LocationSectionService {
                     'Location ID is invalid'
                 );
 
-            return queryRow?.out_location_id;
+            return queryRow?.out_location_section_id;
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
