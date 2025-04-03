@@ -30,10 +30,9 @@ export class SecurityService {
             null
         );
         const queryRow = queryRes.rows?.[0];
-
-        if (queryRow?.out_is_profile_id_valid === false)
+        if (queryRow?.out_profile_id_is_valid === false)
             throw new FieldFailError('profile_id', 'Profile ID is invalid');
-        if (queryRow?.out_is_method_id_valid === false)
+        if (queryRow?.out_method_id_is_valid === false)
             throw new FieldFailError('method_id', 'Method ID is invalid');
 
         // Add the permission ID to the security component
@@ -54,13 +53,12 @@ export class SecurityService {
             null
         );
         const queryRow = queryRes.rows?.[0];
-
-        if (queryRow?.out_is_profile_id_valid === false)
+        if (queryRow?.out_profile_id_is_valid === false)
             throw new FieldFailError(400,
                 'profile_id',
                 'Profile ID is invalid'
             );
-        if (queryRow?.out_is_method_id_valid === false)
+        if (queryRow?.out_method_id_is_valid === false)
             throw new FieldFailError(400, 'method_id', 'Method ID is invalid');
 
         // Remove the permission ID from the security component
@@ -117,14 +115,14 @@ export class SecurityService {
             null
         );
         const queryRow = queryRes.rows?.[0];
-
-        if (queryRow?.out_is_profile_id_valid === false)
+        if (queryRow?.out_profile_id_is_valid === false)
             throw new FieldFailError(400,
                 'profile_id',
                 'Profile ID is invalid'
             );
         if (queryRow?.out_user_id === null)
             throw new FieldFailError(400, 'username', 'Username is invalid');
+
         return queryRow?.out_user_id
     }
 
@@ -139,14 +137,14 @@ export class SecurityService {
             null
         );
         const queryRow = queryRes.rows?.[0];
-
-        if (queryRow?.out_is_profile_id_valid === false)
+        if (queryRow?.out_profile_id_is_valid === false)
             throw new FieldFailError(400,
                 'profile_id',
                 'Profile ID is invalid'
             );
         if (queryRow?.out_user_id === null)
             throw new FieldFailError(400, 'username', 'Username is invalid');
+
         return queryRow?.out_user_id
     }
 
@@ -166,12 +164,12 @@ export class SecurityService {
             SET_PROFILE_PERMISSIONS_PROC,
             req.session.userID,
             body.profile_id,
-            body.assign_method_ids ?? [],
-            body.revoke_method_ids ?? [],
+            body.create_method_ids ?? [],
+            body.remove_method_ids ?? [],
         )
 
         // Update the permissions to the security component
-        Security.updatePermissions(body.profile_id, body.assign_method_ids, body.revoke_method_ids)
+        Security.updatePermissions(body.profile_id, body.create_method_ids, body.remove_method_ids)
     }
 }
 

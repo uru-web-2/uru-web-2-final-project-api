@@ -318,16 +318,16 @@ CREATE TABLE IF NOT EXISTS documents (
     id BIGSERIAL PRIMARY KEY,
     title VARCHAR(100),
     description TEXT,
-    registered_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     removed_at TIMESTAMP,
     release_date TIMESTAMP,
     average_ratings FLOAT DEFAULT 0,
     number_ratings BIGINT DEFAULT 0,
     pages INTEGER,
     author VARCHAR(255),
-    registered_by_user_id BIGINT NOT NULL,
+    created_by_user_id BIGINT NOT NULL,
     removed_by_user_id BIGINT,
-    FOREIGN KEY (registered_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
 `;
@@ -628,12 +628,12 @@ CREATE TABLE IF NOT EXISTS magazines (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100),
     description TEXT,
-    registered_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     removed_at TIMESTAMP,
     release_date TIMESTAMP,
-    registered_by_user_id BIGINT NOT NULL,
+    created_by_user_id BIGINT NOT NULL,
     removed_by_user_id BIGINT,
-    FOREIGN KEY (registered_by_user_id) REFERENCES users(id),
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id),
     FOREIGN KEY (removed_by_user_id) REFERENCES users(id)
 );
 `;

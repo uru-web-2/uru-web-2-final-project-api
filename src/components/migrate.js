@@ -186,7 +186,31 @@ import {
     CREATE_REMOVE_BOOK_PROC,
     CREATE_REMOVE_ARTICLE_PROC,
     CREATE_REMOVE_THESIS_PROC,
-    CREATE_REMOVE_MAGAZINE_ISSUE_PROC
+    CREATE_REMOVE_MAGAZINE_ISSUE_PROC,
+    CREATE_GET_NUMBER_OF_BOOK_COPIES_BY_BOOK_ID_PROC,
+    CREATE_IS_COUNTRY_ID_VALID_PROC,
+    CREATE_IS_USER_ID_VALID_PROC,
+    CREATE_IS_USER_EMAIL_ID_VALID_PROC,
+    CREATE_GET_USER_EMAIL_ID_BY_USER_EMAIL_PROC,
+    CREATE_IS_DOCUMENT_ID_VALID_PROC,
+    CREATE_IS_POST_ID_VALID_PROC,
+    CREATE_IS_LOCATION_ID_VALID_PROC,
+    CREATE_IS_USER_EMAIL_VERIFICATION_TOKEN_VALID_PROC,
+    CREATE_IS_OBJECT_ID_VALID_PROC,
+    CREATE_IS_LOCATION_SECTION_ID_VALID_PROC,
+    CREATE_IS_TOPIC_ID_VALID_PROC,
+    CREATE_IS_MAGAZINE_ID_VALID_PROC,
+    CREATE_IS_PUBLISHER_ID_VALID_PROC,
+    CREATE_IS_DOCUMENT_REVIEW_ID_VALID_PROC,
+    CREATE_IS_BOOK_ID_VALID_PROC,
+    CREATE_IS_WORK_ID_VALID_PROC,
+    CREATE_IS_ARTICLE_ID_VALID_PROC,
+    CREATE_IS_BOOK_COPY_ID_VALID_PROC,
+    CREATE_IS_MAGAZINE_ISSUE_ID_VALID_PROC,
+    CREATE_IS_THESIS_ID_VALID_PROC,
+    CREATE_IS_ARTICLE_JURY_MEMBER_PROC,
+    CREATE_IS_ARTICLE_ANNOTATION_ID_VALID_PROC,
+    CREATE_IS_BOOK_COPY_LOAN_ID_VALID_PROC
 } from "../database/model/createStoredProcedures.js";
 import Logger from "./logger.js";
 import {MigratePermissions} from "@ralvarezdev/js-module-permissions";
@@ -225,7 +249,7 @@ loadNode()
 
 // Migrate module recursively
 async function migrateModule(profilesID, module, parentModuleID = null) {
-    let queryRes, queryRows
+    let queryRes, queryRow
 
     try {
         // Insert the module
@@ -275,7 +299,11 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
                 objectName,
                 moduleID,
                 null,
+                null
             )
+            queryRow = queryRes.rows?.[0]
+            if (queryRow?.out_module_id_is_valid === false)
+                Logger.error(`Module ID ${moduleID} is not valid`)
         } catch (error) {
             // Log the error
             Logger.error(`Error inserting object ${objectName}: ${error}`)
@@ -292,13 +320,16 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
                 GET_OBJECT_ID_BY_NAME_PROC,
                 objectName,
                 moduleID,
+                null,
                 null
             )
+            queryRow = queryRes.rows?.[0]
+            if (queryRow?.out_module_id_is_valid === false)
+                Logger.error(`Module ID ${moduleID} is not valid`)
         }
 
         // Get the object ID
-        queryRows = queryRes?.rows?.[0]
-        const objectID = queryRows?.out_object_id
+        const objectID = queryRow?.out_object_id
 
         // Log the object
         Logger.info(`Object ${objectName} inserted/retrieved with ID ${objectID} and parent module ID ${moduleID}`)
@@ -329,11 +360,14 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
                     methodName,
                     objectID,
                     allowedProfilesID,
+                    null,
                     null
                 )
+                queryRow = queryRes?.rows?.[0]
+                if (queryRow?.out_method_id_is_valid === false)
+                    Logger.error(`Method ID ${methodID} is not valid`)
 
-                queryRows = queryRes?.rows?.[0]
-                methodID = queryRows?.out_method_id
+                methodID = queryRow?.out_method_id
             } catch (error) {
                 // Log the error
                 Logger.error(`Error inserting method ${methodName}: ${error}`)
@@ -350,18 +384,27 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
                     GET_METHOD_ID_BY_NAME_PROC,
                     methodName,
                     objectID,
+                    null,
                     null
                 )
+                queryRow = queryRes?.rows?.[0]
+                if (queryRow?.out_method_id_is_valid === false)
+                    Logger.error(`Method ID ${methodID} is not valid`)
 
-                queryRows = queryRes?.rows?.[0]
                 methodID = queryRows?.out_method_id
 
                 // Get the current allowed profiles
                 queryRes = await DatabaseManager.rawQuery(
                     GET_PERMISSIONS_BY_METHOD_ID_PROC,
                     methodID,
+                    null,
                     null
                 )
+                queryRow = queryRes?.rows?.[0]
+                if (queryRow?.out_method_id_is_valid === false) {
+                    Logger.error(`Method ID ${methodID} is not valid`)
+                    return
+                }
 
                 const currentAllowedProfilesID = queryRes.rows?.[0].out_allowed_profile_ids
 
@@ -372,13 +415,17 @@ async function migrateModule(profilesID, module, parentModuleID = null) {
                 const profilesIDToRemove = currentAllowedProfilesID.filter((profileID) => !allowedProfilesID.includes(profileID))
 
                 // Set the method permissions
-                await DatabaseManager.rawQuery(
+                queryRes=await DatabaseManager.rawQuery(
                     SET_METHOD_PERMISSIONS_PROC,
                     null,
                     methodID,
                     profilesIDToAdd,
                     profilesIDToRemove
+                    ,null
                 )
+                queryRow = queryRes?.rows?.[0]
+                if (queryRow?.out_method_id_is_valid === false)
+                    Logger.error(`Method ID ${methodID} is not valid`)
             }
 
             // Log the method
@@ -492,6 +539,29 @@ export default async function migrate() {
     // Create the stored procedures
     await DatabaseManager.runTransaction(async (client) => {
         for (const query of [
+            CREATE_IS_COUNTRY_ID_VALID_PROC,
+            CREATE_IS_USER_ID_VALID_PROC,
+            CREATE_IS_USER_EMAIL_ID_VALID_PROC,
+            CREATE_IS_DOCUMENT_ID_VALID_PROC,
+            CREATE_IS_POST_ID_VALID_PROC,
+            CREATE_IS_LOCATION_ID_VALID_PROC,
+            CREATE_IS_USER_EMAIL_VERIFICATION_TOKEN_VALID_PROC,
+            CREATE_IS_OBJECT_ID_VALID_PROC,
+            CREATE_IS_LOCATION_SECTION_ID_VALID_PROC,
+            CREATE_IS_TOPIC_ID_VALID_PROC,
+            CREATE_IS_MAGAZINE_ID_VALID_PROC,
+            CREATE_IS_PUBLISHER_ID_VALID_PROC,
+            CREATE_IS_DOCUMENT_REVIEW_ID_VALID_PROC,
+            CREATE_IS_BOOK_ID_VALID_PROC,
+            CREATE_IS_WORK_ID_VALID_PROC,
+            CREATE_IS_ARTICLE_ID_VALID_PROC,
+            CREATE_IS_BOOK_COPY_ID_VALID_PROC,
+            CREATE_IS_MAGAZINE_ISSUE_ID_VALID_PROC,
+            CREATE_IS_THESIS_ID_VALID_PROC,
+            CREATE_IS_ARTICLE_ANNOTATION_ID_VALID_PROC,
+            CREATE_IS_BOOK_COPY_LOAN_ID_VALID_PROC,
+            CREATE_IS_ARTICLE_JURY_MEMBER_PROC,
+            CREATE_GET_USER_EMAIL_ID_BY_USER_EMAIL_PROC,
             CREATE_GET_COUNTRY_ID_BY_NAME_PROC,
             CREATE_CREATE_USER_PERSONAL_DOCUMENT_PROC,
             CREATE_REMOVE_USER_PERSONAL_DOCUMENT_PROC,
@@ -603,7 +673,8 @@ export default async function migrate() {
             CREATE_REMOVE_BOOK_PROC,
             CREATE_REMOVE_ARTICLE_PROC,
             CREATE_REMOVE_THESIS_PROC,
-            CREATE_REMOVE_MAGAZINE_ISSUE_PROC
+            CREATE_REMOVE_MAGAZINE_ISSUE_PROC,
+            CREATE_GET_NUMBER_OF_BOOK_COPIES_BY_BOOK_ID_PROC
         ])
             await client.rawQuery(query)
     })

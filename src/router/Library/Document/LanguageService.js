@@ -11,18 +11,32 @@ import {
     DOCUMENT_LANGUAGES_UNIQUE_DOCUMENT_ID_LANGUAGE_ID
 } from "../../../database/model/constraints.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
+import {uploadArticleFile} from "../../../components/files.js";
 
 // Service for the language object
 export class LanguageService {
     // Creates a document language
     async CreateDocumentLanguage(req, body) {
         try {
-            await DatabaseManager.rawQuery(
+            const queryRes=await DatabaseManager.rawQuery(
                 CREATE_DOCUMENT_LANGUAGE_PROC,
                 req.session.userID,
                 body.language_id,
-                body.document_id
+                body.document_id,
+                null,
+                null
             );
+            const queryRow = queryRes.rows?.[0];
+            if (queryRow?.out_document_id_is_valid === false)
+                throw new FieldFailError(400,
+                    'document_id',
+                    'Document ID is invalid'
+                );
+            if (queryRow?.out_language_id_is_valid === false)
+                throw new FieldFailError(400,
+                    'language_id',
+                    'Language ID is invalid'
+                );
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)

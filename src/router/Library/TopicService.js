@@ -49,7 +49,6 @@ export class TopicService {
                 null,
             );
             const queryRow = queryRes.rows?.[0];
-
             if (queryRow?.out_topic_id_is_valid === false)
                 throw new FieldFailError(400, 'id', 'Topic ID is invalid');
         } catch (error) {
@@ -72,7 +71,6 @@ export class TopicService {
             null,
         );
         const queryRow = queryRes.rows?.[0];
-
         if (queryRow?.out_topic_id_is_valid === false)
             throw new FieldFailError(400, 'id', 'Topic ID is invalid');
     }

@@ -54,9 +54,13 @@ import {
 import {addDuration} from "./utils.js";
 import {IS_PROD, loadNode} from "@ralvarezdev/js-mode";
 import Audit from "./audit.js";
+import multer from 'multer'
 
 // Load environment variables
 loadNode()
+
+// Stringify body name to send JSON as a string
+const BODY_STRINGIFY_NAME = 'stringify'
 
 // Validate new password
 function ValidateNewPassword(password) {
@@ -139,11 +143,17 @@ export class Dispatcher {
 
     // Initialize the dispatcher
     constructor() {
+        // Create a new instance of multer
+        const upload = multer();
+
         // Create a new instance of the app
         this.#app = express()
 
         // Add the body parser middleware
         this.#app.use(express.json())
+
+        // Parse multipart/form-data
+        this.#app.use(upload.any());
 
         // Add the error JSON body parser handler middleware
         this.#app.use(ErrorHandler.errorJSONBodyParserCatcher())
@@ -235,7 +245,7 @@ export class Dispatcher {
                 body.username,
                 body.email,
                 body.password_hash,
-                body.document_country,
+                body.document_country_name,
                 body.document_type,
                 body.document_number,
                 emailVerificationToken,
@@ -243,17 +253,14 @@ export class Dispatcher {
                 null,
                 null
             )
-            if (queryRes.rows.length > 0) {
-                const isCountryValid = queryRes.rows[0]?.out_country_name_is_valid
-                userID = queryRes.rows[0]?.out_user_id
-
-                // Check if the country is valid
-                if (!isCountryValid)
+            const queryRow = queryRes.rows?.[0]
+            if(queryRow?.out_user_document_country_name_is_valid === false)
                     throw new FieldFailError(400,
-                        "document_country",
+                        "document_country_name",
                         "country not found"
                     )
-            }
+
+             userID = queryRow?.out_user_id
 
             // Log the user ID
             Logger.info(`Signed up user ${userID}`)
@@ -324,8 +331,8 @@ export class Dispatcher {
 
             // Check if the username was found
             if (logInRes.rows.length > 0) {
-                userID = logInRes.rows[0]?.out_user_id
-                passwordHash = logInRes.rows[0]?.out_user_password_hash
+                userID = logInRes.rows?.[0]?.out_user_id
+                passwordHash = logInRes.rows?.[0]?.out_user_password_hash
             }
 
             // Check if the user exists
@@ -373,7 +380,7 @@ export class Dispatcher {
             SetSessionToResponse(req,
                 userID,
                 body.profile ? parsedUserProfiles.find(profile => profile.name === body.profile).id : parsedUserProfiles[0].id,
-                logInRes.rows[0]?.out_user_email_is_verified
+                logInRes.rows?.[0]?.out_user_email_is_verified
             )
 
             // Log the user ID
@@ -405,6 +412,19 @@ export class Dispatcher {
     // Handle the execute request
     async Execute(req, res, next) {
         try {
+            // Check if the request body is stringified
+            if (req.body?.[BODY_STRINGIFY_NAME]) {
+                // Parse the request body
+                req.body = JSON.parse(req.body[BODY_STRINGIFY_NAME])
+
+                // Check if the request body is empty
+                if (Object.keys(req.body).length === 0)
+                    throw new FieldFailError(400,
+                        "body",
+                        "request body is empty"
+                    )
+            }
+
             // Validate the request
             const {
                 modules,
@@ -451,12 +471,13 @@ export class Dispatcher {
                 null,
                 null,
                 null,
+                null,
             )
-            const firstName = getRes.rows[0]?.out_user_first_name
-            const lastName = getRes.rows[0]?.out_user_last_name
+            const firstName = getRes.rows?.[0]?.out_user_first_name
+            const lastName = getRes.rows?.[0]?.out_user_last_name
             const fullName = firstName + " " + lastName
-            const emailID = getRes.rows[0]?.out_user_email_id
-            const email = getRes.rows[0]?.out_user_email
+            const emailID = getRes.rows?.[0]?.out_user_email_id
+            const email = getRes.rows?.[0]?.out_user_email
 
             // Create the user with the new email verification token
             const createRes = await DatabaseManager.rawQuery(
@@ -465,8 +486,16 @@ export class Dispatcher {
                 emailVerificationToken,
                 addDuration(EMAIL_VERIFICATION_TOKEN_DURATION).toISOString(),
                 null,
+                null,
             )
-            if (createRes.rows[0].out_user_email_is_verified) {
+            const createRow = createRes.rows?.[0]
+            if (createRow?.out_user_email_id_is_valid === false) {
+                throw new FieldFailError(400,
+                    "email",
+                    "email not found"
+                )
+            }
+            if (createRow?.out_user_email_is_verified) {
                 // Set in the session that the email is verified
                 AddEmailVerificationToSession(req)
 
@@ -502,8 +531,8 @@ export class Dispatcher {
                 body.token,
                 null,
             )
-            const isTokenValid = queryRes.rows[0]?.out_user_email_verification_token_is_valid
-            if (!isTokenValid)
+            const queryRow = queryRes.rows?.[0]
+            if (queryRow?.out_user_email_verification_token_is_valid === false)
                 throw new FieldFailError(400, "token", "token is invalid")
 
             // Set in the session that the email is verified
@@ -530,24 +559,30 @@ export class Dispatcher {
             const resetPasswordToken = uuidv4()
 
             // Get the user email information by the user ID
-            const queryRes = await DatabaseManager.rawQuery(
+            let queryRes = await DatabaseManager.rawQuery(
                 GET_USER_EMAIL_INFO_BY_USER_EMAIL_PROC,
                 body.email,
                 null,
                 null,
                 null,
                 null,
+                null,
             )
-            const firstName = queryRes.rows[0]?.out_user_first_name
-            const lastName = queryRes.rows[0]?.out_user_last_name
+            const queryRow = queryRes.rows?.[0]
+            if (!queryRow?.out_user_email_id_is_valid)
+                throw new FieldFailError(400, "email", "email not found")
+
+            const firstName = queryRow?.out_user_first_name
+            const lastName = queryRow?.out_user_last_name
             const fullName = firstName + " " + lastName
-            const userID = queryRes.rows[0]?.out_user_id
+            const userID = queryRow?.out_user_id
 
             // Create the new reset password token
-            await DatabaseManager.rawQuery(CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
+            queryRes = await DatabaseManager.rawQuery(CREATE_USER_RESET_PASSWORD_TOKEN_PROC,
                 userID,
                 resetPasswordToken,
                 addDuration(RESET_PASSWORD_TOKEN_DURATION).toISOString(),
+                null
             )
 
             // Send the response
@@ -586,8 +621,8 @@ export class Dispatcher {
                 passwordHash,
                 null,
             )
-            const isTokenValid = queryRes.rows[0]?.out_user_reset_password_token_is_valid
-            if (!isTokenValid)
+            const queryRow = queryRes.rows?.[0]
+            if (queryRow?.out_user_reset_password_token_is_valid === false)
                 throw new FieldFailError(400, "token", "token is invalid")
 
             // Send the response

@@ -1,11 +1,33 @@
 import {PROFILES_NAME} from "../../components/constants.js";
+import {IDENTITY_DOCUMENT, PASSPORT} from "./constants.js";
+
+// Create a stored procedure that checks if a country ID is valid
+export const CREATE_IS_COUNTRY_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_country_id_valid(
+    IN in_country_id BIGINT,
+    OUT out_country_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_country_id_is_valid := FALSE;
+    
+    -- Check if the country ID is valid
+    SELECT TRUE
+    INTO out_country_id_is_valid
+    FROM countries
+    WHERE id = in_country_id;
+END;
+$$;
+`
 
 // Create a stored procedure that gets a country ID by name
 export const CREATE_GET_COUNTRY_ID_BY_NAME_PROC = `
 CREATE OR REPLACE PROCEDURE get_country_id_by_name(
     IN in_country_name VARCHAR,
-    OUT out_country_id BIGINT,
     OUT out_country_name_is_valid BOOLEAN
+    OUT out_country_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -34,13 +56,21 @@ CREATE OR REPLACE PROCEDURE create_user_personal_document(
     IN in_user_document_country_id BIGINT,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR,
+    OUT out_document_id_is_valid BOOLEAN,
     OUT out_document_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the document ID is valid
+    call is_country_id_valid(in_user_document_country_id, out_document_id_is_valid);
+    
+    IF out_document_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into people table according to the document type
-    IF in_user_document_type = 'Identity Document' THEN
+    IF in_user_document_type = '${IDENTITY_DOCUMENT}' THEN
         -- Insert into identity_documents table
         INSERT INTO identity_documents (
             country_id,
@@ -84,7 +114,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Delete the user personal document
-    IF in_user_document_type = 'Identity Document' THEN
+    IF in_user_document_type = '${IDENTITY_DOCUMENT}' THEN
         UPDATE identity_documents
         SET removed_at = NOW(),
             removed_by_user_id = in_removed_by_user_id
@@ -108,6 +138,7 @@ CREATE OR REPLACE PROCEDURE replace_user_personal_document(
     IN in_user_document_country_id BIGINT,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR,
+    OUT out_document_country_id_is_valid BOOLEAN,
     OUT out_document_id BIGINT
 )
 LANGUAGE plpgsql
@@ -117,7 +148,7 @@ BEGIN
     call remove_user_personal_document(in_replaced_by_user_id, in_user_document_type, in_user_document_number);
     
     -- Create the user personal document
-    call create_user_personal_document(in_replaced_by_user_id, in_user_document_country_id, in_user_document_type, in_user_document_number, out_document_id);
+    call create_user_personal_document(in_replaced_by_user_id, in_user_document_country_id, in_user_document_type, in_user_document_number, out_document_country_id_is_valid, out_document_id);
 END;
 $$;
 `
@@ -131,6 +162,7 @@ CREATE OR REPLACE PROCEDURE create_person(
     IN in_user_document_country_id BIGINT,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR,
+    OUT out_document_country_id_is_valid BOOLEAN,
     OUT out_person_id BIGINT
 )
 LANGUAGE plpgsql
@@ -139,10 +171,10 @@ DECLARE
     var_document_id BIGINT;
 BEGIN
     -- Create the user personal document
-    call create_user_personal_document(in_created_by_user_id, in_user_document_country_id, in_user_document_type, in_user_document_number, var_document_id);
+    call create_user_personal_document(in_created_by_user_id, in_user_document_country_id, in_user_document_type, in_user_document_number, out_document_country_id_is_valid,var_document_id);
 
     -- Insert into people table according to the document type
-    IF in_user_document_type = 'Identity Document' THEN        
+    IF in_user_document_type = '${IDENTITY_DOCUMENT}' THEN        
         -- Insert into people table
         INSERT INTO people (
             first_name,
@@ -175,6 +207,28 @@ END;
 $$;
 `
 
+// Create a stored procedure that checks if a user ID is valid
+export const CREATE_IS_USER_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_user_id_valid(
+    IN in_user_id BIGINT,
+    OUT out_user_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_user_id_is_valid := FALSE;
+    
+    -- Check if the user ID is valid
+    SELECT TRUE
+    INTO out_user_id_is_valid
+    FROM users
+    WHERE id = in_user_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
 // Create a stored procedure that creates a new user email
 export const CREATE_CREATE_USER_EMAIL_PROC = `
 CREATE OR REPLACE PROCEDURE create_user_email(
@@ -182,11 +236,19 @@ CREATE OR REPLACE PROCEDURE create_user_email(
     IN in_user_email VARCHAR,
     IN in_user_email_verification_token VARCHAR,
     IN in_user_email_verification_expires_at TIMESTAMP,
+    OUT out_user_id_is_valid BOOLEAN,
     OUT out_user_email_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the user ID is valid
+    call is_user_id_valid(in_user_id, out_user_id_is_valid);
+    
+    IF out_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into user_emails table
     INSERT INTO user_emails (
         user_id,
@@ -221,6 +283,7 @@ CREATE OR REPLACE PROCEDURE update_user_email(
     IN in_user_email VARCHAR,
     IN in_user_email_verification_token VARCHAR,
     IN in_user_email_verification_expires_at TIMESTAMP,
+    OUT out_user_id_is_valid BOOLEAN,
     OUT out_user_email_id BIGINT
 )
 LANGUAGE plpgsql
@@ -233,7 +296,7 @@ BEGIN
     AND removed_at IS NULL;
     
     -- Create the user email
-    call create_user_email(in_user_id, in_user_email, in_user_email_verification_token, in_user_email_verification_expires_at, out_user_email_id);
+    call create_user_email(in_user_id, in_user_email, in_user_email_verification_token, in_user_email_verification_expires_at, out_user_id_is_valid, out_user_email_id);
 END;
 $$;
 `
@@ -258,17 +321,43 @@ END;
 $$;
 `
 
+// Create a stored procedure that checks if a user email ID is valid
+export const CREATE_IS_USER_EMAIL_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_user_email_id_valid(
+    IN in_user_email_id BIGINT,
+    OUT out_user_email_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_user_email_id_is_valid := FALSE;
+    
+    -- Check if the user email ID is valid
+    SELECT TRUE
+    INTO out_user_email_id_is_valid
+    FROM user_emails
+    WHERE id = in_user_email_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
 // Create a stored procedure that creates a new user email verification token
 export const CREATE_CREATE_USER_EMAIL_VERIFICATION_TOKEN_PROC = `
 CREATE OR REPLACE PROCEDURE create_user_email_verification_token(
     IN in_user_email_id BIGINT,
     IN in_user_email_verification_token VARCHAR,
     IN in_user_email_verification_expires_at TIMESTAMP,
+    OUT out_user_email_id_is_valid BOOLEAN
     OUT out_user_email_is_verified BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the user email ID is valid
+    call is_user_email_id_valid(in_user_email_id, out_user_email_id_is_valid);
+
     -- Check if the user email is verified
     SELECT verified_at IS NOT NULL
     INTO out_user_email_is_verified
@@ -303,6 +392,7 @@ $$;
 export const CREATE_GET_USER_EMAIL_INFO_BY_USER_ID_PROC = `
 CREATE OR REPLACE PROCEDURE get_user_email_info_by_user_id(
     IN in_user_id BIGINT,
+    OUT out_user_id_is_valid BOOLEAN,
     OUT out_user_first_name VARCHAR,
     OUT out_user_last_name VARCHAR,
     OUT out_user_email_id BIGINT,
@@ -311,6 +401,9 @@ CREATE OR REPLACE PROCEDURE get_user_email_info_by_user_id(
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the user ID is valid
+    call is_user_id_valid(in_user_id, out_user_id_is_valid);
+
     -- Select the user email information
     SELECT user_emails.id, user_emails.email, people.first_name, people.last_name
     INTO out_user_email_id, out_user_email, out_user_first_name, out_user_last_name
@@ -322,10 +415,40 @@ END;
 $$;
 `
 
+// Create a stored procedure that gets the user email ID by user email
+export const CREATE_GET_USER_EMAIL_ID_BY_USER_EMAIL_PROC = `
+CREATE OR REPLACE PROCEDURE get_user_email_id_by_user_email(
+    IN in_user_email VARCHAR,
+    OUT out_user_email_is_valid BOOLEAN
+    OUT out_user_email_id BIGINT,
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_user_email_id := NULL;
+    
+    -- Check if the user email is valid
+    SELECT id
+    INTO out_user_email_id
+    FROM user_emails
+    WHERE email = in_user_email
+    AND removed_at IS NULL;
+        
+    IF out_user_email_id IS NULL THEN
+        out_user_email_is_valid := FALSE;
+    ELSE
+        out_user_email_is_valid := TRUE;
+    END IF;
+END;
+$$;
+`
+
 // Create a stored procedure that gets a user email information by user email
 export const CREATE_GET_USER_EMAIL_INFO_BY_USER_EMAIL_PROC = `
 CREATE OR REPLACE PROCEDURE get_user_email_info_by_user_email(
     IN in_user_email VARCHAR,
+    OUT out_user_email_is_valid BOOLEAN,
     OUT out_user_id BIGINT,
     OUT out_user_first_name VARCHAR,
     OUT out_user_last_name VARCHAR,
@@ -333,14 +456,42 @@ CREATE OR REPLACE PROCEDURE get_user_email_info_by_user_email(
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    var_user_email_id BIGINT;
 BEGIN
+    -- Get the user email ID
+    call get_user_email_id_by_user_email(in_user_email, out_user_email_is_valid, var_user_email_id);
+
     -- Select the user email information
     SELECT users.id, user_emails.id, people.first_name, people.last_name
     INTO out_user_id, out_user_email_id, out_user_first_name, out_user_last_name
     FROM user_emails
     INNER JOIN users ON user_emails.user_id = users.id
     INNER JOIN people ON users.person_id = people.id
-    WHERE user_emails.email = in_user_email;
+    WHERE user_emails.id = var_user_email_id;
+END;
+$$;
+`
+
+// Create a stored procedure that check if a user email verification token is valid
+export const CREATE_IS_USER_EMAIL_VERIFICATION_TOKEN_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_user_email_verification_token_valid(
+    IN in_user_email_verification_token VARCHAR,
+    OUT out_user_email_verification_token_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_user_email_verification_token_is_valid := FALSE;
+    
+    -- Check if the user email verification token is valid
+    SELECT TRUE
+    INTO out_user_email_verification_token_is_valid
+    FROM user_email_verification_tokens
+    WHERE verification_token = in_user_email_verification_token
+    AND expires_at > NOW()
+    AND verified_at IS NULL;
 END;
 $$;
 `
@@ -355,12 +506,10 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Check if the user email verification token is valid
-    SELECT TRUE
-    INTO out_user_email_verification_token_is_valid
-    FROM user_email_verification_tokens
-    WHERE verification_token = in_user_email_verification_token
-    AND expires_at > NOW()
-    AND verified_at IS NULL;
+    call is_user_email_verification_token_valid(in_user_email_verification_token, out_user_email_verification_token_is_valid);
+    IF out_user_email_verification_token_is_valid = FALSE THEN
+        RETURN;
+    END IF;
 
     -- Update the user_email_verification_tokens table
     UPDATE user_email_verification_tokens
@@ -396,11 +545,15 @@ export const CREATE_CREATE_USER_RESET_PASSWORD_TOKEN_PROC = `
 CREATE OR REPLACE PROCEDURE create_user_reset_password_token(
     IN in_user_id BIGINT,
     IN in_user_reset_password_token VARCHAR,
-    IN in_user_reset_password_expires_at TIMESTAMP
+    IN in_user_reset_password_expires_at TIMESTAMP,
+    OUT out_user_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the user ID is valid
+    call is_user_id_valid(in_user_id, out_user_id_is_valid);
+
     -- Remove the user reset password token
     call remove_user_reset_password_token_by_user_id(in_user_id);
     
@@ -423,11 +576,15 @@ $$;
 export const CREATE_UPDATE_USER_PASSWORD_HASH_PROC = `
 CREATE OR REPLACE PROCEDURE update_user_password_hash(
     IN in_user_id BIGINT,
-    IN in_user_password_hash VARCHAR
+    IN in_user_password_hash VARCHAR,
+    OUT out_user_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the user ID is valid
+    call is_user_id_valid(in_user_id, out_user_id_is_valid);
+
     -- Remove the user password hash
     UPDATE user_password_hashes
     SET removed_at = NOW()
@@ -495,13 +652,13 @@ CREATE OR REPLACE PROCEDURE create_user(
 	IN in_user_username VARCHAR,
 	IN in_user_email VARCHAR,
 	IN in_user_password_hash VARCHAR,
-	IN in_user_document_country VARCHAR,
+	IN in_user_document_country_name VARCHAR,
 	IN in_user_document_type VARCHAR,
 	IN in_user_document_number VARCHAR,
 	IN in_user_email_verification_token VARCHAR,
 	IN in_user_email_verification_expires_at TIMESTAMP,
-	OUT out_user_id BIGINT,
-    OUT out_country_name_is_valid BOOLEAN
+    OUT out_user_document_country_name_is_valid BOOLEAN,
+	OUT out_user_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -511,17 +668,18 @@ DECLARE
     var_profile_id BIGINT;
     var_user_email_id BIGINT;
     var_user_document_country_id BIGINT;
+    var_user_document_country_id_is_valid BIGINT;
 BEGIN
     -- Get the country ID
-    call get_country_id_by_name(in_user_document_country, var_user_document_country_id, out_country_name_is_valid);
+    call get_country_id_by_name(in_user_document_country_name, out_user_document_country_name_is_valid, var_user_document_country_id);
     
     -- Check if the country name is valid
-    IF out_country_name_is_valid = FALSE THEN
+    IF out_user_document_country_name_is_valid = FALSE THEN
         RETURN;
     END IF;
 
     -- Create the person
-    call create_person(in_created_by_user_id, in_user_first_name, in_user_last_name, var_user_document_country_id, in_user_document_type, in_user_document_number, var_person_id);
+    call create_person(in_created_by_user_id, in_user_first_name, in_user_last_name, var_user_document_country_id, in_user_document_type, in_user_document_number, var_user_document_country_id_is_valid, var_person_id);
         
 	-- Insert into users table
 	INSERT INTO users (
@@ -624,17 +782,17 @@ $$;
 export const CREATE_IS_PROFILE_ID_VALID_PROC = `
 CREATE OR REPLACE PROCEDURE is_profile_id_valid(
     IN in_profile_id BIGINT,
-    OUT out_is_profile_id_valid BOOLEAN
+    OUT out_profile_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Set the default value
-    out_is_profile_id_valid := FALSE;
+    out_profile_id_is_valid := FALSE;
 
     -- Check if the profile ID is valid
     SELECT TRUE
-    INTO out_is_profile_id_valid
+    INTO out_profile_id_is_valid
     FROM profiles
     WHERE id = in_profile_id
     AND removed_at IS NULL;
@@ -642,21 +800,43 @@ END;
 $$;
 `
 
-// Create a stored procedure to check if a method ID is valid
-export const CREATE_IS_METHOD_ID_VALID_PROC = `
-CREATE OR REPLACE PROCEDURE is_method_id_valid(
-    IN in_method_id BIGINT,
-    OUT out_is_method_id_valid BOOLEAN
+// Create a stored procedure that checks if an object ID is valid
+export const CREATE_IS_OBJECT_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_object_id_valid(
+    IN in_object_id BIGINT,
+    OUT out_object_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Set the default value
-    out_is_method_id_valid := FALSE;
+    out_object_id_is_valid := FALSE;
+
+    -- Check if the object ID is valid    
+    SELECT TRUE
+    INTO out_object_id_is_valid
+    FROM objects
+    WHERE id = in_object_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that checks if a method ID is valid
+export const CREATE_IS_METHOD_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_method_id_valid(
+    IN in_method_id BIGINT,
+    OUT out_method_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_method_id_is_valid := FALSE;
 
     -- Check if the method ID is valid    
     SELECT TRUE
-    INTO out_is_method_id_valid
+    INTO out_method_id_is_valid
     FROM methods
     WHERE id = in_method_id
     AND removed_at IS NULL;
@@ -670,7 +850,7 @@ CREATE OR REPLACE PROCEDURE create_user_profile(
     IN in_created_by_user_id BIGINT,
     IN in_user_username VARCHAR,
     IN in_profile_id BIGINT,
-    OUT out_is_profile_id_valid BOOLEAN,
+    OUT out_profile_id_is_valid BOOLEAN,
     OUT out_user_id BIGINT
 )
 LANGUAGE plpgsql
@@ -685,8 +865,8 @@ BEGIN
     END IF;
     
     -- Check if the profile ID is valid
-    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
-    IF out_is_profile_id_valid = FALSE THEN
+    call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
+    IF out_profile_id_is_valid = FALSE THEN
         RETURN;
     END IF;
     
@@ -711,7 +891,7 @@ CREATE OR REPLACE PROCEDURE remove_user_profile(
     IN in_removed_by_user_id BIGINT,
     IN in_user_username VARCHAR,
     IN in_profile_id BIGINT,
-    OUT out_is_profile_id_valid BOOLEAN,
+    OUT out_profile_id_is_valid BOOLEAN,
     OUT out_user_id BIGINT
 )
 LANGUAGE plpgsql
@@ -726,7 +906,7 @@ BEGIN
     END IF;
     
     -- Check if the profile ID is valid
-    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
+    call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
     
     -- Update the user_profiles table
     UPDATE user_profiles
@@ -766,22 +946,22 @@ CREATE OR REPLACE PROCEDURE create_profile_permission(
     IN in_created_by_user_id BIGINT,
     IN in_profile_id BIGINT,
     IN in_method_id BIGINT,
-    OUT out_is_profile_id_valid BOOLEAN,
-    OUT out_is_method_id_valid BOOLEAN,
+    OUT out_profile_id_is_valid BOOLEAN,
+    OUT out_method_id_is_valid BOOLEAN,
     OUT out_permission_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Check if the profile ID is valid
-    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
-    IF out_is_profile_id_valid = FALSE THEN
+    call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
+    IF out_profile_id_is_valid = FALSE THEN
         RETURN;
     END IF;
     
     -- Check if the method ID is valid
-    call is_method_id_valid(in_method_id, out_is_method_id_valid);
-    IF out_is_method_id_valid = FALSE THEN
+    call is_method_id_valid(in_method_id, out_method_id_is_valid);
+    IF out_method_id_is_valid = FALSE THEN
         RETURN;
     END IF;
 
@@ -814,22 +994,22 @@ CREATE OR REPLACE PROCEDURE remove_profile_permission(
     IN in_removed_by_user_id BIGINT,
     IN in_profile_id BIGINT,
     IN in_method_id BIGINT,
-    OUT out_is_profile_id_valid BOOLEAN,
-    OUT out_is_method_id_valid BOOLEAN,
+    OUT out_profile_id_is_valid BOOLEAN,
+    OUT out_method_id_is_valid BOOLEAN,
     OUT out_permission_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Check if the profile ID is valid
-    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
-    IF out_is_profile_id_valid = FALSE THEN
+    call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
+    IF out_profile_id_is_valid = FALSE THEN
         RETURN;
     END IF;
     
     -- Check if the method ID is valid
-    call is_method_id_valid(in_method_id, out_is_method_id_valid);
-    IF out_is_method_id_valid = FALSE THEN
+    call is_method_id_valid(in_method_id, out_method_id_is_valid);
+    IF out_method_id_is_valid = FALSE THEN
         RETURN;
     END IF;
     
@@ -886,7 +1066,7 @@ CREATE OR REPLACE PROCEDURE update_profile(
     IN in_profile_id BIGINT,
     IN in_profile_name VARCHAR,
     IN in_profile_description TEXT,
-    OUT out_is_profile_id_valid BOOLEAN
+    OUT out_profile_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -895,8 +1075,8 @@ DECLARE
     var_current_profile_description TEXT;
 BEGIN
     -- Check if the profile ID is valid
-    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
-    IF out_is_profile_id_valid = FALSE THEN
+    call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
+    IF out_profile_id_is_valid = FALSE THEN
         RETURN;
     END IF;
     
@@ -923,14 +1103,14 @@ export const CREATE_REMOVE_PROFILE_PROC = `
 CREATE OR REPLACE PROCEDURE remove_profile(
     IN in_removed_by_user_id BIGINT,
     IN in_profile_id BIGINT,
-    OUT out_is_profile_id_valid BOOLEAN
+    OUT out_profile_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Check if the profile ID is valid
-    call is_profile_id_valid(in_profile_id, out_is_profile_id_valid);
-    IF out_is_profile_id_valid = FALSE THEN
+    call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
+    IF out_profile_id_is_valid = FALSE THEN
         RETURN;
     END IF;
 
@@ -991,6 +1171,7 @@ CREATE OR REPLACE PROCEDURE create_object(
     IN in_created_by_user_id BIGINT,
     IN in_object_name VARCHAR,
     IN in_module_id BIGINT,
+    OUT out_module_id_is_valid BOOLEAN,
     OUT out_object_id BIGINT
 )   
 LANGUAGE plpgsql
@@ -1018,6 +1199,7 @@ CREATE OR REPLACE PROCEDURE create_method(
     IN in_created_by_user_id BIGINT,
     IN in_method_name VARCHAR,
     IN in_object_id BIGINT,
+    OUT out_method_id_is_valid BOOLEAN,
     OUT out_method_id BIGINT
 )
 LANGUAGE plpgsql
@@ -1046,6 +1228,7 @@ CREATE OR REPLACE PROCEDURE create_method_with_profiles(
     IN in_method_name VARCHAR,
     IN in_object_id BIGINT,
     IN in_profile_ids BIGINT[],
+    OUT out_object_id_is_valid BOOLEAN,
     OUT out_method_id BIGINT
 )
 LANGUAGE plpgsql
@@ -1053,6 +1236,12 @@ AS $$
 DECLARE
     var_profile_id BIGINT;
 BEGIN
+    -- Check if the object ID is valid
+    call is_object_id_valid(in_object_id, out_object_id_is_valid);
+    IF out_object_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into methods table
     INSERT INTO methods (
         created_by_user_id,
@@ -1154,11 +1343,18 @@ export const CREATE_GET_OBJECT_ID_BY_NAME_PROC = `
 CREATE OR REPLACE PROCEDURE get_object_id_by_name(
     IN in_object_name VARCHAR,
     IN in_module_id BIGINT,
+    OUT out_module_id_is_valid BOOLEAN,
     OUT out_object_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the module ID is valid
+    call is_object_id_valid(in_module_id, out_module_id_is_valid);
+    IF out_module_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+        
     -- Select the object id
     SELECT id
     INTO out_object_id
@@ -1175,11 +1371,18 @@ export const CREATE_GET_METHOD_ID_BY_NAME_PROC = `
 CREATE OR REPLACE PROCEDURE get_method_id_by_name(
     IN in_method_name VARCHAR,
     IN in_object_id BIGINT,
+    OUT out_object_id_is_valid BOOLEAN,
     OUT out_method_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the object ID is valid
+    call is_object_id_valid(in_object_id, out_object_id_is_valid);
+    IF out_object_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Select the method id
     SELECT id
     INTO out_method_id
@@ -1211,11 +1414,18 @@ $$;
 export const CREATE_UPDATE_USER_USERNAME_PROC = `
 CREATE OR REPLACE PROCEDURE update_user_username(
     IN in_user_id BIGINT,
-    IN in_user_username VARCHAR
+    IN in_user_username VARCHAR,
+    OUT out_user_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the user ID is valid
+    call is_user_id_valid(in_user_id, out_user_id_is_valid);
+    IF out_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
     -- Remove the current username
     UPDATE user_usernames
     SET removed_at = NOW()
@@ -1243,10 +1453,11 @@ CREATE OR REPLACE PROCEDURE update_user_by_admin(
     IN in_user_first_name VARCHAR,
     IN in_user_last_name VARCHAR,
     IN in_user_username VARCHAR,
-    IN in_user_document_country VARCHAR,
+    IN in_user_document_country_name VARCHAR,
     IN in_user_document_type VARCHAR,
     IN in_user_document_number VARCHAR,
-    OUT out_country_name_is_valid BOOLEAN
+    OUT out_user_id_is_valid BOOLEAN,
+    OUT out_user_document_country_name_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -1256,13 +1467,16 @@ DECLARE
     var_user_document_country_id BIGINT;
     var_document_id BIGINT;
 BEGIN
+    -- Check if the user ID is valid
+    call is_user_id_valid(in_user_id, out_user_id_is_valid);
+
     -- Get the country ID
-    call get_country_id_by_name(in_user_document_country, var_user_document_country_id, out_country_name_is_valid);
+    call get_country_id_by_name(in_user_document_country_name, out_user_document_country_name_is_valid, var_user_document_country_id);
 
     -- Replace the user personal document
-    IF out_country_name_is_valid = TRUE AND in_user_document_type IS NOT NULL AND in_user_document_number IS NOT NULL THEN
-        call replace_user_personal_document(in_updated_by_user_id, var_user_document_country_id, in_user_document_type, in_user_document_number, var_document_id);
-    END IF;
+    IF out_user_document_country_name_is_valid = TRUE AND in_user_document_type IS NOT NULL AND in_user_document_number IS NOT NULL THEN
+        call replace_user_personal_document(in_updated_by_user_id, var_user_document_country_id, in_user_document_type, in_user_document_number, out_document_country_id_is_valid, var_document_id);
+    END IF;    
     
     -- Get the current user first name and last name
     SELECT people.first_name, people.last_name
@@ -1289,7 +1503,7 @@ $$;
 // Create a stored procedure that creates a new document
 export const CREATE_CREATE_DOCUMENT_PROC = `
 CREATE OR REPLACE PROCEDURE create_document(
-    IN in_registered_by_user_id BIGINT,
+    IN in_created_by_user_id BIGINT,
     IN in_document_title VARCHAR,
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
@@ -1315,7 +1529,7 @@ DECLARE
 BEGIN
     -- Insert into documents table
     INSERT INTO documents (
-        registered_by_user_id,
+        created_by_user_id,
         title,
         description,
         release_date,
@@ -1323,7 +1537,7 @@ BEGIN
         author
     )
     VALUES (
-        in_registered_by_user_id,
+        in_created_by_user_id,
         in_document_title,
         in_document_description,
         in_document_release_date,
@@ -1336,7 +1550,7 @@ BEGIN
     IF in_document_topic_ids IS NOT NULL THEN
         FOREACH var_document_topic_id IN ARRAY in_document_topic_ids
         LOOP
-            call create_document_topic(in_registered_by_user_id, out_document_id, var_document_topic_id);
+            call create_document_topic(in_created_by_user_id, out_document_id, var_document_topic_id);
         END LOOP;
     END IF;
     
@@ -1344,7 +1558,7 @@ BEGIN
     IF in_document_location_section_ids IS NOT NULL THEN
         FOREACH var_document_location_section_id IN ARRAY in_document_location_section_ids
         LOOP
-            call create_document_location_section(in_registered_by_user_id, out_document_id, var_document_location_section_id);
+            call create_document_location_section(in_created_by_user_id, out_document_id, var_document_location_section_id);
         END LOOP;
     END IF;
     
@@ -1352,7 +1566,7 @@ BEGIN
     IF in_document_language_ids IS NOT NULL THEN
         FOREACH var_document_language_id IN ARRAY in_document_language_ids
         LOOP
-            call create_document_language(in_registered_by_user_id, out_document_id, var_document_language_id);
+            call create_document_language(in_created_by_user_id, out_document_id, var_document_language_id);
         END LOOP;
     END IF;
     
@@ -1367,10 +1581,32 @@ BEGIN
             FOR i IN 1..var_document_document_image_uuids_length LOOP
                 var_document_document_image_uuid := in_document_document_image_uuids[i];
                 var_document_document_image_extension := in_document_document_image_extensions[i];
-                call create_document_image(in_registered_by_user_id, out_document_id, var_document_document_image_uuid, var_document_document_image_extension);
+                call create_document_image(in_created_by_user_id, out_document_id, var_document_document_image_uuid, var_document_document_image_extension);
             END LOOP;
         END IF;
     END IF;
+END;
+$$;
+`
+
+// Create a stored procedure that checks if a document ID is valid
+export const CREATE_IS_DOCUMENT_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_document_id_valid(
+    IN in_document_id BIGINT,
+    OUT out_document_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_document_id_is_valid := FALSE;
+    
+    -- Check if the document ID is valid
+    SELECT TRUE
+    INTO out_document_id_is_valid
+    FROM documents
+    WHERE id = in_document_id
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -1393,7 +1629,8 @@ CREATE OR REPLACE PROCEDURE update_document(
     IN in_remove_document_language_ids BIGINT[],
     IN in_create_document_document_image_uuids VARCHAR[],
     IN in_create_document_document_image_extensions VARCHAR,
-    IN in_remove_document_document_image_uuids VARCHAR[]
+    IN in_remove_document_document_image_uuids VARCHAR[],
+    OUT out_document_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -1415,6 +1652,12 @@ DECLARE
     var_document_document_image_extension VARCHAR;
     var_document_document_image_uuids_length INT;
 BEGIN
+    -- Check if the document ID is valid
+    call is_document_id_valid(in_document_id, out_document_id_is_valid);
+    IF out_document_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the current document title, description, release date and pages
     SELECT title, description, release_date, pages, author
     INTO var_current_document_title, var_current_document_description, var_current_document_release_date, var_current_document_pages, var_current_document_author
@@ -1618,11 +1861,18 @@ CREATE OR REPLACE PROCEDURE create_document_image(
     IN in_created_by_user_id BIGINT,
     IN in_document_id BIGINT,
     IN in_document_image_uuid VARCHAR,
-    IN in_document_image_extension VARCHAR
+    IN in_document_image_extension VARCHAR,
+    OUT out_document_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the document ID is valid
+    call is_document_id_valid(in_document_id, out_document_id_is_valid);
+    IF out_document_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into document_images table
     INSERT INTO document_images (
         created_by_user_id,
@@ -1664,13 +1914,14 @@ export const CREATE_CREATE_DOCUMENT_LANGUAGE_PROC = `
 CREATE OR REPLACE PROCEDURE create_document_language(
     IN in_created_by_user_id BIGINT,
     IN in_document_id BIGINT,
-    IN in_language_id BIGINT
+    IN in_language_id BIGINT,
+    OUT out_document_id_is_valid BOOLEAN,
+    OUT out_language_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_language_id BIGINT;
-    var_language_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the document language already exists
     SELECT id
@@ -1684,13 +1935,15 @@ BEGIN
         RETURN;
     END IF;
     
-    -- Check if the language ID is valid
-    SELECT TRUE
-    INTO var_language_id_is_valid
-    FROM languages
-    WHERE id = in_language_id;
+    -- Check if the document ID is valid
+    call is_document_id_valid(in_document_id, out_document_id_is_valid);
+    IF out_document_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
     
-    IF var_language_id_is_valid = FALSE THEN
+    -- Check if the language ID is valid
+    call is_language_id_valid(in_language_id, out_language_id_is_valid);
+    IF out_language_id_is_valid = FALSE THEN
         RETURN;
     END IF;
 
@@ -1735,11 +1988,18 @@ export const CREATE_CREATE_POST_PROC = `
 CREATE OR REPLACE PROCEDURE create_post(
     IN in_created_by_user_id BIGINT,
     IN in_document_id BIGINT,
-    IN in_post_available_until TIMESTAMP
+    IN in_post_available_until TIMESTAMP,
+    OUT out_document_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the document ID is valid
+    call is_document_id_valid(in_document_id, out_document_id_is_valid);
+    IF out_document_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into posts table
     INSERT INTO posts (
         created_by_user_id,
@@ -1755,23 +2015,57 @@ END;
 $$;
 `
 
+// Create a stored procedure that checks if a post ID is valid
+export const CREATE_IS_POST_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_post_id_valid(
+    IN in_post_id BIGINT,
+    OUT out_post_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_post_id_is_valid := FALSE;
+    
+    -- Check if the post ID is valid
+    SELECT TRUE
+    INTO out_post_id_is_valid
+    FROM posts
+    WHERE id = in_post_id
+    AND removed_at IS NULL;
+END;
+$$; 
+`
+
 // Create a stored procedure that updates a post
 export const CREATE_UPDATE_POST_PROC = `
 CREATE OR REPLACE PROCEDURE update_post(
     IN in_post_id BIGINT,
-    IN in_post_available_until TIMESTAMP
+    IN in_post_available_until TIMESTAMP,
+    OUT out_post_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_current_post_available_until TIMESTAMP;
 BEGIN
+    -- Check if the post ID is valid
+    call is_post_id_valid(in_post_id, out_post_id_is_valid);
+    IF out_post_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the current post available until
     SELECT available_until
     INTO var_current_post_available_until
     FROM posts
     WHERE id = in_post_id
     AND removed_at IS NULL;
+    
+    -- Update the posts table
+    UPDATE posts
+    SET available_until = COALESCE(in_post_available_until, var_current_post_available_until)
+    WHERE id = in_post_id;
 END;
 $$;
 `
@@ -1822,6 +2116,28 @@ END;
 $$;
 `
 
+// Create a stored procedure that checks if a location ID is valid
+export const CREATE_IS_LOCATION_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_location_id_valid(
+    IN in_location_id BIGINT,
+    OUT out_location_id_is_valid BOOLEAN    
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_location_id_is_valid := FALSE;
+    
+    -- Check if the location ID is valid
+    SELECT TRUE
+    INTO out_location_id_is_valid
+    FROM locations
+    WHERE id = in_location_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
 // Create a stored procedure that updates a location
 export const CREATE_UPDATE_LOCATION_PROC = `
 CREATE OR REPLACE PROCEDURE update_location(
@@ -1837,12 +2153,7 @@ DECLARE
     var_current_location_area VARCHAR;
 BEGIN
     -- Check if the location ID is valid
-    SELECT TRUE
-    INTO out_location_id_is_valid
-    FROM locations
-    WHERE id = in_location_id
-    AND removed_at IS NULL;
-    
+    call is_location_id_valid(in_location_id, out_location_id_is_valid);
     IF out_location_id_is_valid = FALSE THEN
         RETURN;
     END IF;
@@ -1874,12 +2185,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Check if the location ID is valid
-    SELECT TRUE
-    INTO out_location_id_is_valid
-    FROM locations
-    WHERE id = in_location_id
-    AND removed_at IS NULL;
-    
+    call is_location_id_valid(in_location_id, out_location_id_is_valid);
     IF out_location_id_is_valid = FALSE THEN
         RETURN;
     END IF;
@@ -1900,11 +2206,18 @@ CREATE OR REPLACE PROCEDURE create_location_section(
     IN in_created_by_user_id BIGINT,
     IN in_location_id BIGINT,
     IN in_location_section_name VARCHAR,
+    OUT out_location_id_is_valid BOOLEAN,
     OUT out_location_section_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the location ID is valid
+    call is_location_id_valid(in_location_id, out_location_id_is_valid);
+    IF out_location_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into location_sections table
     INSERT INTO location_sections (
         created_by_user_id,
@@ -1917,6 +2230,28 @@ BEGIN
         in_location_section_name
     )
     RETURNING id INTO out_location_section_id;
+END;
+$$;
+`
+
+// Create a stored procedure that checks if a location section ID is valid
+export const CREATE_IS_LOCATION_SECTION_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_location_section_id_valid(
+    IN in_location_section_id BIGINT,
+    OUT out_location_section_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_location_section_id_is_valid := FALSE;
+    
+    -- Check if the location section ID is valid
+    SELECT TRUE
+    INTO out_location_section_id_is_valid
+    FROM location_sections
+    WHERE id = in_location_section_id
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -1934,12 +2269,7 @@ DECLARE
     var_current_location_section_name VARCHAR;
 BEGIN
     -- Check if the location section ID is valid
-    SELECT TRUE
-    INTO out_location_section_id_is_valid
-    FROM location_sections
-    WHERE id = in_location_section_id
-    AND removed_at IS NULL;
-    
+    call is_location_section_id_valid(in_location_section_id, out_location_section_id_is_valid);
     IF out_location_section_id_is_valid = FALSE THEN
         RETURN;
     END IF;
@@ -1970,12 +2300,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Check if the location section ID is valid
-    SELECT TRUE
-    INTO out_location_section_id_is_valid
-    FROM location_sections
-    WHERE id = in_location_section_id
-    AND removed_at IS NULL;
-    
+    call is_location_section_id_valid(in_location_section_id, out_location_section_id_is_valid);
     IF out_location_section_id_is_valid = FALSE THEN
         RETURN;
     END IF;
@@ -1995,13 +2320,14 @@ export const CREATE_CREATE_DOCUMENT_LOCATION_SECTION_PROC = `
 CREATE OR REPLACE PROCEDURE create_document_location_section(
     IN in_created_by_user_id BIGINT,
     IN in_document_id BIGINT,
-    IN in_location_section_id BIGINT
+    IN in_location_section_id BIGINT,
+    OUT out_document_id_is_valid BOOLEAN,
+    OUT out_location_section_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_location_section_id BIGINT;
-    var_location_section_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the document location section already exists
     SELECT id
@@ -2016,13 +2342,14 @@ BEGIN
     END IF;
     
     -- Check if the location section ID is valid
-    SELECT TRUE
-    INTO var_location_section_id_is_valid
-    FROM location_sections
-    WHERE id = in_location_section_id
-    AND removed_at IS NULL;
+    call is_location_section_id_valid(in_location_section_id, out_location_section_id_is_valid);
+    IF out_location_section_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
     
-    IF var_location_section_id_is_valid = FALSE THEN
+    -- Check if the document ID is valid
+    call is_document_id_valid(in_document_id, out_document_id_is_valid);
+    IF out_document_id_is_valid = FALSE THEN
         RETURN;
     END IF;
 
@@ -2046,11 +2373,25 @@ export const CREATE_REMOVE_DOCUMENT_LOCATION_SECTION_PROC = `
 CREATE OR REPLACE PROCEDURE remove_document_location_section(
     IN in_removed_by_user_id BIGINT,
     IN in_document_id BIGINT,
-    IN in_location_section_id BIGINT
+    IN in_location_section_id BIGINT,
+    OUT out_document_id_is_valid BOOLEAN,
+    OUT out_location_section_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the document ID is valid
+    call is_document_id_valid(in_document_id, out_document_id_is_valid);
+    IF out_document_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the location section ID is valid
+    call is_location_section_id_valid(in_location_section_id, out_location_section_id_is_valid);
+    IF out_location_section_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the document_location_sections table
     UPDATE document_location_sections
     SET removed_at = NOW(),
@@ -2089,6 +2430,28 @@ END;
 $$;
 `
 
+// Create a stored procedure that checks if a topic ID is valid
+export const CREATE_IS_TOPIC_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_topic_id_valid(
+    IN in_topic_id BIGINT,
+    OUT out_topic_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_topic_id_is_valid := FALSE;
+    
+    -- Check if the topic ID is valid
+    SELECT TRUE
+    INTO out_topic_id_is_valid
+    FROM topics
+    WHERE id = in_topic_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
 // Create a stored procedure that updates a topic
 export const CREATE_UPDATE_TOPIC_PROC = `
 CREATE OR REPLACE PROCEDURE update_topic(
@@ -2104,12 +2467,7 @@ DECLARE
     var_current_topic_description TEXT;
 BEGIN
     -- Check if the topic ID is valid
-    SELECT TRUE
-    INTO out_topic_id_is_valid
-    FROM topics
-    WHERE id = in_topic_id
-    AND removed_at IS NULL;
-    
+    call is_topic_id_valid(in_topic_id, out_topic_id_is_valid);
     IF out_topic_id_is_valid = FALSE THEN
         RETURN;
     END IF;
@@ -2141,12 +2499,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Check if the topic ID is valid
-    SELECT TRUE
-    INTO out_topic_id_is_valid
-    FROM topics
-    WHERE id = in_topic_id
-    AND removed_at IS NULL;
-    
+    call is_topic_id_valid(in_topic_id, out_topic_id_is_valid);
     IF out_topic_id_is_valid = FALSE THEN
         RETURN;
     END IF;
@@ -2173,13 +2526,14 @@ export const CREATE_CREATE_DOCUMENT_TOPIC_PROC = `
 CREATE OR REPLACE PROCEDURE create_document_topic(
     IN in_created_by_user_id BIGINT,
     IN in_document_id BIGINT,
-    IN in_topic_id BIGINT
+    IN in_topic_id BIGINT,
+    OUT out_document_id_is_valid BOOLEAN,
+    OUT out_topic_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE 
     var_document_topic_id BIGINT;
-    var_topic_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the document topic already exists
     SELECT id
@@ -2194,13 +2548,14 @@ BEGIN
     END IF;   
     
     -- Check if the topic ID is valid
-    SELECT TRUE
-    INTO var_topic_id_is_valid
-    FROM topics
-    WHERE id = in_topic_id
-    AND removed_at IS NULL;
+    call is_topic_id_valid(in_topic_id, out_topic_id_is_valid);
+    IF out_topic_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
     
-    IF var_topic_id_is_valid = FALSE THEN
+    -- Check if the document ID is valid
+    call is_document_id_valid(in_document_id, out_document_id_is_valid);
+    IF out_document_id_is_valid = FALSE THEN
         RETURN;
     END IF;
 
@@ -2224,11 +2579,25 @@ export const CREATE_REMOVE_DOCUMENT_TOPIC_PROC = `
 CREATE OR REPLACE PROCEDURE remove_document_topic(
     IN in_removed_by_user_id BIGINT,
     IN in_document_id BIGINT,
-    IN in_topic_id BIGINT
+    IN in_topic_id BIGINT,
+    OUT out_document_id_is_valid BOOLEAN,
+    OUT out_topic_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the document ID is valid
+    call is_document_id_valid(in_document_id, out_document_id_is_valid);
+    IF out_document_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the topic ID is valid
+    call is_topic_id_valid(in_topic_id, out_topic_id_is_valid);
+    IF out_topic_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the document_topics table
     UPDATE document_topics
     SET removed_at = NOW(),
@@ -2246,7 +2615,8 @@ CREATE OR REPLACE PROCEDURE create_magazine(
     IN in_created_by_user_id BIGINT,
     IN in_magazine_name VARCHAR,
     IN in_magazine_description TEXT,
-    IN in_magazine_release_date DATE
+    IN in_magazine_release_date DATE,
+    OUT out_magazine_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -2263,7 +2633,30 @@ BEGIN
         in_magazine_name,
         in_magazine_description,
         in_magazine_release_date
-    );
+    )
+    RETURNING id INTO out_magazine_id;
+END;
+$$;
+`
+
+// Create a stored procedure that checks if a magazine ID is valid
+export const CREATE_IS_MAGAZINE_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_magazine_id_valid(
+    IN in_magazine_id BIGINT,
+    OUT out_magazine_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_magazine_id_is_valid := FALSE;
+    
+    -- Check if the magazine ID is valid
+    SELECT TRUE
+    INTO out_magazine_id_is_valid
+    FROM magazines
+    WHERE id = in_magazine_id
+    AND removed_at IS NULL;
 END;
 $$;
 `
@@ -2274,7 +2667,8 @@ CREATE OR REPLACE PROCEDURE update_magazine(
     IN in_magazine_id BIGINT,
     IN in_magazine_name VARCHAR,
     IN in_magazine_description TEXT,
-    IN in_magazine_release_date DATE
+    IN in_magazine_release_date DATE,
+    OUT out_magazine_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -2283,6 +2677,12 @@ DECLARE
     var_current_magazine_description TEXT;
     var_current_magazine_release_date DATE;
 BEGIN
+    -- Check if the magazine ID is valid
+    call is_magazine_id_valid(in_magazine_id, out_magazine_id_is_valid);
+    IF out_magazine_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the current magazine name and description
     SELECT name, description, release_date
     INTO var_current_magazine_name, var_current_magazine_description, var_current_magazine_release_date
@@ -2304,11 +2704,18 @@ $$;
 export const CREATE_REMOVE_MAGAZINE_PROC = `
 CREATE OR REPLACE PROCEDURE remove_magazine(
     IN in_removed_by_user_id BIGINT,
-    IN in_magazine_id BIGINT
+    IN in_magazine_id BIGINT,
+    OUT out_magazine_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the magazine ID is valid
+    call is_magazine_id_valid(in_magazine_id, out_magazine_id_is_valid);
+    IF out_magazine_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the magazines table
     UPDATE magazines
     SET removed_at = NOW(),
@@ -2331,15 +2738,15 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     var_method_id BIGINT;
-    var_is_profile_id_valid BOOLEAN;
-    var_is_method_id_valid BOOLEAN;
+    var_profile_id_is_valid BOOLEAN;
+    var_method_id_is_valid BOOLEAN;
     var_permission_id BIGINT;
 BEGIN
     -- Assign methods
     IF in_create_method_ids IS NOT NULL THEN
         FOREACH var_method_id IN ARRAY in_create_method_ids
         LOOP
-            call create_profile_permission(in_set_by_user_id, in_profile_id, var_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
+            call create_profile_permission(in_set_by_user_id, in_profile_id, var_method_id, var_profile_id_is_valid, var_method_id_is_valid, var_permission_id);
         END LOOP;
     END IF;
     
@@ -2347,7 +2754,7 @@ BEGIN
     IF in_remove_method_ids IS NOT NULL THEN
         FOREACH var_method_id IN ARRAY in_remove_method_ids
         LOOP
-            call remove_profile_permission(in_set_by_user_id, in_profile_id, var_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
+            call remove_profile_permission(in_set_by_user_id, in_profile_id, var_method_id, var_profile_id_is_valid, var_method_id_is_valid, var_permission_id);
         END LOOP;
     END IF;
 END;
@@ -2381,6 +2788,28 @@ END;
 $$;
 `
 
+// Create a stored procedure that checks if a publisher ID is valid
+export const CREATE_IS_PUBLISHER_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_publisher_id_valid(
+    IN in_publisher_id BIGINT,
+    OUT out_publisher_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_publisher_id_is_valid := FALSE;
+    
+    -- Check if the publisher ID is valid
+    SELECT TRUE
+    INTO out_publisher_id_is_valid
+    FROM publishers
+    WHERE id = in_publisher_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
 // Create a stored procedure that updates a publisher
 export const CREATE_UPDATE_PUBLISHER_PROC = `
 CREATE OR REPLACE PROCEDURE update_publisher(
@@ -2396,12 +2825,7 @@ DECLARE
     var_current_publisher_description TEXT;
 BEGIN
     -- Check if the publisher ID is valid
-    SELECT TRUE
-    INTO out_publisher_id_is_valid
-    FROM publishers
-    WHERE id = in_publisher_id
-    AND removed_at IS NULL;
-    
+    call is_publisher_id_valid(in_publisher_id, out_publisher_id_is_valid);
     IF out_publisher_id_is_valid = FALSE THEN
         RETURN;
     END IF;
@@ -2433,12 +2857,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Check if the publisher ID is valid
-    SELECT TRUE
-    INTO out_publisher_id_is_valid
-    FROM publishers
-    WHERE id = in_publisher_id
-    AND removed_at IS NULL;
-    
+    call is_publisher_id_valid(in_publisher_id, out_publisher_id_is_valid);    
     IF out_publisher_id_is_valid = FALSE THEN
         RETURN;
     END IF;
@@ -2453,7 +2872,29 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that creates a new document review
+// Create a stored procedure that checks if a document review ID is valid
+export const CREATE_IS_DOCUMENT_REVIEW_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_document_review_id_valid(
+    IN in_document_review_id BIGINT,
+    OUT out_document_review_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_document_review_id_is_valid := FALSE;
+    
+    -- Check if the document review ID is valid
+    SELECT TRUE
+    INTO out_document_review_id_is_valid
+    FROM document_reviews
+    WHERE id = in_document_review_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new document review
 export const CREATE_CREATE_DOCUMENT_REVIEW_PROC = `
 CREATE OR REPLACE PROCEDURE create_document_review(
     IN in_created_by_user_id BIGINT,
@@ -2461,11 +2902,27 @@ CREATE OR REPLACE PROCEDURE create_document_review(
     IN in_review_title VARCHAR,
     IN in_review_content TEXT,
     IN in_review_rating SMALLINT,
-    IN in_review_parent_document_review_id BIGINT
+    IN in_review_parent_document_review_id BIGINT,
+    OUT out_document_id_is_valid BOOLEAN,
+    OUT out_review_parent_document_review_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the document ID is valid
+    call is_document_id_valid(in_document_id, out_document_id_is_valid);
+    IF out_document_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the parent document review ID is valid
+    IF in_review_parent_document_review_id IS NOT NULL THEN
+        call is_document_review_id_valid(in_review_parent_document_review_id, out_review_parent_document_review_id_is_valid);
+        IF out_review_parent_document_review_id_is_valid = FALSE THEN
+            RETURN;
+        END IF;
+    END IF;
+
     -- Insert into document_reviews table
     INSERT INTO document_reviews (
         created_by_user_id,
@@ -2487,13 +2944,14 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that updates a document review
+// Create a stored procedure that updates a document review
 export const CREATE_UPDATE_DOCUMENT_REVIEW_PROC = `
 CREATE OR REPLACE PROCEDURE update_document_review(
     IN in_review_id BIGINT,
     IN in_review_title VARCHAR,
     IN in_review_content TEXT,
-    IN in_review_rating SMALLINT
+    IN in_review_rating SMALLINT,
+    OUT out_review_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -2502,6 +2960,12 @@ DECLARE
     var_current_review_content TEXT;
     var_current_review_rating SMALLINT;
 BEGIN
+    -- Check if the review ID is valid
+    call is_document_review_id_valid(in_review_id, out_review_id_is_valid);
+    IF out_review_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the current review title, content and rating
     SELECT title, content, rating
     INTO var_current_review_title, var_current_review_content, var_current_review_rating
@@ -2520,15 +2984,22 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that removes a document review
+// Create a stored procedure that removes a document review
 export const CREATE_REMOVE_DOCUMENT_REVIEW_PROC = `
 CREATE OR REPLACE PROCEDURE remove_document_review(
     IN in_removed_by_user_id BIGINT,
-    IN in_review_id BIGINT
+    IN in_review_id BIGINT,
+    OUT out_review_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the review ID is valid
+    call is_document_review_id_valid(in_review_id, out_review_id_is_valid);
+    IF out_review_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the document_reviews table
     UPDATE document_reviews
     SET removed_at = NOW(),
@@ -2539,7 +3010,7 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that gets a document ID by book ID
+// Create a stored procedure that gets a document ID by book ID
 export const CREATE_GET_DOCUMENT_ID_BY_BOOK_ID_PROC = `
 CREATE OR REPLACE PROCEDURE get_document_id_by_book_id(
     IN in_book_id BIGINT,
@@ -2558,10 +3029,10 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that creates a new book
+// Create a stored procedure that creates a new book
 export const CREATE_CREATE_BOOK_PROC = `
 CREATE OR REPLACE PROCEDURE create_book(
-    IN in_registered_by_user_id BIGINT,
+    IN in_created_by_user_id BIGINT,
     IN in_document_title VARCHAR,
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
@@ -2582,7 +3053,7 @@ DECLARE
     var_document_id BIGINT;
 BEGIN
     -- Insert into documents table
-    call create_document(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids,in_document_document_image_extensions, var_document_id);
+    call create_document(in_created_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids,in_document_document_image_extensions, var_document_id);
     
     -- Insert into books table
     INSERT INTO books (
@@ -2600,7 +3071,29 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that updates a book
+// Create a stored procedure that checks if a book ID is valid
+export const CREATE_IS_BOOK_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_book_id_valid(
+    IN in_book_id BIGINT,
+    OUT out_book_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_book_id_is_valid := FALSE;
+    
+    -- Check if the book ID is valid
+    SELECT TRUE
+    INTO out_book_id_is_valid
+    FROM books
+    WHERE id = in_book_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that updates a book
 export const CREATE_UPDATE_BOOK_PROC = `
 CREATE OR REPLACE PROCEDURE update_book(
     IN in_updated_by_user_id BIGINT,
@@ -2620,7 +3113,8 @@ CREATE OR REPLACE PROCEDURE update_book(
     IN in_create_document_document_image_extensions VARCHAR,
     IN in_remove_document_document_image_uuids VARCHAR[],
     IN in_book_isbn VARCHAR,
-    IN in_book_publisher_id BIGINT
+    IN in_book_publisher_id BIGINT,
+    OUT out_book_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -2629,6 +3123,12 @@ DECLARE
     var_current_book_isbn VARCHAR;
     var_current_book_publisher_id BIGINT;
 BEGIN
+    -- Check if the book ID is valid
+    call is_book_id_valid(in_book_id, out_book_id_is_valid);
+    IF out_book_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the document ID
     call get_document_id_by_book_id(in_book_id, var_document_id);
     
@@ -2652,10 +3152,10 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that creates a new work
+// Create a stored procedure that creates a new work
 export const CREATE_CREATE_WORK_PROC = `
 CREATE OR REPLACE PROCEDURE create_work(
-    IN in_registered_by_user_id BIGINT,
+    IN in_created_by_user_id BIGINT,
     IN in_document_title VARCHAR,
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
@@ -2674,7 +3174,7 @@ DECLARE
     var_document_id BIGINT;
 BEGIN
     -- Insert into documents table
-    call create_document(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids, in_document_document_image_extensions, var_document_id);
+    call create_document(in_created_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids, in_document_document_image_extensions, var_document_id);
     
     -- Insert into works table
     INSERT INTO works (
@@ -2688,7 +3188,7 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that gets a work ID by document ID
+// Create a stored procedure that gets a work ID by document ID
 export const CREATE_GET_WORK_ID_BY_DOCUMENT_ID_PROC = `
 CREATE OR REPLACE PROCEDURE get_work_by_document_id(
     IN in_document_id BIGINT,
@@ -2707,7 +3207,7 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that gets a document ID by work ID
+// Create a stored procedure that gets a document ID by work ID
 export const CREATE_GET_DOCUMENT_ID_BY_WORK_ID_PROC = `
 CREATE OR REPLACE PROCEDURE get_document_id_by_work_id(
     IN in_work_id BIGINT,
@@ -2726,7 +3226,29 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that updates a work
+// Create a stored procedure that checks if a work ID is valid
+export const CREATE_IS_WORK_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_work_id_valid(
+    IN in_work_id BIGINT,
+    OUT out_work_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_work_id_is_valid := FALSE;
+    
+    -- Check if the work ID is valid
+    SELECT TRUE
+    INTO out_work_id_is_valid
+    FROM works
+    WHERE id = in_work_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that updates a work
 export const CREATE_UPDATE_WORK_PROC = `
 CREATE OR REPLACE PROCEDURE update_work(
     IN in_updated_by_user_id BIGINT,
@@ -2744,13 +3266,20 @@ CREATE OR REPLACE PROCEDURE update_work(
     IN in_remove_document_language_ids BIGINT[],
     IN in_create_document_document_image_uuids VARCHAR[],
     IN in_create_document_document_image_extensions VARCHAR,
-    IN in_remove_document_document_image_uuids VARCHAR[]
+    IN in_remove_document_document_image_uuids VARCHAR[],
+    OUT out_work_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
 BEGIN
+    -- Check if the work ID is valid
+    call is_work_id_valid(in_work_id, out_work_id_is_valid);
+    IF out_work_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
     -- Get the document ID
     call get_document_id_by_work_id(in_work_id, var_document_id);
     
@@ -2760,7 +3289,7 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that gets a document ID by article ID
+// Create a stored procedure that gets a document ID by article ID
 export const CREATE_GET_DOCUMENT_ID_BY_ARTICLE_ID_PROC = `
 CREATE OR REPLACE PROCEDURE get_document_id_by_article_id(
     IN in_article_id BIGINT,
@@ -2780,10 +3309,10 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that creates a new article
+// Create a stored procedure that creates a new article
 export const CREATE_CREATE_ARTICLE_PROC = `
 CREATE OR REPLACE PROCEDURE create_article(
-    IN in_registered_by_user_id BIGINT,
+    IN in_created_by_user_id BIGINT,
     IN in_document_title VARCHAR,
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
@@ -2802,7 +3331,7 @@ DECLARE
     var_work_id BIGINT;
 BEGIN
     -- Create the work
-    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids, in_document_document_image_extensions, var_work_id);
+    call create_work(in_created_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids, in_document_document_image_extensions, var_work_id);
     
     -- Insert into articles table
     INSERT INTO articles (
@@ -2816,7 +3345,29 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that updates an article
+// Create a stored procedure that checks if an article ID is valid
+export const CREATE_IS_ARTICLE_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_article_id_valid(
+    IN in_article_id BIGINT,
+    OUT out_article_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_article_id_is_valid := FALSE;
+    
+    -- Check if the article ID is valid
+    SELECT TRUE
+    INTO out_article_id_is_valid
+    FROM articles
+    WHERE id = in_article_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that updates an article
 export const CREATE_UPDATE_ARTICLE_PROC = `
 CREATE OR REPLACE PROCEDURE update_article(
     IN in_updated_by_user_id BIGINT,
@@ -2834,13 +3385,20 @@ CREATE OR REPLACE PROCEDURE update_article(
     IN in_remove_document_language_ids BIGINT[],
     IN in_create_document_document_image_uuids VARCHAR[],
     IN in_create_document_document_image_extensions VARCHAR,
-    IN in_remove_document_document_image_uuids VARCHAR[]
+    IN in_remove_document_document_image_uuids VARCHAR[],
+    OUT out_article_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_work_id BIGINT;
 BEGIN
+    -- Check if the article ID is valid
+    call is_article_id_valid(in_article_id, out_article_id_is_valid);
+    IF out_article_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the work ID
     call get_work_by_document_id(in_article_id, var_work_id);
     
@@ -2850,16 +3408,23 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that creates a new book copy
+// Create a stored procedure that creates a new book copy
 export const CREATE_CREATE_BOOK_COPY_PROC = `
 CREATE OR REPLACE PROCEDURE create_book_copy(
     IN in_created_by_user_id BIGINT,
     IN in_book_id BIGINT,
-    IN in_book_copy_uuid VARCHAR
+    IN in_book_copy_uuid VARCHAR,
+    OUT out_book_copy_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the book ID is valid
+    call is_book_id_valid(in_book_id, out_book_copy_id);
+    IF out_book_copy_id = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into book_copies table
     INSERT INTO book_copies (
         created_by_user_id,
@@ -2875,17 +3440,46 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that updates a book copy
+// Create a stored procedure that checks if a book copy ID is valid
+export const CREATE_IS_BOOK_COPY_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_book_copy_id_valid(
+    IN in_book_copy_id BIGINT,
+    OUT out_book_copy_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_book_copy_id_is_valid := FALSE;
+    
+    -- Check if the book copy ID is valid
+    SELECT TRUE
+    INTO out_book_copy_id_is_valid
+    FROM book_copies
+    WHERE id = in_book_copy_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that updates a book copy
 export const CREATE_UPDATE_BOOK_COPY_PROC = `
 CREATE OR REPLACE PROCEDURE update_book_copy(
     IN in_book_copy_id BIGINT,
-    IN in_book_copy_uuid VARCHAR
+    IN in_book_copy_uuid VARCHAR,
+    OUT out_book_copy_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_current_book_copy_uuid VARCHAR;
 BEGIN
+    -- Check if the book copy ID is valid
+    call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
+    IF out_book_copy_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the current book copy UUID
     SELECT uuid
     INTO var_current_book_copy_uuid
@@ -2901,15 +3495,22 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that removes a book copy
+// Create a stored procedure that removes a book copy
 export const CREATE_REMOVE_BOOK_COPY_PROC = `
 CREATE OR REPLACE PROCEDURE remove_book_copy(
     IN in_removed_by_user_id BIGINT,
-    IN in_book_copy_id BIGINT
+    IN in_book_copy_id BIGINT,
+    OUT out_book_copy_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the book copy ID is valid
+    call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
+    IF out_book_copy_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the book_copies table
     UPDATE book_copies
     SET removed_at = NOW(),
@@ -2920,7 +3521,7 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that gets a document ID by magazine issue ID
+// Create a stored procedure that gets a document ID by magazine issue ID
 export const CREATE_GET_DOCUMENT_ID_BY_MAGAZINE_ISSUE_ID_PROC = `
 CREATE OR REPLACE PROCEDURE get_document_id_by_magazine_issue_id(
     IN in_magazine_issue_id BIGINT,
@@ -2940,10 +3541,10 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that creates a new magazine issue
+// Create a stored procedure that creates a new magazine issue
 export const CREATE_CREATE_MAGAZINE_ISSUE_PROC = `
 CREATE OR REPLACE PROCEDURE create_magazine_issue(
-    IN in_registered_by_user_id BIGINT,
+    IN in_created_by_user_id BIGINT,
     IN in_document_title VARCHAR,
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
@@ -2962,19 +3563,14 @@ CREATE OR REPLACE PROCEDURE create_magazine_issue(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Create the work
-    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids, in_document_document_image_extensions, var_work_id);
-    
     -- Check if the magazine ID is valid
-    SELECT TRUE
-    INTO out_magazine_id_is_valid
-    FROM magazines
-    WHERE id = in_magazine_id
-    AND removed_at IS NULL;
-    
+    call is_magazine_id_valid(in_magazine_id, out_magazine_id_is_valid);
     IF out_magazine_id_is_valid = FALSE THEN
         RETURN;
     END IF;
+
+    -- Create the work
+    call create_work(in_created_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids, in_document_document_image_extensions, var_work_id);
     
     -- Insert into magazine_issues table
     INSERT INTO magazine_issues (
@@ -2992,7 +3588,29 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that updates a magazine issue
+// Create a stored procedure that checks if a magazine issue ID is valid
+export const CREATE_IS_MAGAZINE_ISSUE_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_magazine_issue_id_valid(
+    IN in_magazine_issue_id BIGINT,
+    OUT out_magazine_issue_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_magazine_issue_id_is_valid := FALSE;
+    
+    -- Check if the magazine issue ID is valid
+    SELECT TRUE
+    INTO out_magazine_issue_id_is_valid
+    FROM magazine_issues
+    WHERE id = in_magazine_issue_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that updates a magazine issue
 export const CREATE_UPDATE_MAGAZINE_ISSUE_PROC = `
 CREATE OR REPLACE PROCEDURE update_magazine_issue(
     IN in_updated_by_user_id BIGINT,
@@ -3011,7 +3629,8 @@ CREATE OR REPLACE PROCEDURE update_magazine_issue(
     IN in_remove_document_language_ids BIGINT[],
     IN in_create_document_document_image_uuids VARCHAR[],
     IN in_create_document_document_image_extensions VARCHAR,
-    IN in_remove_document_document_image_uuids VARCHAR[]
+    IN in_remove_document_document_image_uuids VARCHAR[],
+    OUT out_magazine_issue_id_is_valid BOOLEAN,
 )
 LANGUAGE plpgsql
 AS $$
@@ -3019,6 +3638,12 @@ DECLARE
     var_work_id BIGINT;
     var_current_magazine_issue_number BIGINT;
 BEGIN
+    -- Check if the magazine issue ID is valid
+    call is_magazine_issue_id_valid(in_magazine_issue_id, out_magazine_issue_id_is_valid);
+    IF out_magazine_issue_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the work ID
     call get_work_by_document_id(in_magazine_issue_id, var_work_id);
     
@@ -3042,7 +3667,7 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that gets the document ID by thesis ID
+// Create a stored procedure that gets the document ID by thesis ID
 export const CREATE_GET_DOCUMENT_ID_BY_THESIS_ID_PROC = `
 CREATE OR REPLACE PROCEDURE get_document_id_by_thesis_id(
     IN in_thesis_id BIGINT,
@@ -3062,10 +3687,10 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that creates a new thesis
+// Create a stored procedure that creates a new thesis
 export const CREATE_CREATE_THESIS_PROC = `
 CREATE OR REPLACE PROCEDURE create_thesis(
-    IN in_registered_by_user_id BIGINT,
+    IN in_created_by_user_id BIGINT,
     IN in_document_title VARCHAR,
     IN in_document_description TEXT,
     IN in_document_release_date DATE,
@@ -3085,7 +3710,7 @@ DECLARE
     var_work_id BIGINT;
 BEGIN
     -- Create the work
-    call create_work(in_registered_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids, in_document_document_image_extensions, var_work_id);
+    call create_work(in_created_by_user_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_document_topic_ids, in_document_location_section_ids, in_document_language_ids, in_document_document_image_uuids, in_document_document_image_extensions, var_work_id);
     
     -- Insert into theses table
     INSERT INTO theses (
@@ -3099,7 +3724,29 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that updates a thesis
+// Create a stored procedure that checks if a thesis ID is valid
+export const CREATE_IS_THESIS_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_thesis_id_valid(
+    IN in_thesis_id BIGINT,
+    OUT out_thesis_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_thesis_id_is_valid := FALSE;
+    
+    -- Check if the thesis ID is valid
+    SELECT TRUE
+    INTO out_thesis_id_is_valid
+    FROM theses
+    WHERE id = in_thesis_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that updates a thesis
 export const CREATE_UPDATE_THESIS_PROC = `
 CREATE OR REPLACE PROCEDURE update_thesis(
     IN in_updated_by_user_id BIGINT,
@@ -3117,13 +3764,20 @@ CREATE OR REPLACE PROCEDURE update_thesis(
     IN in_remove_document_language_ids BIGINT[],
     IN in_create_document_document_image_uuids VARCHAR[],
     IN in_create_document_document_image_extensions VARCHAR,
-    IN in_remove_document_document_image_uuids VARCHAR[]
+    IN in_remove_document_document_image_uuids VARCHAR[],
+    OUT out_thesis_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_work_id BIGINT;
 BEGIN
+    -- Check if the thesis ID is valid
+    call is_thesis_id_valid(in_thesis_id, out_thesis_id_is_valid);
+    IF out_thesis_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the work ID
     call get_work_by_document_id(in_thesis_id, var_work_id);
     
@@ -3133,11 +3787,11 @@ END;
 $$;
 `
 
-// Query to create a stored procedure that gets the user details by user ID
+// Create a stored procedure that gets the user details by user ID
 export const CREATE_GET_USER_DETAILS_BY_USER_ID_PROC = `
 CREATE OR REPLACE PROCEDURE get_user_details_by_user_id(
     IN in_user_id BIGINT,
-    OUT out_user_id BIGINT,
+    OUT out_user_id_is_valid BOOLEAN,
     OUT out_user_first_name VARCHAR,
     OUT out_user_last_name VARCHAR,
     OUT out_user_email VARCHAR,
@@ -3151,6 +3805,12 @@ CREATE OR REPLACE PROCEDURE get_user_details_by_user_id(
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the user ID is valid
+    call is_user_id_valid(in_user_id, out_user_id_is_valid);
+    IF out_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Query to select the user profile IDs by user ID
     SELECT ARRAY(
         SELECT profile_id
@@ -3181,8 +3841,8 @@ BEGIN
             )
         END AS document_country,
         CASE 
-            WHEN people.passport_id IS NOT NULL THEN 'Passport'
-            ELSE 'Identity Document'
+            WHEN people.passport_id IS NOT NULL THEN '${PASSPORT}'
+            ELSE '${IDENTITY_DOCUMENT}'
         END AS document_type,
         CASE
             WHEN people.passport_id IS NOT NULL THEN (
@@ -3207,8 +3867,8 @@ BEGIN
     AND people.removed_at IS NULL;
 
     -- Query to select the user details by user ID
-    SELECT users.id, people.first_name, people.last_name, user_emails.email, user_usernames.username, people.birthdate
-    INTO out_user_id, out_user_first_name, out_user_last_name, out_user_email, out_user_username, out_user_birthdate
+    SELECT people.first_name, people.last_name, user_emails.email, user_usernames.username, people.birthdate
+    INTO out_user_first_name, out_user_last_name, out_user_email, out_user_username, out_user_birthdate
     FROM users
     INNER JOIN people
     ON users.person_id = people.id
@@ -3227,11 +3887,18 @@ $$;
 export const CREATE_GET_PERMISSIONS_BY_METHOD_ID_PROC = `
 CREATE OR REPLACE PROCEDURE get_permissions_by_method_id(
     IN in_method_id BIGINT,
+    OUT out_method_id_is_valid BOOLEAN,
     OUT out_allowed_profile_ids BIGINT[]
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the method ID is valid
+    call is_method_id_valid(in_method_id, out_method_id_is_valid);
+    IF out_method_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Query to select the allowed profile IDs by method ID
     SELECT ARRAY(
         SELECT profile_id
@@ -3250,21 +3917,27 @@ CREATE OR REPLACE PROCEDURE set_method_permissions(
     IN in_set_by_user_id BIGINT,
     IN in_method_id BIGINT,
     IN in_create_profile_ids BIGINT[],
-    IN in_remove_profile_ids BIGINT[]
+    IN in_remove_profile_ids BIGINT[],
+    OUT out_method_id_is_valid BOOLEAN,
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    var_is_profile_id_valid BOOLEAN;
-    var_is_method_id_valid BOOLEAN;
+    var_profile_id_is_valid BOOLEAN;
     var_permission_id BIGINT;
     var_profile_id BIGINT;
 BEGIN
+    -- Check if the method ID is valid
+    call is_method_id_valid(in_method_id, out_method_id_is_valid);
+    IF out_method_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Create permissions
     IF in_create_profile_ids IS NOT NULL THEN
         FOREACH var_profile_id IN ARRAY in_create_profile_ids
         LOOP
-            call create_profile_permission(in_set_by_user_id, var_profile_id, in_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
+            call create_profile_permission(in_set_by_user_id, var_profile_id, in_method_id, var_profile_id_is_valid, var_method_id_is_valid, var_permission_id);
         END LOOP;
     END IF;
     
@@ -3272,7 +3945,7 @@ BEGIN
     IF in_remove_profile_ids IS NOT NULL THEN
         FOREACH var_profile_id IN ARRAY in_remove_profile_ids
         LOOP
-            call remove_profile_permission(in_set_by_user_id, var_profile_id, in_method_id, var_is_profile_id_valid, var_is_method_id_valid, var_permission_id);
+            call remove_profile_permission(in_set_by_user_id, var_profile_id, in_method_id, var_profile_id_is_valid, var_method_id_is_valid, var_permission_id);
         END LOOP;
     END IF;
 END;
@@ -3285,11 +3958,25 @@ CREATE OR REPLACE PROCEDURE create_audit_entry(
     IN in_user_id BIGINT,
     IN in_profile_id BIGINT,
     IN in_body JSONB,
-    IN in_ip_address VARCHAR
+    IN in_ip_address VARCHAR,
+    OUT out_user_id_is_valid BOOLEAN,
+    OUT out_profile_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the user ID is valid
+    call is_user_id_valid(in_user_id, out_user_id_is_valid);
+    IF out_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the profile ID is valid
+    call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
+    IF out_profile_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into audit_entries table
     INSERT INTO audit_entries (
         user_id,
@@ -3312,11 +3999,25 @@ export const CREATE_CREATE_ARTICLE_JURY_MEMBER_PROC = `
 CREATE OR REPLACE PROCEDURE create_article_jury_member(
     IN in_created_by_user_id BIGINT,
     IN in_article_id BIGINT,
-    IN in_jury_member_id BIGINT
+    IN in_jury_member_id BIGINT,
+    OUT out_article_id_is_valid BOOLEAN,
+    OUT out_jury_member_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the article ID is valid
+    call is_article_id_valid(in_article_id, out_article_id_is_valid);
+    IF out_article_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the jury member ID is valid
+    call is_user_id_valid(in_jury_member_id, out_jury_member_id_is_valid);
+    IF out_jury_member_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into article_jury_members table
     INSERT INTO article_jury_members (
         created_by_user_id,
@@ -3337,11 +4038,25 @@ export const CREATE_REMOVE_ARTICLE_JURY_MEMBER_PROC = `
 CREATE OR REPLACE PROCEDURE remove_article_jury_member(
     IN in_removed_by_user_id BIGINT,
     IN in_article_id BIGINT,
-    IN in_jury_member_id BIGINT
+    IN in_jury_member_id BIGINT,
+    OUT out_article_id_is_valid BOOLEAN,
+    OUT out_jury_member_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the article ID is valid
+    call is_article_id_valid(in_article_id, out_article_id_is_valid);
+    IF out_article_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the jury member ID is valid
+    call is_user_id_valid(in_jury_member_id, out_jury_member_id_is_valid);
+    IF out_jury_member_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the article_jury_members table
     UPDATE article_jury_members
     SET removed_at = NOW(),
@@ -3353,17 +4068,62 @@ END;
 $$;
 `
 
-// Create a stored procedure that creates a new article annotation
-export const CREATE_CREATE_ARTICLE_ANNOTATION_PROC = `
-CREATE OR REPLACE PROCEDURE create_article_annotation(
-    IN in_created_by_jury_id BIGINT,
+// Create a stored procedure that checks if a jury member is part of an article jury
+export const CREATE_IS_ARTICLE_JURY_MEMBER_PROC = `
+CREATE OR REPLACE PROCEDURE is_article_jury_member(
     IN in_article_id BIGINT,
-    IN in_annotation_title VARCHAR,
-    IN in_annotation_content TEXT
+    IN in_jury_member_id BIGINT,
+    OUT out_jury_member_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Set the default value
+    out_jury_member_id_is_valid := FALSE;
+    
+    -- Check if the jury member is part of the article jury
+    SELECT TRUE
+    INTO out_jury_member_id_is_valid
+    FROM article_jury_members
+    WHERE article_id = in_article_id
+    AND jury_member_id = in_jury_member_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
+// Create a stored procedure that creates a new article annotation
+export const CREATE_CREATE_ARTICLE_ANNOTATION_PROC = `
+CREATE OR REPLACE PROCEDURE create_article_annotation(
+    IN in_created_by_jury_member_id BIGINT,
+    IN in_article_id BIGINT,
+    IN in_annotation_title VARCHAR,
+    IN in_annotation_content TEXT,
+    OUT out_article_id_is_valid BOOLEAN,
+    OUT out_jury_member_id_is_valid BOOLEAN,
+    OUT out_is_article_jury_member BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Check if the article ID is valid
+    call is_article_id_valid(in_article_id, out_article_id_is_valid);
+    IF out_article_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the jury member ID is valid
+    call is_user_id_valid(in_jury_member_id, out_jury_member_id_is_valid);
+    IF out_jury_member_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the jury member is a member of the article jury
+    call is_article_jury_member(in_article_id, in_jury_member_id, out_is_article_jury_member);
+    IF out_is_article_jury_member = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into article_annotations table
     INSERT INTO article_annotations (
         created_by_jury_id,
@@ -3381,12 +4141,35 @@ END;
 $$;
 `
 
+// Create a stored procedure that checks if an article annotation ID is valid
+export const CREATE_IS_ARTICLE_ANNOTATION_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_article_annotation_id_valid(
+    IN in_article_annotation_id BIGINT,
+    OUT out_article_annotation_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_article_annotation_id_is_valid := FALSE;
+    
+    -- Check if the article annotation ID is valid
+    SELECT TRUE
+    INTO out_article_annotation_id_is_valid
+    FROM article_annotations
+    WHERE id = in_article_annotation_id
+    AND removed_at IS NULL;
+END;
+$$;
+`
+
 // Create a stored procedure that updates an article annotation
 export const CREATE_UPDATE_ARTICLE_ANNOTATION_PROC = `
 CREATE OR REPLACE PROCEDURE update_article_annotation(
     IN in_annotation_id BIGINT,
     IN in_annotation_title VARCHAR,
-    IN in_annotation_content TEXT
+    IN in_annotation_content TEXT,
+    OUT out_article_annotation_id_is_valid BOOLEAN,
 )
 LANGUAGE plpgsql
 AS $$
@@ -3394,6 +4177,12 @@ DECLARE
     var_current_annotation_title VARCHAR;
     var_current_annotation_content TEXT;
 BEGIN
+    -- Check if the article annotation ID is valid
+    call is_article_annotation_id_valid(in_annotation_id, out_article_annotation_id_is_valid);
+    IF out_article_annotation_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the current annotation title and content
     SELECT title, content
     INTO var_current_annotation_title, var_current_annotation_content
@@ -3414,11 +4203,18 @@ $$;
 export const CREATE_RESOLVE_ARTICLE_ANNOTATION_PROC = `
 CREATE OR REPLACE PROCEDURE resolve_article_annotation(
     IN in_resolved_by_user_id BIGINT,
-    IN in_annotation_id BIGINT
+    IN in_annotation_id BIGINT,
+    OUT out_article_annotation_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the article annotation ID is valid
+    call is_article_annotation_id_valid(in_annotation_id, out_article_annotation_id_is_valid);
+    IF out_article_annotation_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the article_annotations table
     UPDATE article_annotations
     SET resolved_at = NOW(),
@@ -3433,11 +4229,18 @@ $$;
 export const CREATE_SET_BOOK_COPY_AS_LOST_PROC = `
 CREATE OR REPLACE PROCEDURE set_book_copy_as_lost(
     IN in_lost_by_user_id BIGINT,
-    IN in_book_copy_id BIGINT
+    IN in_book_copy_id BIGINT,
+    OUT out_book_copy_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the book copy ID is valid
+    call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
+    IF out_book_copy_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the book_copies table
     UPDATE book_copies
     SET lost_at = NOW(),
@@ -3454,11 +4257,25 @@ CREATE OR REPLACE PROCEDURE register_book_copy_loan_with_reservation(
     IN in_loaned_to_user_id BIGINT,
     IN in_book_copy_id BIGINT,
     IN in_loan_reserved_at TIMESTAMP,
-    IN in_loan_reserved_until DATE
+    IN in_loan_reserved_until DATE,
+    OUT out_loaned_to_user_id_is_valid BOOLEAN,
+    OUT out_book_copy_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the book copy ID is valid
+    call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
+    IF out_book_copy_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the user ID is valid
+    call is_user_id_valid(in_loaned_to_user_id, out_loaned_to_user_id_is_valid);
+    IF out_loaned_to_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into book_copy_loans table
     INSERT INTO book_copy_loans (
         loaned_to_user_id,
@@ -3482,11 +4299,25 @@ CREATE OR REPLACE PROCEDURE set_book_copy_loan_reservation_as_borrowed(
     IN in_loaned_by_user_id BIGINT,
     IN in_book_copy_id BIGINT,
     IN in_loan_borrowed_at TIMESTAMP,
-    IN in_loan_borrowed_until DATE
+    IN in_loan_borrowed_until DATE,
+    OUT out_loaned_by_user_id_is_valid BOOLEAN,
+    OUT out_book_copy_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the book copy ID is valid
+    call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
+    IF out_book_copy_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the user ID is valid
+    call is_user_id_valid(in_loaned_to_user_id, out_loaned_to_user_id_is_valid);
+    IF out_loaned_to_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the book_copy_loans table
     UPDATE book_copy_loans
     SET borrowed_at = in_loan_borrowed_at,
@@ -3505,11 +4336,32 @@ CREATE OR REPLACE PROCEDURE register_book_copy_loan_without_reservation(
     IN in_loaned_by_user_id BIGINT,
     IN in_book_copy_id BIGINT,
     IN in_loan_borrowed_at TIMESTAMP,
-    IN in_loan_borrowed_until DATE
+    IN in_loan_borrowed_until DATE,
+    OUT out_loaned_to_user_id_is_valid BOOLEAN,
+    OUT out_loaned_by_user_id_is_valid BOOLEAN,
+    OUT out_book_copy_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the book copy ID is valid
+    call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
+    IF out_book_copy_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the loaned to user ID is valid
+    call is_user_id_valid(in_loaned_to_user_id, out_loaned_to_user_id_is_valid);
+    IF out_loaned_to_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
+    -- Check if the loaned by user ID is valid
+    call is_user_id_valid(in_loaned_by_user_id, out_loaned_by_user_id_is_valid);
+    IF out_loaned_by_user_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Insert into book_copy_loans table
     INSERT INTO book_copy_loans (
         loaned_to_user_id,
@@ -3529,17 +4381,48 @@ END;
 $$;
 `
 
+// Create a stored procedure that checks if a book copy loan ID is valid
+export const CREATE_IS_BOOK_COPY_LOAN_ID_VALID_PROC = `
+CREATE OR REPLACE PROCEDURE is_book_copy_loan_id_valid(
+    IN in_book_copy_loan_id BIGINT,
+    OUT out_book_copy_loan_id_is_valid BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Set the default value
+    out_book_copy_loan_id_is_valid := FALSE;
+    
+    -- Check if the book copy loan ID is valid
+    SELECT TRUE
+    INTO out_book_copy_loan_id_is_valid
+    FROM book_copy_loans
+    WHERE id = in_book_copy_loan_id
+    AND removed_at IS NULL
+    AND returned_at IS NULL
+    AND lost_at IS NULL;
+END;
+$$;
+`
+
 // Create a stored procedure that sets the book copy loan as returned
 export const CREATE_SET_BOOK_COPY_LOAN_AS_RETURNED_PROC = `
 CREATE OR REPLACE PROCEDURE set_book_copy_loan_as_returned(
     IN in_book_copy_loan_id BIGINT,
     IN in_loan_returned_at TIMESTAMP,
     IN in_loan_penalty DOUBLE PRECISION,
-    IN in_loan_damaged BOOLEAN
+    IN in_loan_damaged BOOLEAN,
+    OUT out_book_copy_loan_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the book copy loan ID is valid
+    call is_book_copy_loan_id_valid(in_book_copy_loan_id, out_book_copy_loan_id_is_valid);
+    IF out_book_copy_loan_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the book_copy_loans table
     UPDATE book_copy_loans
     SET returned_at = in_loan_returned_at,
@@ -3555,7 +4438,8 @@ $$;
 export const CREATE_SET_BOOK_COPY_LOAN_AS_LOST_PROC = `
 CREATE OR REPLACE PROCEDURE set_book_copy_loan_as_lost(
     IN in_book_copy_loan_id BIGINT,
-    IN in_loan_lost_at TIMESTAMP
+    IN in_loan_lost_at TIMESTAMP,
+    OUT out_book_copy_loan_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -3563,6 +4447,12 @@ DECLARE
     var_book_copy_id BIGINT;
     var_loaned_to_user_id BIGINT;
 BEGIN
+    -- Check if the book copy loan ID is valid
+    call is_book_copy_loan_id_valid(in_book_copy_loan_id, out_book_copy_loan_id_is_valid);
+    IF out_book_copy_loan_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the book copy ID and loaned to user ID
     SELECT book_copy_id, loaned_to_user_id
     INTO var_book_copy_id, var_loaned_to_user_id
@@ -3586,11 +4476,18 @@ $$;
 export const CREATE_REMOVE_BOOK_COPY_LOAN_PROC = `
 CREATE OR REPLACE PROCEDURE remove_book_copy_loan(
     IN in_removed_by_user_id BIGINT,
-    IN in_book_copy_loan_id BIGINT
+    IN in_book_copy_loan_id BIGINT,
+    OUT out_book_copy_loan_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Check if the book copy loan ID is valid
+    call is_book_copy_loan_id_valid(in_book_copy_loan_id, out_book_copy_loan_id_is_valid);
+    IF out_book_copy_loan_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Update the book_copy_loans table
     UPDATE book_copy_loans
     SET removed_at = NOW(),
@@ -3605,13 +4502,20 @@ $$;
 export const CREATE_REMOVE_BOOK_PROC = `
 CREATE OR REPLACE PROCEDURE remove_book(
     IN in_removed_by_user_id BIGINT,
-    IN in_book_id BIGINT
+    IN in_book_id BIGINT,
+    OUT out_book_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
 BEGIN
+    -- Check if the book ID is valid
+    call is_book_id_valid(in_book_id, out_book_id_is_valid);
+    IF out_book_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the document ID
     call get_document_id_by_book_id(in_book_id, var_document_id);
     
@@ -3625,13 +4529,20 @@ $$;
 export const CREATE_REMOVE_ARTICLE_PROC = `
 CREATE OR REPLACE PROCEDURE remove_article(
     IN in_removed_by_user_id BIGINT,
-    IN in_article_id BIGINT
+    IN in_article_id BIGINT,
+    OUT out_article_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
 BEGIN
+    -- Check if the article ID is valid
+    call is_article_id_valid(in_article_id, out_article_id_is_valid);
+    IF out_article_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the document ID
     call get_document_id_by_article_id(in_article_id, var_document_id);
     
@@ -3645,13 +4556,20 @@ $$;
 export const CREATE_REMOVE_MAGAZINE_ISSUE_PROC = `
 CREATE OR REPLACE PROCEDURE remove_magazine_issue(
     IN in_removed_by_user_id BIGINT,
-    IN in_magazine_issue_id BIGINT
+    IN in_magazine_issue_id BIGINT,
+    OUT out_magazine_issue_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
 BEGIN
+    -- Check if the magazine issue ID is valid
+    call is_magazine_issue_id_valid(in_magazine_issue_id, out_magazine_issue_id_is_valid);
+    IF out_magazine_issue_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+    
     -- Get the document ID
     call get_document_id_by_magazine_issue_id(in_magazine_issue_id, var_document_id);
     
@@ -3665,18 +4583,53 @@ $$;
 export const CREATE_REMOVE_THESIS_PROC = `
 CREATE OR REPLACE PROCEDURE remove_thesis(
     IN in_removed_by_user_id BIGINT,
-    IN in_thesis_id BIGINT
+    IN in_thesis_id BIGINT,
+    OUT out_thesis_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
 BEGIN
+    -- Check if the thesis ID is valid
+    call is_thesis_id_valid(in_thesis_id, out_thesis_id_is_valid);
+    IF out_thesis_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
     -- Get the document ID
     call get_document_id_by_thesis_id(in_thesis_id, var_document_id);
     
     -- Delete the document
     call remove_document(in_removed_by_user_id, var_document_id);
+END;
+$$;
+`
+
+// Create a stored procedure that gets the number of book copies by book ID
+export const CREATE_GET_NUMBER_OF_BOOK_COPIES_BY_BOOK_ID_PROC = `
+CREATE OR REPLACE PROCEDURE get_number_of_book_copies_by_book_id(
+    IN in_book_id BIGINT,
+    OUT out_book_id_is_valid BOOLEAN,
+    OUT out_number_of_book_copies BIGINT,
+    OUT out_number_of_book_copies_available BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Check if the book ID is valid
+    call is_book_id_valid(in_book_id, out_book_id_is_valid);
+    IF out_book_id_is_valid = FALSE THEN
+        RETURN;
+    END IF;
+
+    -- Select the number of book copies
+    SELECT COUNT(*), COUNT(*) FILTER (WHERE borrowed_at IS NULL)
+    INTO out_number_of_book_copies
+    FROM book_copies
+    WHERE book_id = in_book_id
+    AND lost_at IS NULL
+    AND removed_at IS NULL;
 END;
 $$;
 `

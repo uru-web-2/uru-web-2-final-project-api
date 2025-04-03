@@ -49,7 +49,6 @@ export class PublisherService {
                 null,
             );
             const queryRow = queryRes.rows?.[0];
-
             if (queryRow?.out_publisher_id_is_valid === false)
                 throw new FieldFailError(400, 'id', 'Publisher ID is invalid');
         } catch (error) {
@@ -72,7 +71,6 @@ export class PublisherService {
             null,
         );
         const queryRow = queryRes.rows?.[0];
-
         if (queryRow?.out_publisher_id_is_valid === false)
             throw new FieldFailError(400, 'id', 'Publisher ID is invalid');
     }

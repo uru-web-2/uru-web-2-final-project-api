@@ -54,8 +54,7 @@ export class ProfileService {
                 null
             );
             const queryRow = queryRes.rows?.[0];
-
-            if (queryRow?.out_is_profile_id_valid === false)
+            if (queryRow?.out_profile_id_is_valid === false)
                 throw new FieldFailError(400, 'id', 'Profile ID is invalid');
 
             // Update the profile to the security component
@@ -80,8 +79,7 @@ export class ProfileService {
             null
         );
         const queryRow = queryRes.rows?.[0];
-
-        if (queryRow?.out_is_profile_id_valid === false)
+        if (queryRow?.out_profile_id_is_valid === false)
             throw new FieldFailError(400, 'id', 'Profile ID is invalid');
 
         // Remove the profile ID from the security component

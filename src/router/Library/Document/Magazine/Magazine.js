@@ -11,10 +11,10 @@ export class Magazine {
         const body = HandleValidation(req, res, Validator.CreateMagazine);
 
         // Create the magazine
-        await Service.CreateMagazine(req, body)
+        const magazineID=await Service.CreateMagazine(req, body)
 
         // Log the creation
-        Logger.info(`Created magazine ${body.name} by admin ${req.session.userID}`)
+        Logger.info(`Created magazine ${magazineID} with name ${body.name} by admin ${req.session.userID}`)
 
         // Send the response
         res.status(200).json(SuccessJSendBody())

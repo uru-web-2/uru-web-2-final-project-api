@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import {IDENTITY_DOCUMENT, PASSPORT} from "../database/model/constants.js";
 
 // Sign up model
 export const SIGN_UP = Joi.object({
@@ -8,10 +9,10 @@ export const SIGN_UP = Joi.object({
     password: Joi.string().required().min(1),
     email: Joi.string().email().required().email(),
     document_number: Joi.string().required().min(1),
-    document_type: Joi.string().required().valid('Identity Document',
-        'Passport'
+    document_type: Joi.string().required().valid(IDENTITY_DOCUMENT,
+        PASSPORT
     ),
-    document_country: Joi.string().required().min(1),
+    document_country_name: Joi.string().required().min(1),
 })
 
 // Log in model

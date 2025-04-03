@@ -53,7 +53,7 @@ export class UserService {
                 body.username,
                 body.email,
                 body.password_hash,
-                body.document_country,
+                body.document_country_name,
                 body.document_type,
                 body.document_number,
                 emailVerificationToken,
@@ -61,19 +61,14 @@ export class UserService {
                 null,
                 null
             )
-            if (queryRes.rows.length > 0) {
-                const isCountryValid = queryRes.rows[0]?.out_country_name_is_valid
-                userID = queryRes.rows[0]?.out_user_id
+            const queryRow = queryRes.rows?.[0]
+            if (queryRow?.out_user_document_country_name_is_valid === false)
+                throw new FieldFailError(400,
+                    "document_country_name",
+                    "country not found"
+                )
 
-                // Check if the country is valid
-                if (!isCountryValid)
-                    throw new FieldFailError(400,
-                        "document_country",
-                        "country not found"
-                    )
-            }
-
-            return userID
+            return queryRes.rows[0]?.out_user_id
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
@@ -124,7 +119,7 @@ export class UserService {
         const userDetails = queryRes.rows[0]
 
         // Check if the user exists
-        if (userDetails.out_user_id === null)
+        if (userDetails.out_user_id_is_valid === false)
             throw new FieldFailError(400,
                 "id",
                 "user not found"
@@ -172,15 +167,21 @@ export class UserService {
             body.first_name,
             body.last_name,
             body.username,
-            body.document_country,
+            body.document_country_name,
             body.document_type,
             body.document_number,
+            null,
             null
         );
         const queryRow = queryRes.rows?.[0];
-        if (!queryRow?.out_country_name_is_valid)
+        if (queryRow?.out_user_id_is_valid === false)
             throw new FieldFailError(400,
-                "document_country",
+                "id",
+                "user not found"
+            )
+        if (queryRow?.out_user_document_country_name_is_valid === false)
+            throw new FieldFailError(400,
+                "document_country_name",
                 "country not found"
             )
     }

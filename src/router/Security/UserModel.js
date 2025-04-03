@@ -1,4 +1,5 @@
 import Joi from "joi";
+import {IDENTITY_DOCUMENT, PASSPORT} from "../../database/model/constants.js";
 
 // Search for a user by username model
 export const SEARCH_USER_BY_USERNAME = Joi.object({
@@ -14,10 +15,10 @@ export const CREATE_USER = Joi.object({
     password: Joi.string().required().min(1),
     email: Joi.string().email().required().email(),
     document_number: Joi.string().required().min(1),
-    document_type: Joi.string().required().valid('Identity Document',
-        'Passport'
+    document_type: Joi.string().required().valid(IDENTITY_DOCUMENT,
+        PASSPORT
     ),
-    document_country: Joi.string().required().min(1),
+    document_country_name: Joi.string().required().min(1),
 })
 
 // Get all users model
@@ -38,8 +39,8 @@ export const UPDATE_USER_BY_ADMIN = Joi.object({
     last_name: Joi.string().min(1),
     username: Joi.string().min(1),
     document_number: Joi.string().min(1),
-    document_type: Joi.string().valid('Identity Document',
-        'Passport'
+    document_type: Joi.string().valid(IDENTITY_DOCUMENT,
+        PASSPORT
     ),
-    document_country: Joi.string().min(1),
+    document_country_name: Joi.string().min(1),
 })

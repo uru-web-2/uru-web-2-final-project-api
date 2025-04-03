@@ -27,6 +27,8 @@ export class LocationSectionService {
                 null,
             );
             const queryRow = queryRes.rows?.[0];
+            if (queryRow?.out_location_id_is_valid === false)
+                throw new FieldFailError(400, 'location_id', 'Location ID is invalid');
 
             return queryRow?.out_location_id;
         } catch (error) {
@@ -52,7 +54,6 @@ export class LocationSectionService {
                 null,
             );
             const queryRow = queryRes.rows?.[0];
-
             if (queryRow?.out_location_id_is_valid === false)
                 throw new FieldFailError(400, 'id', 'Location ID is invalid');
         } catch (error) {
@@ -77,7 +78,6 @@ export class LocationSectionService {
             null,
         );
         const queryRow = queryRes.rows?.[0];
-
         if (queryRow?.out_location_id_is_valid === false)
             throw new FieldFailError(400, 'id', 'Location ID is invalid');
     }
