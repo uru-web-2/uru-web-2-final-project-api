@@ -707,7 +707,7 @@ BEGIN
 	-- Insert into user_usernames table
 	INSERT INTO user_usernames (
 		user_id, 
-		username8
+		username
 	)
 	VALUES (
 		out_user_id, 
@@ -1513,7 +1513,7 @@ BEGIN
     -- Check if the username is not null
     IF in_user_username IS NOT NULL THEN
         -- Update the user_usernames table
-        call update_user_username(in_user_id, in_user_username);
+        call update_user_username(in_user_id, in_user_username, out_user_id_is_valid);
     END IF;
 END;
 $$;
@@ -1538,13 +1538,17 @@ CREATE OR REPLACE PROCEDURE create_document(
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    var_document_topic_id BIGINT;
+    var_document_topic_id BIGINT;    
     var_document_location_section_id BIGINT;
     var_document_author_id BIGINT;
     var_document_language_id BIGINT;
     var_document_document_image_uuid VARCHAR;
     var_document_document_image_extension VARCHAR;
     var_document_document_image_uuids_length INT;
+    var_topic_id_is_valid BOOLEAN;
+    var_document_id_is_valid BOOLEAN;
+    var_location_section_id_is_valid BOOLEAN;
+    var_language_id_is_valid BOOLEAN;
 BEGIN
     -- Insert into documents table
     INSERT INTO documents (
@@ -1569,7 +1573,7 @@ BEGIN
     IF in_document_topic_ids IS NOT NULL THEN
         FOREACH var_document_topic_id IN ARRAY in_document_topic_ids
         LOOP
-            call create_document_topic(in_created_by_user_id, out_document_id, var_document_topic_id);
+            call create_document_topic(in_created_by_user_id, out_document_id, var_document_topic_id, var_document_id_is_valid, var_topic_id_is_valid);
         END LOOP;
     END IF;
     
@@ -1577,7 +1581,7 @@ BEGIN
     IF in_document_location_section_ids IS NOT NULL THEN
         FOREACH var_document_location_section_id IN ARRAY in_document_location_section_ids
         LOOP
-            call create_document_location_section(in_created_by_user_id, out_document_id, var_document_location_section_id);
+            call create_document_location_section(in_created_by_user_id, out_document_id, var_document_location_section_id, var_document_id_is_valid, var_location_section_id_is_valid);
         END LOOP;
     END IF;
     
@@ -1585,7 +1589,7 @@ BEGIN
     IF in_document_language_ids IS NOT NULL THEN
         FOREACH var_document_language_id IN ARRAY in_document_language_ids
         LOOP
-            call create_document_language(in_created_by_user_id, out_document_id, var_document_language_id);
+            call create_document_language(in_created_by_user_id, out_document_id, var_document_language_id, var_document_id_is_valid, var_language_id_is_valid);
         END LOOP;
     END IF;
     
@@ -1600,7 +1604,7 @@ BEGIN
             FOR i IN 1..var_document_document_image_uuids_length LOOP
                 var_document_document_image_uuid := in_document_document_image_uuids[i];
                 var_document_document_image_extension := in_document_document_image_extensions[i];
-                call create_document_image(in_created_by_user_id, out_document_id, var_document_document_image_uuid, var_document_document_image_extension);
+                call create_document_image(in_created_by_user_id, out_document_id, var_document_document_image_uuid, var_document_document_image_extension, var_document_id_is_valid);
             END LOOP;
         END IF;
     END IF;
@@ -1670,6 +1674,9 @@ DECLARE
     var_document_document_image_uuid VARCHAR;
     var_document_document_image_extension VARCHAR;
     var_document_document_image_uuids_length INT;
+    var_document_id_is_valid BOOLEAN;
+    var_topic_id_is_valid BOOLEAN;
+    var_location_section_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the document ID is valid
     call is_document_id_valid(in_document_id, out_document_id_is_valid);
@@ -1707,7 +1714,7 @@ BEGIN
         FOREACH var_document_topic_id IN ARRAY in_create_document_topic_ids
         LOOP
             IF var_document_topic_id <> ALL(var_current_document_topic_ids) THEN
-                call create_document_topic(in_document_id, var_document_topic_id);
+                call create_document_topic(in_updated_by_user_id, in_document_id, var_document_topic_id, var_document_id_is_valid, var_topic_id_is_valid);
             END IF;
         END LOOP;
     END IF;
@@ -1717,7 +1724,7 @@ BEGIN
         FOREACH var_document_topic_id IN ARRAY in_remove_document_topic_ids
         LOOP
             IF var_document_topic_id <> ALL(in_create_document_topic_ids) THEN
-                call remove_document_topic(in_document_id, var_document_topic_id);
+                call remove_document_topic(in_updated_by_user_id, in_document_id, var_document_topic_id, var_document_id_is_valid, var_topic_id_is_valid);
             END IF;
         END LOOP;
     END IF;
@@ -1736,7 +1743,7 @@ BEGIN
         FOREACH var_document_location_section_id IN ARRAY in_create_document_location_section_ids
         LOOP
             IF var_document_location_section_id <> ALL(var_current_document_location_section_ids) THEN
-                call create_document_location_section(in_document_id, var_document_location_section_id);
+                call create_document_location_section(in_updated_by_user_id, in_document_id, var_document_location_section_id, var_document_id_is_valid, var_location_section_id_is_valid);
             END IF;
         END LOOP;
     END IF;
@@ -1746,7 +1753,7 @@ BEGIN
         FOREACH var_document_location_section_id IN ARRAY in_remove_document_location_section_ids
         LOOP
             IF var_document_location_section_id <> ALL(in_create_document_location_section_ids) THEN
-                call remove_document_location_section(in_document_id, var_document_location_section_id);
+                call remove_document_location_section(in_updated_by_user_id, in_document_id, var_document_location_section_id, var_document_id_is_valid, var_location_section_id_is_valid);
             END IF;
         END LOOP;
     END IF;
@@ -1765,7 +1772,7 @@ BEGIN
         FOREACH var_document_language_id IN ARRAY in_create_document_language_ids
         LOOP
             IF var_document_language_id <> ALL(var_current_document_language_ids) THEN
-                call create_document_language(in_document_id, var_document_language_id);
+                call create_document_language(in_updated_by_user_id, in_document_id, var_document_language_id, var_document_id_is_valid, var_language_id_is_valid);
             END IF;
         END LOOP;
     END IF;
@@ -1775,7 +1782,7 @@ BEGIN
         FOREACH var_document_language_id IN ARRAY in_remove_document_language_ids
         LOOP
             IF var_document_language_id <> ALL(in_create_document_language_ids) THEN
-                call remove_document_language(in_document_id, var_document_language_id);
+                call remove_document_language(in_updated_by_user_id, in_document_id, var_document_language_id, var_document_id_is_valid, var_language_id_is_valid);
             END IF;
         END LOOP;
     END IF;
@@ -1794,7 +1801,7 @@ BEGIN
         FOREACH var_document_document_image_uuid IN ARRAY in_remove_document_document_image_uuids
         LOOP
             IF var_document_document_image_uuid <> ALL(var_current_document_document_image_uuids) THEN
-                call remove_document_image(in_document_document_image_uuid);
+                call remove_document_image(in_updated_by_user_id, in_document_document_image_uuid);
             END IF;
         END LOOP;
     END IF;
@@ -1812,7 +1819,7 @@ BEGIN
                 var_document_document_image_extension := in_document_document_image_extensions[i];
                 
                 IF var_document_document_image_uuid <> ALL(var_current_document_document_image_uuids) THEN
-                    call create_document_image(in_updated_by_user_id, in_document_id, var_document_document_image_uuid, var_document_document_image_extension);
+                    call create_document_image(in_updated_by_user_id, in_document_id, var_document_document_image_uuid, var_document_document_image_extension, var_document_id_is_valid);
                 END IF;
             END LOOP;
         END IF;
@@ -1825,7 +1832,8 @@ $$;
 export const CREATE_REMOVE_DOCUMENT_PROC = `
 CREATE OR REPLACE PROCEDURE remove_document(
     IN in_removed_by_user_id BIGINT,
-    IN in_document_id BIGINT
+    IN in_document_id BIGINT,
+    OUT out_document_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -3141,6 +3149,7 @@ DECLARE
     var_document_id BIGINT;
     var_current_book_isbn VARCHAR;
     var_current_book_publisher_id BIGINT;
+    var_document_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the book ID is valid
     call is_book_id_valid(in_book_id, out_book_id_is_valid);
@@ -3152,7 +3161,7 @@ BEGIN
     call get_document_id_by_book_id(in_book_id, var_document_id);
     
     -- Update the documents table
-    call update_document(in_updated_by_user_id, var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_create_document_topic_ids, in_remove_document_topic_ids, in_create_document_location_section_ids, in_remove_document_location_section_ids, in_create_document_language_ids, in_remove_document_language_ids, in_create_document_document_image_uuids, in_create_document_document_image_extensions, in_remove_document_document_image_uuids);
+    call update_document(in_updated_by_user_id, var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_create_document_topic_ids, in_remove_document_topic_ids, in_create_document_location_section_ids, in_remove_document_location_section_ids, in_create_document_language_ids, in_remove_document_language_ids, in_create_document_document_image_uuids, in_create_document_document_image_extensions, in_remove_document_document_image_uuids, var_document_id_is_valid);
     
     -- Select the current book ISBN and publisher ID
     SELECT books.isbn, books.publisher_id
@@ -3292,6 +3301,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
+    var_document_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the work ID is valid
     call is_work_id_valid(in_work_id, out_work_id_is_valid);
@@ -3303,7 +3313,7 @@ BEGIN
     call get_document_id_by_work_id(in_work_id, var_document_id);
     
     -- Update the documents table
-    call update_document(in_updated_by_user_id, var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author,  in_create_document_topic_ids, in_remove_document_topic_ids, in_create_document_location_section_ids, in_remove_document_location_section_ids, in_create_document_language_ids, in_remove_document_language_ids, in_create_document_document_image_uuids, in_create_document_document_image_extensions, in_remove_document_document_image_uuids);
+    call update_document(in_updated_by_user_id, var_document_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author,  in_create_document_topic_ids, in_remove_document_topic_ids, in_create_document_location_section_ids, in_remove_document_location_section_ids, in_create_document_language_ids, in_remove_document_language_ids, in_create_document_document_image_uuids, in_create_document_document_image_extensions, in_remove_document_document_image_uuids, var_document_id_is_valid);
 END;
 $$;
 `
@@ -3411,6 +3421,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     var_work_id BIGINT;
+    var_work_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the article ID is valid
     call is_article_id_valid(in_article_id, out_article_id_is_valid);
@@ -3422,7 +3433,7 @@ BEGIN
     call get_work_by_document_id(in_article_id, var_work_id);
     
     -- Update the work
-    call update_work(in_updated_by_user_id, var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author,  in_create_document_topic_ids, in_remove_document_topic_ids, in_create_document_location_section_ids, in_remove_document_location_section_ids, in_create_document_language_ids, in_remove_document_language_ids, in_create_document_document_image_uuids, in_create_document_document_image_extensions, in_remove_document_document_image_uuids);
+    call update_work(in_updated_by_user_id, var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author,  in_create_document_topic_ids, in_remove_document_topic_ids, in_create_document_location_section_ids, in_remove_document_location_section_ids, in_create_document_language_ids, in_remove_document_language_ids, in_create_document_document_image_uuids, in_create_document_document_image_extensions, in_remove_document_document_image_uuids, var_work_id_is_valid);
 END;
 $$;
 `
@@ -3656,6 +3667,7 @@ AS $$
 DECLARE
     var_work_id BIGINT;
     var_current_magazine_issue_number BIGINT;
+    var_work_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the magazine issue ID is valid
     call is_magazine_issue_id_valid(in_magazine_issue_id, out_magazine_issue_id_is_valid);
@@ -3667,7 +3679,7 @@ BEGIN
     call get_work_by_document_id(in_magazine_issue_id, var_work_id);
     
     -- Update the work
-    call update_work(in_updated_by_user_id, var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_create_document_topic_ids, in_remove_document_topic_ids, in_create_document_location_section_ids, in_remove_document_location_section_ids, in_create_document_language_ids, in_remove_document_language_ids, in_create_document_document_image_uuids, in_create_document_document_image_extensions, in_remove_document_document_image_uuids);
+    call update_work(in_updated_by_user_id, var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author, in_create_document_topic_ids, in_remove_document_topic_ids, in_create_document_location_section_ids, in_remove_document_location_section_ids, in_create_document_language_ids, in_remove_document_language_ids, in_create_document_document_image_uuids, in_create_document_document_image_extensions, in_remove_document_document_image_uuids, var_work_id_is_valid);
     
     -- Select the current magazine issue number
     SELECT issue_number
@@ -3790,6 +3802,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     var_work_id BIGINT;
+    var_work_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the thesis ID is valid
     call is_thesis_id_valid(in_thesis_id, out_thesis_id_is_valid);
@@ -3801,7 +3814,7 @@ BEGIN
     call get_work_by_document_id(in_thesis_id, var_work_id);
     
     -- Update the work
-    call update_work(in_updated_by_user_id, var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author,  in_create_document_topic_ids, in_remove_document_topic_ids, in_create_document_location_section_ids, in_remove_document_location_section_ids, in_create_document_language_ids, in_remove_document_language_ids, in_create_document_document_image_uuids, in_create_document_document_image_extensions, in_remove_document_document_image_uuids);
+    call update_work(in_updated_by_user_id, var_work_id, in_document_title, in_document_description, in_document_release_date, in_document_pages, in_document_author,  in_create_document_topic_ids, in_remove_document_topic_ids, in_create_document_location_section_ids, in_remove_document_location_section_ids, in_create_document_language_ids, in_remove_document_language_ids, in_create_document_document_image_uuids, in_create_document_document_image_extensions, in_remove_document_document_image_uuids, var_work_id_is_valid);
 END;
 $$;
 `
@@ -4191,7 +4204,7 @@ CREATE OR REPLACE PROCEDURE update_article_annotation(
     OUT out_article_annotation_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
-AS $$a
+AS $$
 DECLARE
     var_current_annotation_title VARCHAR;
     var_current_annotation_content TEXT;
@@ -4465,6 +4478,7 @@ AS $$
 DECLARE
     var_book_copy_id BIGINT;
     var_loaned_to_user_id BIGINT;
+    var_book_copy_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the book copy loan ID is valid
     call is_book_copy_loan_id_valid(in_book_copy_loan_id, out_book_copy_loan_id_is_valid);
@@ -4486,7 +4500,7 @@ BEGIN
     AND lost_at IS NULL;
     
     -- Update the book_copies table
-    call set_book_copy_as_lost(var_loaned_to_user_id, var_book_copy_id);
+    call set_book_copy_as_lost(var_loaned_to_user_id, var_book_copy_id, var_book_copy_id_is_valid);
 END;
 $$;
 `
@@ -4528,6 +4542,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
+    var_document_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the book ID is valid
     call is_book_id_valid(in_book_id, out_book_id_is_valid);
@@ -4539,7 +4554,7 @@ BEGIN
     call get_document_id_by_book_id(in_book_id, var_document_id);
     
     -- Delete the document
-    call remove_document(in_removed_by_user_id, var_document_id);
+    call remove_document(in_removed_by_user_id, var_document_id, var_document_id_is_valid); 
 END;
 $$;
 `
@@ -4555,6 +4570,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
+    var_document_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the article ID is valid
     call is_article_id_valid(in_article_id, out_article_id_is_valid);
@@ -4566,7 +4582,7 @@ BEGIN
     call get_document_id_by_article_id(in_article_id, var_document_id);
     
     -- Delete the document
-    call remove_document(in_removed_by_user_id, var_document_id);
+    call remove_document(in_removed_by_user_id, var_document_id, var_document_id_is_valid);
 END;
 $$;
 `
@@ -4582,6 +4598,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
+    var_document_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the magazine issue ID is valid
     call is_magazine_issue_id_valid(in_magazine_issue_id, out_magazine_issue_id_is_valid);
@@ -4593,7 +4610,7 @@ BEGIN
     call get_document_id_by_magazine_issue_id(in_magazine_issue_id, var_document_id);
     
     -- Delete the document
-    call remove_document(in_removed_by_user_id, var_document_id);
+    call remove_document(in_removed_by_user_id, var_document_id, var_document_id_is_valid);
 END;
 $$;
 `
@@ -4609,6 +4626,7 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     var_document_id BIGINT;
+    var_document_id_is_valid BOOLEAN;
 BEGIN
     -- Check if the thesis ID is valid
     call is_thesis_id_valid(in_thesis_id, out_thesis_id_is_valid);
@@ -4620,7 +4638,7 @@ BEGIN
     call get_document_id_by_thesis_id(in_thesis_id, var_document_id);
     
     -- Delete the document
-    call remove_document(in_removed_by_user_id, var_document_id);
+    call remove_document(in_removed_by_user_id, var_document_id, var_document_id_is_valid);
 END;
 $$;
 `
