@@ -47,7 +47,7 @@ export class BookService {
                 null
             );
             const queryRow = queryRes.rows?.[0];
-            if (queryRow?.out_book_publisher_id_is_valid === false)
+            if (queryRow?.out_book_publisher_id_is_valid !== true)
                 throw new FieldFailError(400,
                     'book_publisher_id',
                     'Publisher ID is invalid'

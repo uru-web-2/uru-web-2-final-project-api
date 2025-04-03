@@ -38,7 +38,7 @@ export class MagazineService {
             null,
         );
         const queryRow = queryRes.rows?.[0];
-        if (queryRow?.out_magazine_id_is_valid === false)
+        if (queryRow?.out_magazine_id_is_valid !== true)
             throw new FieldFailError(400, 'id', 'Magazine ID is invalid');
     }
 
@@ -51,7 +51,7 @@ export class MagazineService {
             null
         );
         const queryRow = queryRes.rows?.[0];
-        if (queryRow?.out_magazine_id_is_valid === false)
+        if (queryRow?.out_magazine_id_is_valid !== true)
             throw new FieldFailError(400, 'id', 'Magazine ID is invalid');
     }
 

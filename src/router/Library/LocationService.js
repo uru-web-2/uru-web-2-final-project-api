@@ -49,7 +49,7 @@ export class LocationService {
                 null,
             );
             const queryRow = queryRes.rows?.[0];
-            if (queryRow?.out_location_id_is_valid === false)
+            if (queryRow?.out_location_id_is_valid !== true)
                 throw new FieldFailError(400, 'id', 'Location ID is invalid');
         } catch (error) {
             // Check if it is a constraint violation error
@@ -74,7 +74,7 @@ export class LocationService {
             null,
         );
         const queryRow = queryRes.rows?.[0];
-        if (queryRow?.out_location_id_is_valid === false)
+        if (queryRow?.out_location_id_is_valid !== true)
             throw new FieldFailError(400, 'id', 'Location ID is invalid');
     }
 

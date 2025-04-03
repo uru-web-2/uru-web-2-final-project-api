@@ -10,9 +10,6 @@ CREATE OR REPLACE PROCEDURE is_country_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_country_id_is_valid := FALSE;
-    
     -- Check if the country ID is valid
     SELECT TRUE
     INTO out_country_id_is_valid
@@ -64,7 +61,7 @@ AS $$
 BEGIN
     -- Check if the document ID is valid
     call is_country_id_valid(in_user_document_country_id, out_document_id_is_valid);
-    IF out_document_id_is_valid = FALSE THEN
+    IF out_document_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -215,9 +212,6 @@ CREATE OR REPLACE PROCEDURE is_user_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_user_id_is_valid := FALSE;
-    
     -- Check if the user ID is valid
     SELECT TRUE
     INTO out_user_id_is_valid
@@ -243,7 +237,7 @@ AS $$
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
-    IF out_user_id_is_valid = FALSE THEN
+    IF out_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -328,9 +322,6 @@ CREATE OR REPLACE PROCEDURE is_user_email_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_user_email_id_is_valid := FALSE;
-    
     -- Check if the user email ID is valid
     SELECT TRUE
     INTO out_user_email_id_is_valid
@@ -355,7 +346,7 @@ AS $$
 BEGIN
     -- Check if the user email ID is valid
     call is_user_email_id_valid(in_user_email_id, out_user_email_id_is_valid);
-    IF out_user_email_id_is_valid = FALSE THEN
+    IF out_user_email_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -404,7 +395,7 @@ AS $$
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
-    IF out_user_id_is_valid = FALSE THEN
+    IF out_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -429,9 +420,6 @@ CREATE OR REPLACE PROCEDURE get_user_email_id_by_user_email(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_user_email_id := NULL;
-    
     -- Check if the user email is valid
     SELECT id
     INTO out_user_email_id
@@ -486,9 +474,6 @@ CREATE OR REPLACE PROCEDURE is_user_email_verification_token_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_user_email_verification_token_is_valid := FALSE;
-    
     -- Check if the user email verification token is valid
     SELECT TRUE
     INTO out_user_email_verification_token_is_valid
@@ -511,7 +496,7 @@ AS $$
 BEGIN
     -- Check if the user email verification token is valid
     call is_user_email_verification_token_valid(in_user_email_verification_token, out_user_email_verification_token_is_valid);
-    IF out_user_email_verification_token_is_valid = FALSE THEN
+    IF out_user_email_verification_token_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -557,7 +542,7 @@ AS $$
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
-    IF out_user_id_is_valid = FALSE THEN
+    IF out_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -591,7 +576,7 @@ AS $$
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
-    IF out_user_id_is_valid = FALSE THEN
+    IF out_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -687,7 +672,7 @@ BEGIN
     call get_country_id_by_name(in_user_document_country_name, out_user_document_country_name_is_valid, var_user_document_country_id);
     
     -- Check if the country name is valid
-    IF out_user_document_country_name_is_valid = FALSE THEN
+    IF out_user_document_country_name_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -800,9 +785,6 @@ CREATE OR REPLACE PROCEDURE is_profile_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_profile_id_is_valid := FALSE;
-
     -- Check if the profile ID is valid
     SELECT TRUE
     INTO out_profile_id_is_valid
@@ -822,9 +804,6 @@ CREATE OR REPLACE PROCEDURE is_object_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_object_id_is_valid := FALSE;
-
     -- Check if the object ID is valid    
     SELECT TRUE
     INTO out_object_id_is_valid
@@ -844,9 +823,6 @@ CREATE OR REPLACE PROCEDURE is_method_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_method_id_is_valid := FALSE;
-
     -- Check if the method ID is valid    
     SELECT TRUE
     INTO out_method_id_is_valid
@@ -879,7 +855,7 @@ BEGIN
     
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
-    IF out_profile_id_is_valid = FALSE THEN
+    IF out_profile_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
@@ -920,7 +896,7 @@ BEGIN
     
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
-    IF out_profile_id_is_valid = FALSE THEN
+    IF out_profile_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
@@ -971,13 +947,13 @@ AS $$
 BEGIN
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
-    IF out_profile_id_is_valid = FALSE THEN
+    IF out_profile_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the method ID is valid
     call is_method_id_valid(in_method_id, out_method_id_is_valid);
-    IF out_method_id_is_valid = FALSE THEN
+    IF out_method_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -1019,13 +995,13 @@ AS $$
 BEGIN
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
-    IF out_profile_id_is_valid = FALSE THEN
+    IF out_profile_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the method ID is valid
     call is_method_id_valid(in_method_id, out_method_id_is_valid);
-    IF out_method_id_is_valid = FALSE THEN
+    IF out_method_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
@@ -1092,7 +1068,7 @@ DECLARE
 BEGIN
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
-    IF out_profile_id_is_valid = FALSE THEN
+    IF out_profile_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
@@ -1126,7 +1102,7 @@ AS $$
 BEGIN
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
-    IF out_profile_id_is_valid = FALSE THEN
+    IF out_profile_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -1254,7 +1230,7 @@ DECLARE
 BEGIN
     -- Check if the object ID is valid
     call is_object_id_valid(in_object_id, out_object_id_is_valid);
-    IF out_object_id_is_valid = FALSE THEN
+    IF out_object_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -1367,7 +1343,7 @@ AS $$
 BEGIN
     -- Check if the module ID is valid
     call is_object_id_valid(in_module_id, out_module_id_is_valid);
-    IF out_module_id_is_valid = FALSE THEN
+    IF out_module_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
         
@@ -1395,7 +1371,7 @@ AS $$
 BEGIN
     -- Check if the object ID is valid
     call is_object_id_valid(in_object_id, out_object_id_is_valid);
-    IF out_object_id_is_valid = FALSE THEN
+    IF out_object_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -1438,7 +1414,7 @@ AS $$
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
-    IF out_user_id_is_valid = FALSE THEN
+    IF out_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
@@ -1485,7 +1461,7 @@ DECLARE
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
-    IF out_user_id_is_valid = FALSE THEN
+    IF out_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -1621,9 +1597,6 @@ CREATE OR REPLACE PROCEDURE is_document_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_document_id_is_valid := FALSE;
-    
     -- Check if the document ID is valid
     SELECT TRUE
     INTO out_document_id_is_valid
@@ -1680,7 +1653,7 @@ DECLARE
 BEGIN
     -- Check if the document ID is valid
     call is_document_id_valid(in_document_id, out_document_id_is_valid);
-    IF out_document_id_is_valid = FALSE THEN
+    IF out_document_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -1896,7 +1869,7 @@ AS $$
 BEGIN
     -- Check if the document ID is valid
     call is_document_id_valid(in_document_id, out_document_id_is_valid);
-    IF out_document_id_is_valid = FALSE THEN
+    IF out_document_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -1945,9 +1918,6 @@ CREATE OR REPLACE PROCEDURE is_language_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_language_id_is_valid := FALSE;
-    
     -- Check if the language ID is valid
     SELECT TRUE
     INTO out_language_id_is_valid
@@ -1985,13 +1955,13 @@ BEGIN
     
     -- Check if the document ID is valid
     call is_document_id_valid(in_document_id, out_document_id_is_valid);
-    IF out_document_id_is_valid = FALSE THEN
+    IF out_document_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the language ID is valid
     call is_language_id_valid(in_language_id, out_language_id_is_valid);
-    IF out_language_id_is_valid = FALSE THEN
+    IF out_language_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2044,7 +2014,7 @@ AS $$
 BEGIN
     -- Check if the document ID is valid
     call is_document_id_valid(in_document_id, out_document_id_is_valid);
-    IF out_document_id_is_valid = FALSE THEN
+    IF out_document_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2072,9 +2042,6 @@ CREATE OR REPLACE PROCEDURE is_post_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_post_id_is_valid := FALSE;
-    
     -- Check if the post ID is valid
     SELECT TRUE
     INTO out_post_id_is_valid
@@ -2099,7 +2066,7 @@ DECLARE
 BEGIN
     -- Check if the post ID is valid
     call is_post_id_valid(in_post_id, out_post_id_is_valid);
-    IF out_post_id_is_valid = FALSE THEN
+    IF out_post_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2173,9 +2140,6 @@ CREATE OR REPLACE PROCEDURE is_location_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_location_id_is_valid := FALSE;
-    
     -- Check if the location ID is valid
     SELECT TRUE
     INTO out_location_id_is_valid
@@ -2202,7 +2166,7 @@ DECLARE
 BEGIN
     -- Check if the location ID is valid
     call is_location_id_valid(in_location_id, out_location_id_is_valid);
-    IF out_location_id_is_valid = FALSE THEN
+    IF out_location_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2234,7 +2198,7 @@ AS $$
 BEGIN
     -- Check if the location ID is valid
     call is_location_id_valid(in_location_id, out_location_id_is_valid);
-    IF out_location_id_is_valid = FALSE THEN
+    IF out_location_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2262,7 +2226,7 @@ AS $$
 BEGIN
     -- Check if the location ID is valid
     call is_location_id_valid(in_location_id, out_location_id_is_valid);
-    IF out_location_id_is_valid = FALSE THEN
+    IF out_location_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2291,9 +2255,6 @@ CREATE OR REPLACE PROCEDURE is_location_section_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_location_section_id_is_valid := FALSE;
-    
     -- Check if the location section ID is valid
     SELECT TRUE
     INTO out_location_section_id_is_valid
@@ -2318,7 +2279,7 @@ DECLARE
 BEGIN
     -- Check if the location section ID is valid
     call is_location_section_id_valid(in_location_section_id, out_location_section_id_is_valid);
-    IF out_location_section_id_is_valid = FALSE THEN
+    IF out_location_section_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2349,7 +2310,7 @@ AS $$
 BEGIN
     -- Check if the location section ID is valid
     call is_location_section_id_valid(in_location_section_id, out_location_section_id_is_valid);
-    IF out_location_section_id_is_valid = FALSE THEN
+    IF out_location_section_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2391,13 +2352,13 @@ BEGIN
     
     -- Check if the location section ID is valid
     call is_location_section_id_valid(in_location_section_id, out_location_section_id_is_valid);
-    IF out_location_section_id_is_valid = FALSE THEN
+    IF out_location_section_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the document ID is valid
     call is_document_id_valid(in_document_id, out_document_id_is_valid);
-    IF out_document_id_is_valid = FALSE THEN
+    IF out_document_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2430,13 +2391,13 @@ AS $$
 BEGIN
     -- Check if the document ID is valid
     call is_document_id_valid(in_document_id, out_document_id_is_valid);
-    IF out_document_id_is_valid = FALSE THEN
+    IF out_document_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the location section ID is valid
     call is_location_section_id_valid(in_location_section_id, out_location_section_id_is_valid);
-    IF out_location_section_id_is_valid = FALSE THEN
+    IF out_location_section_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2487,9 +2448,6 @@ CREATE OR REPLACE PROCEDURE is_topic_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_topic_id_is_valid := FALSE;
-    
     -- Check if the topic ID is valid
     SELECT TRUE
     INTO out_topic_id_is_valid
@@ -2516,7 +2474,7 @@ DECLARE
 BEGIN
     -- Check if the topic ID is valid
     call is_topic_id_valid(in_topic_id, out_topic_id_is_valid);
-    IF out_topic_id_is_valid = FALSE THEN
+    IF out_topic_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2548,7 +2506,7 @@ AS $$
 BEGIN
     -- Check if the topic ID is valid
     call is_topic_id_valid(in_topic_id, out_topic_id_is_valid);
-    IF out_topic_id_is_valid = FALSE THEN
+    IF out_topic_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2597,13 +2555,13 @@ BEGIN
     
     -- Check if the topic ID is valid
     call is_topic_id_valid(in_topic_id, out_topic_id_is_valid);
-    IF out_topic_id_is_valid = FALSE THEN
+    IF out_topic_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the document ID is valid
     call is_document_id_valid(in_document_id, out_document_id_is_valid);
-    IF out_document_id_is_valid = FALSE THEN
+    IF out_document_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2636,13 +2594,13 @@ AS $$
 BEGIN
     -- Check if the document ID is valid
     call is_document_id_valid(in_document_id, out_document_id_is_valid);
-    IF out_document_id_is_valid = FALSE THEN
+    IF out_document_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the topic ID is valid
     call is_topic_id_valid(in_topic_id, out_topic_id_is_valid);
-    IF out_topic_id_is_valid = FALSE THEN
+    IF out_topic_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2696,9 +2654,6 @@ CREATE OR REPLACE PROCEDURE is_magazine_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_magazine_id_is_valid := FALSE;
-    
     -- Check if the magazine ID is valid
     SELECT TRUE
     INTO out_magazine_id_is_valid
@@ -2727,7 +2682,7 @@ DECLARE
 BEGIN
     -- Check if the magazine ID is valid
     call is_magazine_id_valid(in_magazine_id, out_magazine_id_is_valid);
-    IF out_magazine_id_is_valid = FALSE THEN
+    IF out_magazine_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2760,7 +2715,7 @@ AS $$
 BEGIN
     -- Check if the magazine ID is valid
     call is_magazine_id_valid(in_magazine_id, out_magazine_id_is_valid);
-    IF out_magazine_id_is_valid = FALSE THEN
+    IF out_magazine_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2845,9 +2800,6 @@ CREATE OR REPLACE PROCEDURE is_publisher_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_publisher_id_is_valid := FALSE;
-    
     -- Check if the publisher ID is valid
     SELECT TRUE
     INTO out_publisher_id_is_valid
@@ -2874,7 +2826,7 @@ DECLARE
 BEGIN
     -- Check if the publisher ID is valid
     call is_publisher_id_valid(in_publisher_id, out_publisher_id_is_valid);
-    IF out_publisher_id_is_valid = FALSE THEN
+    IF out_publisher_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2906,7 +2858,7 @@ AS $$
 BEGIN
     -- Check if the publisher ID is valid
     call is_publisher_id_valid(in_publisher_id, out_publisher_id_is_valid);    
-    IF out_publisher_id_is_valid = FALSE THEN
+    IF out_publisher_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -2929,9 +2881,6 @@ CREATE OR REPLACE PROCEDURE is_document_review_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_document_review_id_is_valid := FALSE;
-    
     -- Check if the document review ID is valid
     SELECT TRUE
     INTO out_document_review_id_is_valid
@@ -2959,14 +2908,14 @@ AS $$
 BEGIN
     -- Check if the document ID is valid
     call is_document_id_valid(in_document_id, out_document_id_is_valid);
-    IF out_document_id_is_valid = FALSE THEN
+    IF out_document_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the parent document review ID is valid
     IF in_review_parent_document_review_id IS NOT NULL THEN
         call is_document_review_id_valid(in_review_parent_document_review_id, out_review_parent_document_review_id_is_valid);
-        IF out_review_parent_document_review_id_is_valid = FALSE THEN
+        IF out_review_parent_document_review_id_is_valid  IS NOT TRUE THEN
             RETURN;
         END IF;
     END IF;
@@ -3010,7 +2959,7 @@ DECLARE
 BEGIN
     -- Check if the review ID is valid
     call is_document_review_id_valid(in_review_id, out_review_id_is_valid);
-    IF out_review_id_is_valid = FALSE THEN
+    IF out_review_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3044,7 +2993,7 @@ AS $$
 BEGIN
     -- Check if the review ID is valid
     call is_document_review_id_valid(in_review_id, out_review_id_is_valid);
-    IF out_review_id_is_valid = FALSE THEN
+    IF out_review_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3103,7 +3052,7 @@ DECLARE
 BEGIN
     -- Check if the publisher ID is valid
     call is_publisher_id_valid(in_book_publisher_id, out_book_publisher_id_is_valid);
-    IF out_book_publisher_id_is_valid = FALSE THEN
+    IF out_book_publisher_id_is_valid IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3135,9 +3084,6 @@ CREATE OR REPLACE PROCEDURE is_book_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_book_id_is_valid := FALSE;
-    
     -- Check if the book ID is valid
     SELECT TRUE
     INTO out_book_id_is_valid
@@ -3181,7 +3127,7 @@ DECLARE
 BEGIN
     -- Check if the book ID is valid
     call is_book_id_valid(in_book_id, out_book_id_is_valid);
-    IF out_book_id_is_valid = FALSE THEN
+    IF out_book_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3291,9 +3237,6 @@ CREATE OR REPLACE PROCEDURE is_work_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_work_id_is_valid := FALSE;
-    
     -- Check if the work ID is valid
     SELECT TRUE
     INTO out_work_id_is_valid
@@ -3333,7 +3276,7 @@ DECLARE
 BEGIN
     -- Check if the work ID is valid
     call is_work_id_valid(in_work_id, out_work_id_is_valid);
-    IF out_work_id_is_valid = FALSE THEN
+    IF out_work_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
@@ -3411,9 +3354,6 @@ CREATE OR REPLACE PROCEDURE is_article_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_article_id_is_valid := FALSE;
-    
     -- Check if the article ID is valid
     SELECT TRUE
     INTO out_article_id_is_valid
@@ -3453,7 +3393,7 @@ DECLARE
 BEGIN
     -- Check if the article ID is valid
     call is_article_id_valid(in_article_id, out_article_id_is_valid);
-    IF out_article_id_is_valid = FALSE THEN
+    IF out_article_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3479,7 +3419,7 @@ AS $$
 BEGIN
     -- Check if the book ID is valid
     call is_book_id_valid(in_book_id, out_book_copy_id);
-    IF out_book_copy_id = FALSE THEN
+    IF out_book_copy_id  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3507,9 +3447,6 @@ CREATE OR REPLACE PROCEDURE is_book_copy_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_book_copy_id_is_valid := FALSE;
-    
     -- Check if the book copy ID is valid
     SELECT TRUE
     INTO out_book_copy_id_is_valid
@@ -3534,7 +3471,7 @@ DECLARE
 BEGIN
     -- Check if the book copy ID is valid
     call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
-    IF out_book_copy_id_is_valid = FALSE THEN
+    IF out_book_copy_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3565,7 +3502,7 @@ AS $$
 BEGIN
     -- Check if the book copy ID is valid
     call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
-    IF out_book_copy_id_is_valid = FALSE THEN
+    IF out_book_copy_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3623,7 +3560,7 @@ AS $$
 BEGIN
     -- Check if the magazine ID is valid
     call is_magazine_id_valid(in_magazine_id, out_magazine_id_is_valid);
-    IF out_magazine_id_is_valid = FALSE THEN
+    IF out_magazine_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3655,9 +3592,6 @@ CREATE OR REPLACE PROCEDURE is_magazine_issue_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_magazine_issue_id_is_valid := FALSE;
-    
     -- Check if the magazine issue ID is valid
     SELECT TRUE
     INTO out_magazine_issue_id_is_valid
@@ -3699,7 +3633,7 @@ DECLARE
 BEGIN
     -- Check if the magazine issue ID is valid
     call is_magazine_issue_id_valid(in_magazine_issue_id, out_magazine_issue_id_is_valid);
-    IF out_magazine_issue_id_is_valid = FALSE THEN
+    IF out_magazine_issue_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3792,9 +3726,6 @@ CREATE OR REPLACE PROCEDURE is_thesis_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_thesis_id_is_valid := FALSE;
-    
     -- Check if the thesis ID is valid
     SELECT TRUE
     INTO out_thesis_id_is_valid
@@ -3834,7 +3765,7 @@ DECLARE
 BEGIN
     -- Check if the thesis ID is valid
     call is_thesis_id_valid(in_thesis_id, out_thesis_id_is_valid);
-    IF out_thesis_id_is_valid = FALSE THEN
+    IF out_thesis_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3867,7 +3798,7 @@ AS $$
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
-    IF out_user_id_is_valid = FALSE THEN
+    IF out_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3955,7 +3886,7 @@ AS $$
 BEGIN
     -- Check if the method ID is valid
     call is_method_id_valid(in_method_id, out_method_id_is_valid);
-    IF out_method_id_is_valid = FALSE THEN
+    IF out_method_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -3989,7 +3920,7 @@ DECLARE
 BEGIN
     -- Check if the method ID is valid
     call is_method_id_valid(in_method_id, out_method_id_is_valid);
-    IF out_method_id_is_valid = FALSE THEN
+    IF out_method_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4027,13 +3958,13 @@ AS $$
 BEGIN
     -- Check if the user ID is valid
     call is_user_id_valid(in_user_id, out_user_id_is_valid);
-    IF out_user_id_is_valid = FALSE THEN
+    IF out_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the profile ID is valid
     call is_profile_id_valid(in_profile_id, out_profile_id_is_valid);
-    IF out_profile_id_is_valid = FALSE THEN
+    IF out_profile_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4068,13 +3999,13 @@ AS $$
 BEGIN
     -- Check if the article ID is valid
     call is_article_id_valid(in_article_id, out_article_id_is_valid);
-    IF out_article_id_is_valid = FALSE THEN
+    IF out_article_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the jury member ID is valid
     call is_user_id_valid(in_jury_member_id, out_jury_member_id_is_valid);
-    IF out_jury_member_id_is_valid = FALSE THEN
+    IF out_jury_member_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4107,13 +4038,13 @@ AS $$
 BEGIN
     -- Check if the article ID is valid
     call is_article_id_valid(in_article_id, out_article_id_is_valid);
-    IF out_article_id_is_valid = FALSE THEN
+    IF out_article_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the jury member ID is valid
     call is_user_id_valid(in_jury_member_id, out_jury_member_id_is_valid);
-    IF out_jury_member_id_is_valid = FALSE THEN
+    IF out_jury_member_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4138,9 +4069,6 @@ CREATE OR REPLACE PROCEDURE is_article_jury_member(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_jury_member_id_is_valid := FALSE;
-    
     -- Check if the jury member is part of the article jury
     SELECT TRUE
     INTO out_jury_member_id_is_valid
@@ -4168,19 +4096,19 @@ AS $$
 BEGIN
     -- Check if the article ID is valid
     call is_article_id_valid(in_article_id, out_article_id_is_valid);
-    IF out_article_id_is_valid = FALSE THEN
+    IF out_article_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the jury member ID is valid
     call is_user_id_valid(in_jury_member_id, out_jury_member_id_is_valid);
-    IF out_jury_member_id_is_valid = FALSE THEN
+    IF out_jury_member_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the jury member is a member of the article jury
     call is_article_jury_member(in_article_id, in_jury_member_id, out_is_article_jury_member);
-    IF out_is_article_jury_member = FALSE THEN
+    IF out_is_article_jury_member  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4210,9 +4138,6 @@ CREATE OR REPLACE PROCEDURE is_article_annotation_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_article_annotation_id_is_valid := FALSE;
-    
     -- Check if the article annotation ID is valid
     SELECT TRUE
     INTO out_article_annotation_id_is_valid
@@ -4239,7 +4164,7 @@ DECLARE
 BEGIN
     -- Check if the article annotation ID is valid
     call is_article_annotation_id_valid(in_annotation_id, out_article_annotation_id_is_valid);
-    IF out_article_annotation_id_is_valid = FALSE THEN
+    IF out_article_annotation_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4271,7 +4196,7 @@ AS $$
 BEGIN
     -- Check if the article annotation ID is valid
     call is_article_annotation_id_valid(in_annotation_id, out_article_annotation_id_is_valid);
-    IF out_article_annotation_id_is_valid = FALSE THEN
+    IF out_article_annotation_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4297,7 +4222,7 @@ AS $$
 BEGIN
     -- Check if the book copy ID is valid
     call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
-    IF out_book_copy_id_is_valid = FALSE THEN
+    IF out_book_copy_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4326,13 +4251,13 @@ AS $$
 BEGIN
     -- Check if the book copy ID is valid
     call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
-    IF out_book_copy_id_is_valid = FALSE THEN
+    IF out_book_copy_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the user ID is valid
     call is_user_id_valid(in_loaned_to_user_id, out_loaned_to_user_id_is_valid);
-    IF out_loaned_to_user_id_is_valid = FALSE THEN
+    IF out_loaned_to_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4368,13 +4293,13 @@ AS $$
 BEGIN
     -- Check if the book copy ID is valid
     call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
-    IF out_book_copy_id_is_valid = FALSE THEN
+    IF out_book_copy_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the user ID is valid
     call is_user_id_valid(in_loaned_to_user_id, out_loaned_to_user_id_is_valid);
-    IF out_loaned_to_user_id_is_valid = FALSE THEN
+    IF out_loaned_to_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4406,19 +4331,19 @@ AS $$
 BEGIN
     -- Check if the book copy ID is valid
     call is_book_copy_id_valid(in_book_copy_id, out_book_copy_id_is_valid);
-    IF out_book_copy_id_is_valid = FALSE THEN
+    IF out_book_copy_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the loaned to user ID is valid
     call is_user_id_valid(in_loaned_to_user_id, out_loaned_to_user_id_is_valid);
-    IF out_loaned_to_user_id_is_valid = FALSE THEN
+    IF out_loaned_to_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
     -- Check if the loaned by user ID is valid
     call is_user_id_valid(in_loaned_by_user_id, out_loaned_by_user_id_is_valid);
-    IF out_loaned_by_user_id_is_valid = FALSE THEN
+    IF out_loaned_by_user_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4450,9 +4375,6 @@ CREATE OR REPLACE PROCEDURE is_book_copy_loan_id_valid(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Set the default value
-    out_book_copy_loan_id_is_valid := FALSE;
-    
     -- Check if the book copy loan ID is valid
     SELECT TRUE
     INTO out_book_copy_loan_id_is_valid
@@ -4479,7 +4401,7 @@ AS $$
 BEGIN
     -- Check if the book copy loan ID is valid
     call is_book_copy_loan_id_valid(in_book_copy_loan_id, out_book_copy_loan_id_is_valid);
-    IF out_book_copy_loan_id_is_valid = FALSE THEN
+    IF out_book_copy_loan_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4510,7 +4432,7 @@ DECLARE
 BEGIN
     -- Check if the book copy loan ID is valid
     call is_book_copy_loan_id_valid(in_book_copy_loan_id, out_book_copy_loan_id_is_valid);
-    IF out_book_copy_loan_id_is_valid = FALSE THEN
+    IF out_book_copy_loan_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4545,7 +4467,7 @@ AS $$
 BEGIN
     -- Check if the book copy loan ID is valid
     call is_book_copy_loan_id_valid(in_book_copy_loan_id, out_book_copy_loan_id_is_valid);
-    IF out_book_copy_loan_id_is_valid = FALSE THEN
+    IF out_book_copy_loan_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4574,7 +4496,7 @@ DECLARE
 BEGIN
     -- Check if the book ID is valid
     call is_book_id_valid(in_book_id, out_book_id_is_valid);
-    IF out_book_id_is_valid = FALSE THEN
+    IF out_book_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4602,7 +4524,7 @@ DECLARE
 BEGIN
     -- Check if the article ID is valid
     call is_article_id_valid(in_article_id, out_article_id_is_valid);
-    IF out_article_id_is_valid = FALSE THEN
+    IF out_article_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4630,7 +4552,7 @@ DECLARE
 BEGIN
     -- Check if the magazine issue ID is valid
     call is_magazine_issue_id_valid(in_magazine_issue_id, out_magazine_issue_id_is_valid);
-    IF out_magazine_issue_id_is_valid = FALSE THEN
+    IF out_magazine_issue_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
     
@@ -4658,7 +4580,7 @@ DECLARE
 BEGIN
     -- Check if the thesis ID is valid
     call is_thesis_id_valid(in_thesis_id, out_thesis_id_is_valid);
-    IF out_thesis_id_is_valid = FALSE THEN
+    IF out_thesis_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
@@ -4684,7 +4606,7 @@ AS $$
 BEGIN
     -- Check if the book ID is valid
     call is_book_id_valid(in_book_id, out_book_id_is_valid);
-    IF out_book_id_is_valid = FALSE THEN
+    IF out_book_id_is_valid  IS NOT TRUE THEN
         RETURN;
     END IF;
 
