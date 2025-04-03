@@ -26,7 +26,7 @@ $$;
 export const CREATE_GET_COUNTRY_ID_BY_NAME_PROC = `
 CREATE OR REPLACE PROCEDURE get_country_id_by_name(
     IN in_country_name VARCHAR,
-    OUT out_country_name_is_valid BOOLEAN
+    OUT out_country_name_is_valid BOOLEAN,
     OUT out_country_id BIGINT
 )
 LANGUAGE plpgsql
@@ -349,7 +349,7 @@ CREATE OR REPLACE PROCEDURE create_user_email_verification_token(
     IN in_user_email_id BIGINT,
     IN in_user_email_verification_token VARCHAR,
     IN in_user_email_verification_expires_at TIMESTAMP,
-    OUT out_user_email_id_is_valid BOOLEAN
+    OUT out_user_email_id_is_valid BOOLEAN,
     OUT out_user_email_is_verified BOOLEAN
 )
 LANGUAGE plpgsql
@@ -419,8 +419,8 @@ $$;
 export const CREATE_GET_USER_EMAIL_ID_BY_USER_EMAIL_PROC = `
 CREATE OR REPLACE PROCEDURE get_user_email_id_by_user_email(
     IN in_user_email VARCHAR,
-    OUT out_user_email_is_valid BOOLEAN
-    OUT out_user_email_id BIGINT,
+    OUT out_user_email_is_valid BOOLEAN,
+    OUT out_user_email_id BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -669,6 +669,8 @@ DECLARE
     var_user_email_id BIGINT;
     var_user_document_country_id BIGINT;
     var_user_document_country_id_is_valid BIGINT;
+DECLARE
+    var_user_id_is_valid BOOLEAN;
 BEGIN
     -- Get the country ID
     call get_country_id_by_name(in_user_document_country_name, out_user_document_country_name_is_valid, var_user_document_country_id);
@@ -694,7 +696,7 @@ BEGIN
 	-- Insert into user_usernames table
 	INSERT INTO user_usernames (
 		user_id, 
-		username
+		username8
 	)
 	VALUES (
 		out_user_id, 
@@ -702,7 +704,7 @@ BEGIN
 	);
 
 	-- Insert into user_emails table
-	call create_user_email(out_user_id, in_user_email, in_user_email_verification_token, in_user_email_verification_expires_at, var_user_email_id);
+	call create_user_email(out_user_id, in_user_email, in_user_email_verification_token, in_user_email_verification_expires_at, var_user_id_is_valid, var_user_email_id);
 
 	-- Insert into user_password_hashes table
 	INSERT INTO user_password_hashes (
@@ -3630,7 +3632,7 @@ CREATE OR REPLACE PROCEDURE update_magazine_issue(
     IN in_create_document_document_image_uuids VARCHAR[],
     IN in_create_document_document_image_extensions VARCHAR,
     IN in_remove_document_document_image_uuids VARCHAR[],
-    OUT out_magazine_issue_id_is_valid BOOLEAN,
+    OUT out_magazine_issue_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -3918,7 +3920,7 @@ CREATE OR REPLACE PROCEDURE set_method_permissions(
     IN in_method_id BIGINT,
     IN in_create_profile_ids BIGINT[],
     IN in_remove_profile_ids BIGINT[],
-    OUT out_method_id_is_valid BOOLEAN,
+    OUT out_method_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
@@ -4169,7 +4171,7 @@ CREATE OR REPLACE PROCEDURE update_article_annotation(
     IN in_annotation_id BIGINT,
     IN in_annotation_title VARCHAR,
     IN in_annotation_content TEXT,
-    OUT out_article_annotation_id_is_valid BOOLEAN,
+    OUT out_article_annotation_id_is_valid BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$

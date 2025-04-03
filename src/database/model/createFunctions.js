@@ -86,7 +86,6 @@ export const CREATE_GET_OBJECTS_BY_PROFILE_ID_MODULE_ID_FN = `
 CREATE OR REPLACE FUNCTION get_objects_by_profile_id_module_id(
     IN in_profile_id BIGINT,
     IN in_module_id BIGINT
-    IN in_module_id BIGINT
 ) RETURNS
 TABLE (
     id BIGINT,
