@@ -16,7 +16,7 @@ export function getPDFFileBufferFromFormData(req, isRequired = true) {
         throw new Error('File is not a PDF')
 
     // Get the file buffer
-    return file.buffer
+    return Buffer.from(file.buffer)
 }
 
 // Get image files from form
@@ -41,7 +41,7 @@ export function getImagesFromFormData(req, isRequired = true) {
     // Process each image
     for (const image of imagesArray) {
         // Get the image buffer
-        const buffer = image.buffer
+        const buffer = Buffer.from(image.buffer)
 
         // Generate a UUID for the image
         const imageUUID = uuidv4()
