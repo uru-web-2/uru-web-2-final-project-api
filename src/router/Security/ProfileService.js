@@ -28,7 +28,7 @@ export class ProfileService {
             const profileID = queryRow?.out_profile_id;
 
             // Add the profile ID to the security component
-            Security.addProfile(profileID, body.name)
+            Security.addProfile(String(profileID), body.name)
 
             return profileID;
         } catch (error) {
@@ -58,7 +58,7 @@ export class ProfileService {
                 throw new FieldFailError(400, 'id', 'Profile ID is invalid');
 
             // Update the profile to the security component
-            Security.updateProfile(body.id, body.name)
+            Security.updateProfile(String(body.id), body.name)
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
@@ -83,7 +83,7 @@ export class ProfileService {
             throw new FieldFailError(400, 'id', 'Profile ID is invalid');
 
         // Remove the profile ID from the security component
-        Security.removeProfile(body.id)
+        Security.removeProfile(String(body.id))
     }
 
     // Searches for a profile by name
