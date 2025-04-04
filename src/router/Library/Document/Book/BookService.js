@@ -7,9 +7,9 @@ import {
     uploadImage
 } from "../../../../components/files.js";
 import {
-    getImagesFromForm,
-    getPDFFileBufferFromForm,
-} from "../../../../components/formidable.js";
+    getImagesFromFormData,
+    getPDFFileBufferFromFormData,
+} from "../../../../components/formData.js";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {BOOKS_UNIQUE_ISBN,} from "../../../../database/model/constraints.js";
 
@@ -21,10 +21,10 @@ export class BookService {
         const {
             imagesExtensionsByUUID,
             imagesBuffersByUUID
-        } = await getImagesFromForm(req, false)
+        } = getImagesFromFormData(req, false)
 
         // Get the PDF file buffer
-        const pdfBuffer = await getPDFFileBufferFromForm(req, false)
+        const pdfBuffer = getPDFFileBufferFromFormData(req, false)
 
         try {
             // Create the book

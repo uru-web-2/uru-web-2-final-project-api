@@ -9,9 +9,9 @@ import {
     uploadMagazineIssueFile
 } from "../../../../components/files.js";
 import {
-    getImagesFromForm,
-    getPDFFileBufferFromForm,
-} from "../../../../components/formidable.js";
+    getImagesFromFormData,
+    getPDFFileBufferFromFormData,
+} from "../../../../components/formData.js";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {
     MAGAZINE_ISSUES_UNIQUE_MAGAZINE_ID_ISSUE_NUMBER,
@@ -25,10 +25,10 @@ export class MagazineIssueService {
         const {
             imagesExtensionsByUUID,
             imagesBuffersByUUID
-        } = await getImagesFromForm(req)
+        } = getImagesFromFormData(req)
 
         // Get the PDF file buffer
-        const pdfBuffer = await getPDFFileBufferFromForm(req)
+        const pdfBuffer = getPDFFileBufferFromFormData(req)
 
         try {
             // Create the magazine issue

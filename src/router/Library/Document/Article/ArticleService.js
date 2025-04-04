@@ -9,9 +9,9 @@ import {
     uploadImage
 } from "../../../../components/files.js";
 import {
-    getImagesFromForm,
-    getPDFFileBufferFromForm,
-} from "../../../../components/formidable.js";
+    getImagesFromFormData,
+    getPDFFileBufferFromFormData,
+} from "../../../../components/formData.js";
 
 // Service for the article object
 export class ArticleService {
@@ -21,10 +21,10 @@ export class ArticleService {
         const {
             imagesExtensionsByUUID,
             imagesBuffersByUUID
-        } = await getImagesFromForm(req)
+        } = getImagesFromFormData(req)
 
         // Get the PDF file buffer
-        const pdfBuffer = await getPDFFileBufferFromForm(req)
+        const pdfBuffer = getPDFFileBufferFromFormData(req)
 
         // Create the article
         const queryRes = await DatabaseManager.rawQuery(
