@@ -41,7 +41,7 @@ export function getImagesFromFormData(req, isRequired = true) {
     // Process each image
     for (const image of imagesArray) {
         // Get the image buffer
-        const buffer = fs.readFileSync(image.path);
+        const buffer = image.buffer
 
         // Generate a UUID for the image
         const imageUUID = uuidv4()
