@@ -159,7 +159,7 @@ export class Security {
             return
 
         // Remove the permission
-        this.#permissions.get(methodID).filter(permissionProfileID => permissionProfileID !== profileID)
+        this.#permissions.set(methodID, this.#permissions.get(methodID).filter(permissionProfileID => permissionProfileID !== profileID))
     }
 
     // Update permissions
@@ -256,7 +256,7 @@ export class Security {
             throw new Error(`Method ${methodName} not found in ${objectName}`)
 
         // Check if the profile exists
-        const profileID = req.session.profileID
+        const profileID = String(req.session.profileID)
         if (!this.hasProfile(profileID)) {
             // Destroy the session
             Session.destroy(req, res)

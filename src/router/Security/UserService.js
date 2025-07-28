@@ -62,7 +62,7 @@ export class UserService {
                 null
             )
             const queryRow = queryRes.rows?.[0]
-            if (queryRow?.out_user_document_country_name_is_valid === false)
+            if (queryRow?.out_user_document_country_name_is_valid !== true)
                 throw new FieldFailError(400,
                     "document_country_name",
                     "country not found"
@@ -119,7 +119,7 @@ export class UserService {
         const userDetails = queryRes.rows[0]
 
         // Check if the user exists
-        if (userDetails.out_user_id_is_valid === false)
+        if (userDetails.out_user_id_is_valid !== true)
             throw new FieldFailError(400,
                 "id",
                 "user not found"
@@ -174,12 +174,12 @@ export class UserService {
             null
         );
         const queryRow = queryRes.rows?.[0];
-        if (queryRow?.out_user_id_is_valid === false)
+        if (queryRow?.out_user_id_is_valid !== true)
             throw new FieldFailError(400,
                 "id",
                 "user not found"
             )
-        if (queryRow?.out_user_document_country_name_is_valid === false)
+        if (queryRow?.out_user_document_country_name_is_valid !== true)
             throw new FieldFailError(400,
                 "document_country_name",
                 "country not found"

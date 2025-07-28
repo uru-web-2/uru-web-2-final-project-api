@@ -21,9 +21,9 @@ export class TopicService {
             null,
         );
         const queryRow = queryRes.rows?.[0];
-        if (queryRow?.out_topic_id_is_valid === false)
+        if (queryRow?.out_topic_id_is_valid !== true)
             throw new FieldFailError(400, 'topic_id', 'Topic ID is invalid');
-        if (queryRow?.out_document_id_is_valid === false)
+        if (queryRow?.out_document_id_is_valid !== true)
             throw new FieldFailError(400,
                 'document_id',
                 'Document ID is invalid'
@@ -41,9 +41,9 @@ export class TopicService {
             null,
         );
         const queryRow = queryRes.rows?.[0];
-        if (queryRow?.out_topic_id_is_valid === false)
+        if (queryRow?.out_topic_id_is_valid !== true)
             throw new FieldFailError(400, 'topic_id', 'Topic ID is invalid');
-        if (queryRow?.out_document_id_is_valid === false)
+        if (queryRow?.out_document_id_is_valid !== true)
             throw new FieldFailError(400,
                 'document_id',
                 'Document ID is invalid'

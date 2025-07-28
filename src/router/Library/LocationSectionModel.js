@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 // Create location section model
 export const CREATE_LOCATION_SECTION = Joi.object({
-    location_id: Joi.string().required().min(1),
+    location_id: Joi.number().required().min(1),
     name: Joi.string().required().min(1),
 })
 

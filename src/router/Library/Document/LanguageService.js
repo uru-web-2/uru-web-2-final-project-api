@@ -26,12 +26,12 @@ export class LanguageService {
                 null
             );
             const queryRow = queryRes.rows?.[0];
-            if (queryRow?.out_document_id_is_valid === false)
+            if (queryRow?.out_document_id_is_valid !== true)
                 throw new FieldFailError(400,
                     'document_id',
                     'Document ID is invalid'
                 );
-            if (queryRow?.out_language_id_is_valid === false)
+            if (queryRow?.out_language_id_is_valid !== true)
                 throw new FieldFailError(400,
                     'language_id',
                     'Language ID is invalid'

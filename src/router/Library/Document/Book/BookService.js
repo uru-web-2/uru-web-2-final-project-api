@@ -7,9 +7,9 @@ import {
     uploadImage
 } from "../../../../components/files.js";
 import {
-    getImagesFromForm,
-    getPDFFileBufferFromForm,
-} from "../../../../components/formidable.js";
+    getImagesFromFormData,
+    getPDFFileBufferFromFormData,
+} from "../../../../components/formData.js";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {BOOKS_UNIQUE_ISBN,} from "../../../../database/model/constraints.js";
 
@@ -21,10 +21,10 @@ export class BookService {
         const {
             imagesExtensionsByUUID,
             imagesBuffersByUUID
-        } = await getImagesFromForm(req, false)
+        } = getImagesFromFormData(req, false)
 
         // Get the PDF file buffer
-        const pdfBuffer = await getPDFFileBufferFromForm(req, false)
+        const pdfBuffer = getPDFFileBufferFromFormData(req, false)
 
         try {
             // Create the book
@@ -43,11 +43,18 @@ export class BookService {
                 Object.values(imagesExtensionsByUUID),
                 body.book_isbn,
                 body.book_publisher_id,
+                null,
                 null
             );
+            const queryRow = queryRes.rows?.[0];
+            if (queryRow?.out_book_publisher_id_is_valid !== true)
+                throw new FieldFailError(400,
+                    'book_publisher_id',
+                    'Publisher ID is invalid'
+                )
 
             // Get the book ID
-            const bookID = queryRes.rows?.[0]?.out_book_id
+            const bookID = queryRow?.out_book_id
 
             // Save the PDF file
             if (pdfBuffer)

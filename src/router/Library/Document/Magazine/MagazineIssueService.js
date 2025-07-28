@@ -1,15 +1,17 @@
 import DatabaseManager from "../../../../components/database.js";
 import {FieldFailError} from "@ralvarezdev/js-express";
-import {CREATE_BOOK_PROC} from "../../../../database/model/storedProcedures.js";
+import {
+    CREATE_MAGAZINE_ISSUE_PROC
+} from "../../../../database/model/storedProcedures.js";
 import {
     PDF_FILE_EXTENSION,
     uploadImage,
     uploadMagazineIssueFile
 } from "../../../../components/files.js";
 import {
-    getImagesFromForm,
-    getPDFFileBufferFromForm,
-} from "../../../../components/formidable.js";
+    getImagesFromFormData,
+    getPDFFileBufferFromFormData,
+} from "../../../../components/formData.js";
 import {PostgresIsUniqueConstraintError} from "@ralvarezdev/js-dbmanager";
 import {
     MAGAZINE_ISSUES_UNIQUE_MAGAZINE_ID_ISSUE_NUMBER,
@@ -23,15 +25,15 @@ export class MagazineIssueService {
         const {
             imagesExtensionsByUUID,
             imagesBuffersByUUID
-        } = await getImagesFromForm(req)
+        } = getImagesFromFormData(req)
 
         // Get the PDF file buffer
-        const pdfBuffer = await getPDFFileBufferFromForm(req)
+        const pdfBuffer = getPDFFileBufferFromFormData(req)
 
         try {
             // Create the magazine issue
             const queryRes = await DatabaseManager.rawQuery(
-                CREATE_BOOK_PROC,
+                CREATE_MAGAZINE_ISSUE_PROC,
                 req.session.userID,
                 body.document_title,
                 body.document_description,

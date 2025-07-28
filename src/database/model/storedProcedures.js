@@ -212,7 +212,7 @@ export const REMOVE_DOCUMENT_REVIEW_PROC = "CALL remove_document_review($1, $2, 
 export const GET_DOCUMENT_ID_BY_BOOK_ID_PROC = "CALL get_document_id_by_book_id($1, $2)"
 
 // Query to create a new book
-export const CREATE_BOOK_PROC = "CALL create_book($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
+export const CREATE_BOOK_PROC = "CALL create_book($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"
 
 // Query to update a book
 export const UPDATE_BOOK_PROC = "CALL update_book($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)"
@@ -396,3 +396,6 @@ export const IS_BOOK_COPY_LOAN_ID_VALID_PROC = "CALL is_book_copy_loan_id_valid(
 
 // Query to get the number of book copies by book ID
 export const GET_NUMBER_OF_BOOK_COPIES_BY_BOOK_ID_PROC = "CALL get_number_of_book_copies_by_book_id($1, $2, $3, $4)"
+
+// Query to check if a language ID is valid
+export const IS_LANGUAGE_ID_VALID_PROC = "CALL is_language_id_valid($1, $2)"

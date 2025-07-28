@@ -26,12 +26,12 @@ export class LocationSectionService {
                 null
             );
             const queryRow = queryRes.rows?.[0];
-            if (queryRow?.out_document_location_section_id_is_valid === false)
+            if (queryRow?.out_document_location_section_id_is_valid !== true)
                 throw new FieldFailError(400,
                     'location_section_id',
                     'Location section ID is invalid'
                 );
-            if (queryRow?.out_document_id_is_valid === false)
+            if (queryRow?.out_document_id_is_valid !== true)
                 throw new FieldFailError(400,
                     'document_id',
                     'Document ID is invalid'
@@ -60,12 +60,12 @@ export class LocationSectionService {
             null, null
         );
         const queryRow = queryRes.rows?.[0];
-        if (queryRow?.out_document_location_section_id_is_valid === false)
+        if (queryRow?.out_document_location_section_id_is_valid !== true)
             throw new FieldFailError(400,
                 'location_section_id',
                 'Location section ID is invalid'
             );
-        if (queryRow?.out_document_id_is_valid === false)
+        if (queryRow?.out_document_id_is_valid !== true)
             throw new FieldFailError(400,
                 'document_id',
                 'Document ID is invalid'

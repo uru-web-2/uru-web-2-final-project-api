@@ -36,14 +36,14 @@ export const FORM_IMAGES_NAME = 'images';
 export const PDF_FILE_EXTENSION = 'pdf'
 
 // Upload an article file
-export async function uploadArticleFile(articleID, extension, file) {
+export async function uploadArticleFile(articleID, extension, buffer) {
     const filePath = join(ARTICLES_PATH, `${articleID}.${extension}`);
 
     // Create the directory
     await fs.promises.mkdir(ARTICLES_PATH, {recursive: true});
 
     // Save the file
-    await fs.promises.writeFile(filePath, file.buffer);
+    await fs.promises.writeFile(filePath, buffer);
 }
 
 // Delete an article file
@@ -58,14 +58,14 @@ export function getArticleRelativePath(articleID, extension) {
 }
 
 // Upload a book file
-export async function uploadBookFile(bookID, extension, file) {
+export async function uploadBookFile(bookID, extension, buffer) {
     const filePath = join(BOOKS_PATH, `${bookID}.${extension}`);
 
     // Create the directory
     await fs.promises.mkdir(BOOKS_PATH, {recursive: true});
 
     // Save the file
-    await fs.promises.writeFile(filePath, file.buffer);
+    await fs.promises.writeFile(filePath, buffer);
 }
 
 // Delete a book file
@@ -80,14 +80,14 @@ export function getBookRelativePath(bookID, extension) {
 }
 
 // Upload a thesis file
-export async function uploadThesisFile(thesisID, extension, file) {
+export async function uploadThesisFile(thesisID, extension, buffer) {
     const filePath = join(THESES_PATH, `${thesisID}.${extension}`);
 
     // Create the directory
     await fs.promises.mkdir(THESES_PATH, {recursive: true});
 
     // Save the file
-    await fs.promises.writeFile(filePath, file.buffer);
+    await fs.promises.writeFile(filePath, buffer);
 }
 
 // Delete a thesis file
@@ -102,7 +102,7 @@ export function getThesisRelativePath(thesisID, extension) {
 }
 
 // Upload a magazine issue file
-export async function uploadMagazineIssueFile(magazineIssueID, extension, file) {
+export async function uploadMagazineIssueFile(magazineIssueID, extension, buffer) {
     const filePath = join(MAGAZINE_ISSUES_PATH,
         `${magazineIssueID}.${extension}`
     );
@@ -111,7 +111,7 @@ export async function uploadMagazineIssueFile(magazineIssueID, extension, file) 
     await fs.promises.mkdir(MAGAZINE_ISSUES_PATH, {recursive: true});
 
     // Save the file
-    await fs.promises.writeFile(filePath, file.buffer);
+    await fs.promises.writeFile(filePath, buffer);
 }
 
 // Delete a magazine issue file
@@ -130,14 +130,14 @@ export function getMagazineIssueRelativePath(magazineIssueID, extension) {
 }
 
 // Upload an image
-export async function uploadImage(imageUUID, extension, file) {
+export async function uploadImage(imageUUID, extension, buffer) {
     const filePath = join(IMAGES_PATH, `${imageUUID}.${extension}`);
 
     // Create the directory
     await fs.promises.mkdir(IMAGES_PATH, {recursive: true});
 
     // Save the file
-    await fs.promises.writeFile(filePath, file.buffer);
+    await fs.promises.writeFile(filePath, buffer);
 }
 
 // Delete an image

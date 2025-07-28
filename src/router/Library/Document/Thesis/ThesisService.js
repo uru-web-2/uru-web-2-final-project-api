@@ -1,14 +1,16 @@
 import DatabaseManager from "../../../../components/database.js";
-import {CREATE_BOOK_PROC} from "../../../../database/model/storedProcedures.js";
+import {
+    CREATE_THESIS_PROC
+} from "../../../../database/model/storedProcedures.js";
 import {
     PDF_FILE_EXTENSION,
     uploadImage,
     uploadThesisFile
 } from "../../../../components/files.js";
 import {
-    getImagesFromForm,
-    getPDFFileBufferFromForm,
-} from "../../../../components/formidable.js";
+    getImagesFromFormData,
+    getPDFFileBufferFromFormData,
+} from "../../../../components/formData.js";
 
 // Service for the thesis object
 export class ThesisService {
@@ -18,14 +20,14 @@ export class ThesisService {
         const {
             imagesExtensionsByUUID,
             imagesBuffersByUUID
-        } = await getImagesFromForm(req)
+        } = getImagesFromFormData(req)
 
         // Get the PDF file buffer
-        const pdfBuffer = await getPDFFileBufferFromForm(req)
+        const pdfBuffer = getPDFFileBufferFromFormData(req)
 
         // Create the thesis
         const queryRes = await DatabaseManager.rawQuery(
-            CREATE_BOOK_PROC,
+            CREATE_THESIS_PROC,
             req.session.userID,
             body.document_title,
             body.document_description,

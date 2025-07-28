@@ -25,15 +25,16 @@ export class LocationSectionService {
                 body.location_id,
                 body.name,
                 null,
+                null
             );
             const queryRow = queryRes.rows?.[0];
-            if (queryRow?.out_location_id_is_valid === false)
+            if (queryRow?.out_location_id_is_valid !== true)
                 throw new FieldFailError(400,
                     'location_id',
                     'Location ID is invalid'
                 );
 
-            return queryRow?.out_location_id;
+            return queryRow?.out_location_section_id;
         } catch (error) {
             // Check if it is a constraint violation error
             const constraintName = PostgresIsUniqueConstraintError(error)
@@ -57,7 +58,7 @@ export class LocationSectionService {
                 null,
             );
             const queryRow = queryRes.rows?.[0];
-            if (queryRow?.out_location_id_is_valid === false)
+            if (queryRow?.out_location_id_is_valid !== true)
                 throw new FieldFailError(400, 'id', 'Location ID is invalid');
         } catch (error) {
             // Check if it is a constraint violation error
@@ -81,7 +82,7 @@ export class LocationSectionService {
             null,
         );
         const queryRow = queryRes.rows?.[0];
-        if (queryRow?.out_location_id_is_valid === false)
+        if (queryRow?.out_location_id_is_valid !== true)
             throw new FieldFailError(400, 'id', 'Location ID is invalid');
     }
 
