@@ -11,7 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Ramón Álvarez, Juan Camarillo, Yeglimar Montanez and Angelina Pineda",
-  "license": "ISC",
+  "license": "GPL-3.0-only",
   "dependencies": {
     "@ralvarezdev/js-dbmanager": "^0.1.25",
     "@ralvarezdev/js-decorator": "^0.2.3",
